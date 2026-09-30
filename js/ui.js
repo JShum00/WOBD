@@ -8,11 +8,35 @@ const $ = (id) => document.getElementById(id);
 
 const DISCLAIMER = 'WOBD gives general information, not a professional diagnosis. Always confirm a problem before replacing parts.';
 
-export function showUnsupported() {
-  $('app').hidden = true;
-  $('car-form').hidden = true;
-  $('connect-btn').hidden = true;
-  $('unsupported').hidden = false;
+// Set when this browser can't reach an adapter, so Connect stays off.
+let connectBlocked = false;
+
+// check: the result of checkBrowser() in serial.js.
+export function showBrowserAlert(check, { demo }) {
+  $('browser-alert-title').textContent = check.reason;
+  $('browser-alert-text').textContent = `${check.fix} You can still try the demos below.`;
+  $('browser-alert').hidden = false;
+  if (!demo) {
+    connectBlocked = true;
+    $('connect-btn').disabled = true;
+    $('connect-btn').title = check.reason;
+  }
+}
+
+// ---------- Welcome card ----------
+
+export function initWelcome(demo) {
+  $('welcome-real').hidden = Boolean(demo);
+  $('welcome-demo').hidden = !demo;
+  for (const link of document.querySelectorAll('.demo-list a')) {
+    if (link.dataset.demo === demo) link.setAttribute('aria-current', 'page');
+  }
+}
+
+// Shown until the first connection. Afterwards the codes area takes over.
+export function setWelcomeVisible(visible) {
+  $('welcome').hidden = !visible;
+  $('codes-empty').hidden = visible || $('codes-body').rows.length > 0;
 }
 
 export function showDemoBadge() {
@@ -103,7 +127,7 @@ export function setConnection(state, text) {
   $('conn-status').dataset.state = state;
   $('conn-status').textContent = text;
   $('connect-btn').textContent = state === 'connected' ? 'Disconnect' : 'Connect';
-  $('connect-btn').disabled = state === 'busy';
+  $('connect-btn').disabled = connectBlocked || state === 'busy';
 }
 
 export function setControls({ scan = false, print = false, clear = false }) {

@@ -6,6 +6,57 @@ export function isSerialSupported() {
   return 'serial' in navigator;
 }
 
+function detectBrowser() {
+  const ua = navigator.userAgent;
+  // iPads report a Mac user agent, so touch support gives them away.
+  const mobile = Boolean(navigator.userAgentData?.mobile)
+    || /Android|iPhone|iPad|iPod|Mobile/i.test(ua)
+    || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  let name = 'This browser';
+  if (/Firefox\/|FxiOS/.test(ua)) name = 'Firefox';
+  else if (/Edg/.test(ua)) name = 'Edge';
+  else if (/OPR\//.test(ua)) name = 'Opera';
+  else if (/SamsungBrowser/.test(ua)) name = 'Samsung Internet';
+  else if (navigator.brave) name = 'Brave';
+  else if (/Chrome\/|CriOS/.test(ua)) name = 'Chrome';
+  else if (/Safari\//.test(ua)) name = 'Safari';
+  return { name, mobile };
+}
+
+// Says whether this browser can reach a USB adapter and, if not, why and what
+// to do instead. Phones are ruled out even when they expose Web Serial,
+// because they can't use USB OBD adapters.
+export function checkBrowser() {
+  const { name, mobile } = detectBrowser();
+  if (mobile) {
+    return {
+      supported: false,
+      name,
+      reason: "Phones and tablets can't connect to a USB car adapter.",
+      fix: 'Open wobd.app on a laptop or Chromebook in Chrome, Edge, or Opera.',
+    };
+  }
+  if (!window.isSecureContext) {
+    return {
+      supported: false,
+      name,
+      reason: 'This page needs a secure (https) connection to reach the adapter.',
+      fix: 'Open https://wobd.app instead.',
+    };
+  }
+  if (!isSerialSupported()) {
+    return {
+      supported: false,
+      name,
+      reason: name === 'Brave'
+        ? 'Brave turns off Web Serial, the feature WOBD uses to talk to the adapter.'
+        : `${name} doesn't support Web Serial, the feature WOBD uses to talk to the adapter.`,
+      fix: 'Open wobd.app in Chrome, Edge, or Opera on a computer.',
+    };
+  }
+  return { supported: true, name };
+}
+
 export class SerialTransport {
   constructor(port) {
     this.port = port;

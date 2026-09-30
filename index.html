@@ -8,6 +8,7 @@
   <link rel="icon" href="img/bob.png">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/print.css" media="print">
+  <script src="js/theme.js"></script>
   <script type="module" src="js/app.js"></script>
 </head>
 <body>
@@ -32,6 +33,10 @@
     <div class="header-right">
       <span id="demo-badge" class="demo-badge" hidden>Demo</span>
       <a class="header-link" href="guide.html">How to use</a>
+      <button id="theme-btn" type="button" class="theme-btn" aria-pressed="false" aria-label="Dark mode">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="currentColor"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></g></svg>
+      </button>
       <button id="connect-btn" type="button" class="btn btn-light">Connect</button>
     </div>
   </header>
@@ -39,6 +44,11 @@
   <div class="dev-banner" role="note">
     <strong>WOBD is in active testing and development.</strong>
     Results aren't guaranteed yet, so double-check anything important with a mechanic.
+  </div>
+
+  <div id="browser-alert" class="browser-alert" role="alert" hidden>
+    <p><strong id="browser-alert-title">This browser can't connect to a car adapter.</strong>
+      <span id="browser-alert-text"></span></p>
   </div>
 
   <main id="app" class="layout">
@@ -62,7 +72,39 @@
           <tbody id="codes-body"></tbody>
         </table>
         <p id="codes-hint" class="hint" hidden>Click a code link to open Bob.</p>
-        <p id="codes-empty" class="empty">Connect to your car, then click Scan to read its trouble codes.</p>
+        <p id="codes-empty" class="empty" hidden>Click Scan to read your car's trouble codes.</p>
+
+        <section id="welcome" class="welcome" aria-label="Getting started">
+          <div class="welcome-art" aria-hidden="true">
+            <svg viewBox="0 0 160 90">
+              <!-- OBD-II plug, cable, USB plug -->
+              <path d="M8 22h46l-6 30H14z" fill="currentColor"/>
+              <g fill="var(--surface)">
+                <circle cx="20" cy="30" r="2.2"/><circle cx="28" cy="30" r="2.2"/><circle cx="36" cy="30" r="2.2"/><circle cx="44" cy="30" r="2.2"/>
+                <circle cx="22" cy="42" r="2.2"/><circle cx="30" cy="42" r="2.2"/><circle cx="38" cy="42" r="2.2"/>
+              </g>
+              <path d="M31 52c0 26 40 30 60 12s30-30 44-24" fill="none" stroke="var(--muted)" stroke-width="4" stroke-linecap="round"/>
+              <rect x="128" y="30" width="16" height="22" rx="3" fill="var(--muted)" transform="rotate(-20 136 41)"/>
+              <rect x="138" y="22" width="14" height="14" rx="1.5" fill="none" stroke="var(--muted)" stroke-width="3" transform="rotate(-20 145 29)"/>
+            </svg>
+          </div>
+          <div>
+            <div id="welcome-real">
+              <h2>You need a USB OBD-II adapter to use WOBD</h2>
+              <p>Plug a <strong>USB ELM327-compatible OBD-II cable</strong> into the port under your dashboard and into this computer, then click Connect. They're sold at auto parts stores and online. <a href="guide.html#adapter">What to buy</a></p>
+              <p>Or view one of the demos below, with a pretend car:</p>
+            </div>
+            <div id="welcome-demo" hidden>
+              <h2>You're viewing a demo</h2>
+              <p>A pretend car is hooked up. Click <strong>Connect</strong> to start, or switch demos. <a href="./">Exit demo</a></p>
+            </div>
+            <ul class="demo-list">
+              <li><a href="?demo" data-demo="can">Newer car with trouble codes <small>CAN · a misfire, a lean code, and an EVAP leak</small></a></li>
+              <li><a href="?demo=iso" data-demo="iso">Older car, like a 2001 PT Cruiser <small>ISO 9141 · includes a brand-specific code</small></a></li>
+              <li><a href="?demo=clear" data-demo="clear">Healthy car <small>No trouble codes</small></a></li>
+            </ul>
+          </div>
+        </section>
 
         <div class="actions">
           <button id="print-btn" type="button" class="btn" disabled>Print report</button>
@@ -98,20 +140,6 @@
     </aside>
   </main>
 
-  <main id="unsupported" class="unsupported" hidden>
-    <aside class="bob-panel" aria-label="Bob the mechanic">
-      <div class="bubble-slot">
-        <div class="bubble" data-tone="unknown">
-          <span class="bubble-mood" aria-hidden="true">?</span>
-          <h3>This browser can't reach the adapter</h3>
-          <p>WOBD talks to your adapter through Web Serial, which only works in Chrome, Edge, or Opera on a computer, or Chrome on a Chromebook. Open this page in one of those and I'll be right here.</p>
-          <p><a href="guide.html">How to use WOBD</a> · <a href="?demo">Look around in demo mode</a></p>
-        </div>
-      </div>
-      <div class="bob-figure"><img src="img/bob.png" alt="Bob the mechanic"></div>
-      <p class="bob-name">Bob</p>
-    </aside>
-  </main>
 
   <footer class="site-footer">
     <p>WOBD gives general information, not a professional diagnosis. Always confirm a problem before replacing parts.</p>

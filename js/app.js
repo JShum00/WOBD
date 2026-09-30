@@ -1,5 +1,5 @@
 // Wires the adapter, OBD requests, Bob, and the UI together and holds app state.
-import { SerialTransport, isSerialSupported } from './serial.js';
+import { SerialTransport, checkBrowser } from './serial.js';
 import { DemoTransport } from './demo.js';
 import { ELM327, ElmError } from './elm327.js';
 import * as obd from './obd.js';
@@ -11,6 +11,7 @@ const BAUD_RATES = [38400, 9600, 115200];
 
 const params = new URLSearchParams(location.search);
 const demo = params.has('demo') ? params.get('demo') || 'can' : null;
+const browser = checkBrowser();
 
 const $ = (id) => document.getElementById(id);
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -34,11 +35,9 @@ const bob = new Bob({ slot: $('bob-slot'), live: $('bob-live'), getCar: ui.getCa
 start();
 
 async function start() {
-  if (!isSerialSupported() && !demo) {
-    ui.showUnsupported();
-    return;
-  }
+  if (!browser.supported) ui.showBrowserAlert(browser, { demo });
   if (demo) ui.showDemoBadge();
+  ui.initWelcome(demo);
 
   ui.initTabs(onTabChange);
   ui.initVoiceToggle(voice, (on) => {
@@ -91,11 +90,17 @@ function bobIdle() {
       mood: 'check',
       text: 'Connected! Tell me the year, make, and model up top so my search links are more useful, or skip it. Then click Scan.',
     });
+  } else if (demo) {
+    bob.say({ text: "Hi, I'm Bob! This is demo mode, so a pretend car is hooked up. Click Connect to get started." });
+  } else if (!browser.supported) {
+    bob.say({
+      tone: 'unknown',
+      mood: 'question',
+      text: `Hi, I'm Bob! ${browser.reason} ${browser.fix} Until then, try one of the demos.`,
+    });
   } else {
     bob.say({
-      text: demo
-        ? "Hi, I'm Bob! This is demo mode, so a pretend car is hooked up. Click Connect to get started."
-        : "Hi, I'm Bob! Plug the adapter into your car and this computer, turn the ignition on, then click Connect.",
+      text: "Hi, I'm Bob! You'll need a USB OBD-II adapter. Plug it into your car and this computer, turn the ignition on, then click Connect. No adapter yet? Try a demo.",
     });
   }
 }
@@ -159,6 +164,7 @@ async function onConnectClick() {
     });
   };
   ui.renderGauges(state.supportedPids);
+  ui.setWelcomeVisible(false);
   showConnected();
   bobIdle();
   if (state.tab === 'live') startLive();
@@ -190,6 +196,7 @@ async function disconnect() {
   await transport?.close();
   ui.setConnection('idle', 'Not connected');
   ui.setControls({ print: Boolean(state.scan) });
+  ui.setWelcomeVisible(!state.scan);
 }
 
 function showConnected() {
