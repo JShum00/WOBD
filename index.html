@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WOBD · Free car diagnostics in your browser</title>
+  <meta name="description" content="Plug a USB OBD-II adapter into your laptop or Chromebook and read your car's trouble codes in plain English. Free, nothing to install.">
+  <link rel="icon" href="img/bob.png">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/print.css" media="print">
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="logo" href="./"><span class="logo-mark" aria-hidden="true"></span>WOBD</a>
+
+    <form id="car-form" class="car-form" aria-label="Your car" onsubmit="return false">
+      <div id="car-fields" class="car-form">
+        <label class="sr-only" for="car-year">Year</label>
+        <select id="car-year"><option value="">Year</option></select>
+        <label class="sr-only" for="car-make">Make</label>
+        <select id="car-make"><option value="">Make</option></select>
+        <label class="sr-only" for="car-make-other">Make (other)</label>
+        <input id="car-make-other" type="text" placeholder="Make" autocomplete="off" hidden>
+        <label class="sr-only" for="car-model">Model</label>
+        <input id="car-model" type="text" placeholder="Model" autocomplete="off">
+        <button id="car-skip" type="button" class="link-button">Skip</button>
+      </div>
+      <button id="car-add" type="button" class="link-button" hidden>Add your car</button>
+    </form>
+
+    <div class="header-right">
+      <span id="demo-badge" class="demo-badge" hidden>Demo</span>
+      <a class="header-link" href="guide.html">How to use</a>
+      <button id="connect-btn" type="button" class="btn btn-light">Connect</button>
+    </div>
+  </header>
+
+  <div class="dev-banner" role="note">
+    <strong>WOBD is in active testing and development.</strong>
+    Results aren't guaranteed yet, so double-check anything important with a mechanic.
+  </div>
+
+  <main id="app" class="layout">
+    <section class="panel" aria-label="Diagnostics">
+      <div class="tabs" role="tablist">
+        <button id="tab-scan" class="tab" role="tab" data-tab="scan" aria-selected="true" aria-controls="panel-scan">Scan results</button>
+        <button id="tab-live" class="tab" role="tab" data-tab="live" aria-selected="false" aria-controls="panel-live" tabindex="-1">Live data</button>
+      </div>
+
+      <div id="panel-scan" class="tab-panel" role="tabpanel" aria-labelledby="tab-scan">
+        <div class="toolbar">
+          <p id="conn-status" class="status" role="status">Not connected</p>
+          <button id="scan-btn" type="button" class="btn btn-primary" disabled>Scan</button>
+        </div>
+        <p id="scan-summary" class="scan-summary" hidden></p>
+
+        <table id="codes-table" class="codes-table" hidden>
+          <thead>
+            <tr><th scope="col">Code</th><th scope="col">Description</th><th scope="col" class="col-urgency">Urgency</th></tr>
+          </thead>
+          <tbody id="codes-body"></tbody>
+        </table>
+        <p id="codes-hint" class="hint" hidden>Click a code link to open Bob.</p>
+        <p id="codes-empty" class="empty">Connect to your car, then click Scan to read its trouble codes.</p>
+
+        <div class="actions">
+          <button id="print-btn" type="button" class="btn" disabled>Print report</button>
+          <button id="clear-btn" type="button" class="btn" disabled>Clear codes</button>
+        </div>
+      </div>
+
+      <div id="panel-live" class="tab-panel" role="tabpanel" aria-labelledby="tab-live" hidden>
+        <p class="safety-note"><strong>Parked or passenger only.</strong> Don't watch live data while you're driving.</p>
+        <div id="gauges" class="gauges"></div>
+      </div>
+    </section>
+
+    <aside class="bob-panel" aria-label="Bob the mechanic">
+      <div id="bob-slot" class="bubble-slot"></div>
+      <div class="bob-figure"><img src="img/bob.png" alt="Bob the mechanic"></div>
+      <div class="bob-name-row">
+        <p class="bob-name">Bob</p>
+        <button id="voice-btn" type="button" class="voice-btn" aria-pressed="false" title="Have Bob read his speech bubble aloud" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/>
+            <g class="voice-on" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M16 9a4 4 0 0 1 0 6"/><path d="M18.5 6.5a7.5 7.5 0 0 1 0 11"/>
+            </g>
+            <g class="voice-off" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M16 9l5 6M21 9l-5 6"/>
+            </g>
+          </svg>
+          <span>Voice</span>
+        </button>
+      </div>
+      <div id="bob-live" class="sr-only" aria-live="polite"></div>
+    </aside>
+  </main>
+
+  <main id="unsupported" class="unsupported" hidden>
+    <aside class="bob-panel" aria-label="Bob the mechanic">
+      <div class="bubble-slot">
+        <div class="bubble" data-tone="unknown">
+          <span class="bubble-mood" aria-hidden="true">?</span>
+          <h3>This browser can't reach the adapter</h3>
+          <p>WOBD talks to your adapter through Web Serial, which only works in Chrome, Edge, or Opera on a computer, or Chrome on a Chromebook. Open this page in one of those and I'll be right here.</p>
+          <p><a href="guide.html">How to use WOBD</a> · <a href="?demo">Look around in demo mode</a></p>
+        </div>
+      </div>
+      <div class="bob-figure"><img src="img/bob.png" alt="Bob the mechanic"></div>
+      <p class="bob-name">Bob</p>
+    </aside>
+  </main>
+
+  <footer class="site-footer">
+    <p>WOBD gives general information, not a professional diagnosis. Always confirm a problem before replacing parts.</p>
+    <p>Free and open source. Your scan data never leaves this computer.</p>
+  </footer>
+
+  <section id="report" class="report" aria-hidden="true"></section>
+
+  <dialog id="clear-dialog" aria-labelledby="clear-title">
+    <form method="dialog">
+      <h2 id="clear-title">Clear trouble codes?</h2>
+      <div class="dialog-bob">
+        <div class="bob-figure"><img src="img/bob.png" alt=""></div>
+        <div>
+          <p>This turns off the check engine light, but it also resets your car's emissions readiness monitors.</p>
+          <p><strong>If you're going for an emissions inspection soon, don't clear.</strong> The car has to drive for a while before it's ready again, and it can fail until then.</p>
+        </div>
+      </div>
+      <label class="check-row">
+        <input id="clear-ready" type="checkbox">
+        <span>The ignition is on and the engine is off.</span>
+      </label>
+      <div class="dialog-actions">
+        <button type="submit" value="cancel" class="btn">Cancel</button>
+        <button id="clear-confirm" type="submit" value="clear" class="btn btn-danger" disabled>Clear codes</button>
+      </div>
+    </form>
+  </dialog>
+</body>
+</html>

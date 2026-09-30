@@ -1,0 +1,330 @@
+{
+  "P0011": {
+    "title": "Intake Camshaft Timing Over-Advanced (Bank 1)",
+    "plain": "The engine's valve timing is further ahead than the computer asked for. Low or dirty oil is often behind it.",
+    "urgency": "medium",
+    "causes": ["Low or dirty engine oil", "Sticking variable valve timing solenoid", "Stretched timing chain"],
+    "difficulty": "moderate",
+    "tellMechanic": "I have a P0011. Can you check the oil level and the cam timing solenoid first?"
+  },
+  "P0016": {
+    "title": "Crankshaft/Camshaft Position Correlation (Bank 1 Sensor A)",
+    "plain": "The crankshaft and camshaft aren't lined up the way the computer expects. That can mean the timing chain or belt has stretched or slipped.",
+    "urgency": "medium",
+    "causes": ["Stretched timing chain or slipped belt", "Faulty variable valve timing solenoid", "Bad cam or crank position sensor", "Low or dirty engine oil"],
+    "difficulty": "shop",
+    "tellMechanic": "I have a P0016 cam/crank correlation code. Can you check the timing chain and the VVT solenoid?"
+  },
+  "P0101": {
+    "title": "Mass Air Flow (MAF) Sensor Range/Performance",
+    "plain": "The sensor that measures air coming into the engine is giving readings that don't make sense. The engine may run rough or hesitate.",
+    "urgency": "medium",
+    "causes": ["Dirty mass air flow sensor", "Clogged air filter", "Air leak between the sensor and the engine", "Failed mass air flow sensor"],
+    "difficulty": "diy",
+    "tellMechanic": "I have a P0101. Can you clean or test the MAF sensor and check for intake leaks?"
+  },
+  "P0113": {
+    "title": "Intake Air Temperature Sensor Circuit High",
+    "plain": "The sensor that reads incoming air temperature is sending a signal that's too high, usually because it's unplugged or its wiring is damaged.",
+    "urgency": "low",
+    "causes": ["Unplugged or corroded sensor connector", "Damaged wiring", "Failed intake air temperature sensor"],
+    "difficulty": "diy",
+    "tellMechanic": "I have a P0113. Can you check the intake air temp sensor and its connector?"
+  },
+  "P0117": {
+    "title": "Engine Coolant Temperature Sensor Circuit Low",
+    "plain": "The engine temperature sensor is reporting an impossibly hot reading, usually from a wiring short or a bad sensor. Your temperature gauge and cooling fan may act oddly.",
+    "urgency": "medium",
+    "causes": ["Shorted sensor wiring", "Failed coolant temperature sensor", "Damaged connector"],
+    "difficulty": "diy",
+    "tellMechanic": "I have a P0117. Can you test the coolant temperature sensor and its wiring?"
+  },
+  "P0118": {
+    "title": "Engine Coolant Temperature Sensor Circuit High",
+    "plain": "The engine temperature sensor is reporting an impossibly cold reading, usually because it's unplugged or failed. Your temperature gauge and cooling fan may act oddly.",
+    "urgency": "medium",
+    "causes": ["Unplugged or corroded sensor connector", "Broken wiring", "Failed coolant temperature sensor"],
+    "difficulty": "diy",
+    "tellMechanic": "I have a P0118. Can you test the coolant temperature sensor and its connector?"
+  },
+  "P0128": {
+    "title": "Coolant Thermostat (Coolant Temperature Below Regulating Temperature)",
+    "plain": "Your engine is taking too long to warm up. Usually the thermostat is stuck open.",
+    "urgency": "low",
+    "causes": ["Thermostat stuck open", "Faulty coolant temperature sensor", "Low coolant level"],
+    "difficulty": "moderate",
+    "tellMechanic": "I have a P0128. Can you check the thermostat and the coolant temp sensor?"
+  },
+  "P0133": {
+    "title": "O2 Sensor Circuit Slow Response (Bank 1 Sensor 1)",
+    "plain": "The oxygen sensor before the catalytic converter is reacting slowly, which can hurt fuel economy. It's often just an old sensor.",
+    "urgency": "low",
+    "causes": ["Aging upstream oxygen sensor", "Exhaust leak ahead of the sensor", "Damaged sensor wiring"],
+    "difficulty": "diy",
+    "tellMechanic": "I have a P0133. Can you check for exhaust leaks before replacing the upstream O2 sensor?"
+  },
+  "P0135": {
+    "title": "O2 Sensor Heater Circuit (Bank 1 Sensor 1)",
+    "plain": "The built-in heater in the oxygen sensor before the catalytic converter isn't working, so the sensor takes longer to start reading.",
+    "urgency": "low",
+    "causes": ["Failed heater inside the oxygen sensor", "Blown fuse for the sensor heater", "Damaged wiring or connector"],
+    "difficulty": "diy",
+    "tellMechanic": "I have a P0135. Can you check the O2 heater fuse before replacing the sensor?"
+  },
+  "P0141": {
+    "title": "O2 Sensor Heater Circuit (Bank 1 Sensor 2)",
+    "plain": "The built-in heater in the oxygen sensor after the catalytic converter isn't working.",
+    "urgency": "low",
+    "causes": ["Failed heater inside the oxygen sensor", "Blown fuse for the sensor heater", "Damaged wiring or connector"],
+    "difficulty": "diy",
+    "tellMechanic": "I have a P0141. Can you check the O2 heater fuse and wiring for the downstream sensor?"
+  },
+  "P0171": {
+    "title": "System Too Lean (Bank 1)",
+    "plain": "The engine is getting too much air or not enough fuel. A vacuum leak is the most common reason.",
+    "urgency": "medium",
+    "causes": ["Vacuum leak from a cracked hose", "Dirty mass air flow sensor", "Weak fuel pump or clogged fuel filter", "Leaking intake gasket"],
+    "difficulty": "moderate",
+    "tellMechanic": "I have a P0171 lean code. Can you smoke-test for vacuum leaks and check the MAF sensor?"
+  },
+  "P0172": {
+    "title": "System Too Rich (Bank 1)",
+    "plain": "The engine is getting too much fuel for the amount of air. You might smell fuel or notice worse gas mileage.",
+    "urgency": "medium",
+    "causes": ["Dirty mass air flow sensor", "Leaking fuel injector", "Faulty fuel pressure regulator", "Clogged air filter"],
+    "difficulty": "moderate",
+    "tellMechanic": "I have a P0172 rich code. Can you check the MAF sensor and fuel pressure?"
+  },
+  "P0174": {
+    "title": "System Too Lean (Bank 2)",
+    "plain": "One side of the engine is getting too much air or not enough fuel. A vacuum leak is the most common reason.",
+    "urgency": "medium",
+    "causes": ["Vacuum leak from a cracked hose", "Dirty mass air flow sensor", "Weak fuel pump or clogged fuel filter", "Leaking intake gasket"],
+    "difficulty": "moderate",
+    "tellMechanic": "I have a P0174 lean code. Can you smoke-test for vacuum leaks and check the MAF sensor?"
+  },
+  "P0175": {
+    "title": "System Too Rich (Bank 2)",
+    "plain": "One side of the engine is getting too much fuel for the amount of air. You might smell fuel or notice worse gas mileage.",
+    "urgency": "medium",
+    "causes": ["Dirty mass air flow sensor", "Leaking fuel injector", "Faulty fuel pressure regulator", "Clogged air filter"],
+    "difficulty": "moderate",
+    "tellMechanic": "I have a P0175 rich code. Can you check the MAF sensor and fuel pressure?"
+  },
+  "P0217": {
+    "title": "Engine Overtemperature Condition",
+    "plain": "Your engine has been overheating. Stop driving as soon as it's safe, because heat can warp or crack engine parts.",
+    "urgency": "high",
+    "causes": ["Low coolant from a leak", "Cooling fan not running", "Stuck thermostat", "Failing water pump"],
+    "difficulty": "shop",
+    "tellMechanic": "I have a P0217 overheat code. Can you pressure-test the cooling system and check the fan?"
+  },
+  "P0300": {
+    "title": "Random/Multiple Cylinder Misfire Detected",
+    "plain": "The engine is misfiring, meaning cylinders aren't firing properly. You may feel shaking or hesitation, and unburned fuel can damage the catalytic converter.",
+    "urgency": "high",
+    "causes": ["Worn spark plugs", "Failing ignition coils or plug wires", "Vacuum leak", "Low fuel pressure"],
+    "difficulty": "moderate",
+    "tellMechanic": "I have a P0300 random misfire. Can you check the plugs, coils, and look for vacuum leaks?"
+  },
+  "P0301": {
+    "title": "Cylinder 1 Misfire Detected",
+    "plain": "Cylinder 1 isn't firing properly. You may feel shaking or hesitation, and unburned fuel can damage the catalytic converter.",
+    "urgency": "high",
+    "causes": ["Worn spark plug in cylinder 1", "Failing ignition coil or plug wire", "Clogged or leaking fuel injector", "Low compression"],
+    "difficulty": "moderate",
+    "tellMechanic": "I have a P0301. Can you swap the cylinder 1 coil with another cylinder to see if the misfire follows it?"
+  },
+  "P0302": {
+    "title": "Cylinder 2 Misfire Detected",
+    "plain": "Cylinder 2 isn't firing properly. You may feel shaking or hesitation, and unburned fuel can damage the catalytic converter.",
+    "urgency": "high",
+    "causes": ["Worn spark plug in cylinder 2", "Failing ignition coil or plug wire", "Clogged or leaking fuel injector", "Low compression"],
+    "difficulty": "moderate",
+    "tellMechanic": "I have a P0302. Can you swap the cylinder 2 coil with another cylinder to see if the misfire follows it?"
+  },
+  "P0303": {
+    "title": "Cylinder 3 Misfire Detected",
+    "plain": "Cylinder 3 isn't firing properly. You may feel shaking or hesitation, and unburned fuel can damage the catalytic converter.",
+    "urgency": "high",
+    "causes": ["Worn spark plug in cylinder 3", "Failing ignition coil or plug wire", "Clogged or leaking fuel injector", "Low compression"],
+    "difficulty": "moderate",
+    "tellMechanic": "I have a P0303. Can you swap the cylinder 3 coil with another cylinder to see if the misfire follows it?"
+  },
+  "P0304": {
+    "title": "Cylinder 4 Misfire Detected",
+    "plain": "Cylinder 4 isn't firing properly. You may feel shaking or hesitation, and unburned fuel can damage the catalytic converter.",
+    "urgency": "high",
+    "causes": ["Worn spark plug in cylinder 4", "Failing ignition coil or plug wire", "Clogged or leaking fuel injector", "Low compression"],
+    "difficulty": "moderate",
+    "tellMechanic": "I have a P0304. Can you swap the cylinder 4 coil with another cylinder to see if the misfire follows it?"
+  },
+  "P0305": {
+    "title": "Cylinder 5 Misfire Detected",
+    "plain": "Cylinder 5 isn't firing properly. You may feel shaking or hesitation, and unburned fuel can damage the catalytic converter.",
+    "urgency": "high",
+    "causes": ["Worn spark plug in cylinder 5", "Failing ignition coil or plug wire", "Clogged or leaking fuel injector", "Low compression"],
+    "difficulty": "moderate",
+    "tellMechanic": "I have a P0305. Can you swap the cylinder 5 coil with another cylinder to see if the misfire follows it?"
+  },
+  "P0306": {
+    "title": "Cylinder 6 Misfire Detected",
+    "plain": "Cylinder 6 isn't firing properly. You may feel shaking or hesitation, and unburned fuel can damage the catalytic converter.",
+    "urgency": "high",
+    "causes": ["Worn spark plug in cylinder 6", "Failing ignition coil or plug wire", "Clogged or leaking fuel injector", "Low compression"],
+    "difficulty": "moderate",
+    "tellMechanic": "I have a P0306. Can you swap the cylinder 6 coil with another cylinder to see if the misfire follows it?"
+  },
+  "P0325": {
+    "title": "Knock Sensor 1 Circuit (Bank 1)",
+    "plain": "The sensor that listens for engine knock isn't sending a good signal. The computer may play it safe and cut some power.",
+    "urgency": "low",
+    "causes": ["Damaged knock sensor wiring", "Corroded connector", "Failed knock sensor"],
+    "difficulty": "moderate",
+    "tellMechanic": "I have a P0325. Can you check the knock sensor wiring before replacing the sensor?"
+  },
+  "P0335": {
+    "title": "Crankshaft Position Sensor A Circuit",
+    "plain": "The computer lost the signal that tells it where the crankshaft is. The engine may stall or refuse to start.",
+    "urgency": "high",
+    "causes": ["Failed crankshaft position sensor", "Damaged sensor wiring", "Damaged tone ring on the crankshaft"],
+    "difficulty": "moderate",
+    "tellMechanic": "I have a P0335. Can you check the crank sensor signal and its wiring?"
+  },
+  "P0340": {
+    "title": "Camshaft Position Sensor A Circuit (Bank 1)",
+    "plain": "The computer isn't getting a good signal from the camshaft sensor. The car may be hard to start or run poorly.",
+    "urgency": "medium",
+    "causes": ["Failed camshaft position sensor", "Damaged wiring or connector", "Slipped timing belt or chain"],
+    "difficulty": "moderate",
+    "tellMechanic": "I have a P0340. Can you check the cam sensor and its wiring, and confirm the timing is right?"
+  },
+  "P0401": {
+    "title": "Exhaust Gas Recirculation (EGR) Flow Insufficient",
+    "plain": "The system that sends a little exhaust back into the engine to lower emissions isn't flowing enough. You might hear pinging when accelerating.",
+    "urgency": "low",
+    "causes": ["Carbon-clogged EGR passages", "Stuck EGR valve", "Faulty EGR pressure sensor"],
+    "difficulty": "moderate",
+    "tellMechanic": "I have a P0401. Can you check the EGR passages for carbon buildup before replacing the valve?"
+  },
+  "P0411": {
+    "title": "Secondary Air Injection System Incorrect Flow",
+    "plain": "The pump that blows fresh air into the exhaust at cold start isn't moving enough air. It only affects emissions for the first minute or so.",
+    "urgency": "low",
+    "causes": ["Failed secondary air pump", "Stuck check valve", "Blown fuse or bad relay", "Cracked air hose"],
+    "difficulty": "moderate",
+    "tellMechanic": "I have a P0411. Can you check the air pump fuse and relay, and the check valve?"
+  },
+  "P0420": {
+    "title": "Catalyst System Efficiency Below Threshold (Bank 1)",
+    "plain": "Your catalytic converter isn't cleaning the exhaust as well as it should.",
+    "urgency": "low",
+    "causes": ["Faulty downstream oxygen sensor", "Exhaust leak", "Worn-out catalytic converter"],
+    "difficulty": "shop",
+    "tellMechanic": "I have a P0420. Can you check the O2 sensors and look for exhaust leaks before replacing the converter?"
+  },
+  "P0430": {
+    "title": "Catalyst System Efficiency Below Threshold (Bank 2)",
+    "plain": "The catalytic converter on one side of the engine isn't cleaning the exhaust as well as it should.",
+    "urgency": "low",
+    "causes": ["Faulty downstream oxygen sensor", "Exhaust leak", "Worn-out catalytic converter"],
+    "difficulty": "shop",
+    "tellMechanic": "I have a P0430. Can you check the O2 sensors and look for exhaust leaks before replacing the converter?"
+  },
+  "P0440": {
+    "title": "Evaporative Emission System Malfunction",
+    "plain": "The system that traps gas fumes from your fuel tank found a problem. It doesn't affect how the car drives.",
+    "urgency": "low",
+    "causes": ["Loose or worn gas cap", "Cracked vapor hose", "Faulty purge or vent valve"],
+    "difficulty": "moderate",
+    "tellMechanic": "I have a P0440. Can you smoke-test the EVAP system?"
+  },
+  "P0442": {
+    "title": "Evaporative Emission System Leak Detected (Small Leak)",
+    "plain": "The system that traps gas fumes has a small leak. Often it's just a gas cap that isn't sealing.",
+    "urgency": "low",
+    "causes": ["Loose or worn gas cap", "Cracked vapor hose", "Faulty purge or vent valve"],
+    "difficulty": "diy",
+    "tellMechanic": "I have a P0442. I've checked the gas cap. Can you smoke-test the EVAP system?"
+  },
+  "P0446": {
+    "title": "Evaporative Emission System Vent Control Circuit",
+    "plain": "The valve that lets the fuel vapor system breathe isn't working right. It doesn't affect how the car drives.",
+    "urgency": "low",
+    "causes": ["Failed vent valve", "Blocked vent filter", "Damaged wiring to the vent valve"],
+    "difficulty": "moderate",
+    "tellMechanic": "I have a P0446. Can you check the EVAP vent valve and its wiring?"
+  },
+  "P0455": {
+    "title": "Evaporative Emission System Leak Detected (Large Leak)",
+    "plain": "The system that traps gas fumes has a big leak. Check that the gas cap is on and clicked tight first.",
+    "urgency": "low",
+    "causes": ["Missing or loose gas cap", "Disconnected vapor hose", "Stuck-open vent valve", "Cracked charcoal canister"],
+    "difficulty": "diy",
+    "tellMechanic": "I have a P0455. The gas cap is tight. Can you smoke-test the EVAP system?"
+  },
+  "P0456": {
+    "title": "Evaporative Emission System Leak Detected (Very Small Leak)",
+    "plain": "The system that traps gas fumes has a tiny leak. A gas cap with a worn seal is a common cause.",
+    "urgency": "low",
+    "causes": ["Worn gas cap seal", "Small crack in a vapor hose", "Leaking purge or vent valve"],
+    "difficulty": "diy",
+    "tellMechanic": "I have a P0456. Can you smoke-test the EVAP system for a small leak?"
+  },
+  "P0457": {
+    "title": "Evaporative Emission System Leak Detected (Fuel Cap Loose/Off)",
+    "plain": "Your gas cap is loose or missing. Tighten it until it clicks, and the light should go off after some driving.",
+    "urgency": "low",
+    "causes": ["Gas cap not tightened", "Missing gas cap", "Worn gas cap seal"],
+    "difficulty": "diy",
+    "tellMechanic": "I have a P0457. I've tightened the gas cap. Could the cap seal be bad?"
+  },
+  "P0500": {
+    "title": "Vehicle Speed Sensor A",
+    "plain": "The computer isn't getting a speed signal. Your speedometer may stop working, and an automatic transmission may shift oddly.",
+    "urgency": "medium",
+    "causes": ["Failed vehicle speed sensor", "Damaged wiring or connector", "Worn sensor drive gear"],
+    "difficulty": "moderate",
+    "tellMechanic": "I have a P0500. Can you check the speed sensor and its wiring?"
+  },
+  "P0505": {
+    "title": "Idle Air Control System",
+    "plain": "The engine can't hold a steady idle. It may idle too high, too low, or stall at stops.",
+    "urgency": "medium",
+    "causes": ["Dirty throttle body", "Failed idle air control valve", "Vacuum leak"],
+    "difficulty": "diy",
+    "tellMechanic": "I have a P0505. Can you clean the throttle body and check the idle air control valve?"
+  },
+  "P0524": {
+    "title": "Engine Oil Pressure Too Low",
+    "plain": "Your engine oil pressure is too low. Stop driving as soon as it's safe and check the oil level, because low oil pressure can ruin an engine fast.",
+    "urgency": "high",
+    "causes": ["Low engine oil level", "Wrong or worn-out oil", "Failing oil pump", "Faulty oil pressure sensor"],
+    "difficulty": "shop",
+    "tellMechanic": "I have a P0524. Can you check the actual oil pressure with a gauge?"
+  },
+  "P0562": {
+    "title": "System Voltage Low",
+    "plain": "The car's electrical system voltage is too low. The battery or alternator may be on its way out.",
+    "urgency": "medium",
+    "causes": ["Weak or old battery", "Failing alternator", "Loose or corroded battery cables"],
+    "difficulty": "diy",
+    "tellMechanic": "I have a P0562. Can you test the battery and the alternator output?"
+  },
+  "P0606": {
+    "title": "Control Module Processor Fault",
+    "plain": "The engine computer found a problem with itself. Sometimes a software update fixes it; sometimes the computer needs replacing.",
+    "urgency": "medium",
+    "causes": ["Internal engine computer fault", "Poor power or ground to the computer", "Outdated computer software"],
+    "difficulty": "shop",
+    "tellMechanic": "I have a P0606. Can you check the computer's power and grounds, and whether there's a software update?"
+  },
+  "P0700": {
+    "title": "Transmission Control System Malfunction",
+    "plain": "The transmission computer found a problem and saved its own code. A transmission scan will show the details.",
+    "urgency": "medium",
+    "causes": ["A fault stored in the transmission computer", "Failing shift solenoid", "Low or old transmission fluid"],
+    "difficulty": "shop",
+    "tellMechanic": "I have a P0700. Can you read the transmission computer's codes?"
+  }
+}

@@ -1,0 +1,59 @@
+/* Print-only layout: hide the app and show the scan report built by ui.js. */
+@page { margin: 16mm 14mm; }
+
+body {
+  background: #fff;
+  color: #000;
+  display: block;
+  font-size: 11pt;
+}
+
+body > *:not(.report) { display: none !important; }
+
+.report { display: block !important; }
+
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 2px solid #000;
+  padding-bottom: 8pt;
+  margin-bottom: 12pt;
+}
+.report-logo { font-size: 20pt; font-weight: 800; letter-spacing: 0.04em; margin: 0; }
+.report-logo small { display: block; font-size: 9pt; font-weight: 400; letter-spacing: 0; }
+.report-meta { text-align: right; margin: 0; font-size: 10pt; line-height: 1.5; }
+
+.report-status { margin: 0 0 12pt; font-size: 11pt; }
+
+.report table { width: 100%; border-collapse: collapse; margin-bottom: 14pt; }
+.report th, .report td {
+  text-align: left;
+  vertical-align: top;
+  padding: 4pt 6pt;
+  border-bottom: 1px solid #999;
+}
+.report th { border-bottom: 1.5px solid #000; font-size: 10pt; }
+.report .mono { font-family: ui-monospace, Menlo, monospace; font-weight: 700; white-space: nowrap; }
+
+/* Urgency is printed as text, so it survives black-and-white printers. */
+.report .urgency { font-weight: 700; text-transform: uppercase; font-size: 9pt; white-space: nowrap; }
+
+.report-code {
+  break-inside: avoid;
+  page-break-inside: avoid;
+  border: 1px solid #999;
+  border-radius: 4pt;
+  padding: 8pt 10pt;
+  margin-bottom: 10pt;
+}
+.report-code h3 { margin: 0 0 4pt; font-size: 12pt; }
+.report-code p { margin: 0 0 4pt; }
+.report-code ul { margin: 0 0 4pt; padding-left: 14pt; }
+
+.report-footer {
+  border-top: 1px solid #000;
+  margin-top: 16pt;
+  padding-top: 6pt;
+  font-size: 9pt;
+}
