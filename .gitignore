@@ -4,6 +4,7 @@ Thumbs.db
 *.swp
 .vscode/
 .idea/
+Docs/
 
 # Logs and scratch files
 *.log
