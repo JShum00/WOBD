@@ -1,0 +1,10 @@
+# Repo files that aren't part of the website
+.git
+.gitignore
+.assetsignore
+.wrangler
+wrangler.jsonc
+README.md
+Assets
+Docs
+node_modules
