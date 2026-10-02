@@ -7,6 +7,7 @@ import * as obd from './obd.js';
 import { Bob, loadCodeBook, loadGenericCodes, lookup } from './bob.js';
 import * as ui from './ui.js';
 import { Voice } from './voice.js';
+import { collectConnInfo, friendlyError, hideConnInfo, initConnInfo, isLowBattery, renderConnInfo, FRIENDLY } from './conninfo.js';
 
 const SLOW_EVERY = 5;
 const DETECT_PROGRESS_DELAY = 300;  // ms before the baud-rate progress bar appears
@@ -41,6 +42,7 @@ async function start() {
   if (demo) ui.showDemoBadge();
   ui.initWelcome(demo);
 
+  initConnInfo();
   ui.initTabs(onTabChange);
   ui.initVoiceToggle(voice, (on) => {
     voice.setEnabled(on);
@@ -110,8 +112,7 @@ function bobIdle() {
 }
 
 function showError(err) {
-  const text = err instanceof ElmError ? err.message : `Something went wrong: ${err.message}`;
-  bob.say({ tone: 'high', mood: 'warning', text });
+  bob.say({ tone: 'high', mood: 'warning', text: friendlyError(err) });
 }
 
 // ---------- Connect ----------
@@ -163,6 +164,7 @@ async function connectTo(transport, { baudRate } = {}) {
     state.supportedPids = await obd.readSupportedPids(elm);
     state.protocol = await obd.readProtocol(elm);
     state.vin = await obd.readVin(elm);
+    state.connInfo = await collectConnInfo(elm);
     state.transport = transport;
     state.elm = elm;
   } catch (err) {
@@ -190,7 +192,9 @@ async function connectTo(transport, { baudRate } = {}) {
   ui.renderGauges(state.supportedPids);
   ui.setWelcomeVisible(false);
   showConnected();
+  renderConnInfo(state.connInfo);
   bobIdle();
+  if (isLowBattery(state.connInfo)) bob.say({ tone: 'medium', mood: 'warning', text: FRIENDLY.lowBattery });
   if (state.tab === 'live') startLive();
 }
 
@@ -260,6 +264,7 @@ async function disconnect() {
   const { transport } = state;
   state.transport = null;
   state.elm = null;
+  hideConnInfo();
   await transport?.close();
   ui.setConnection('idle', 'Not connected');
   ui.setControls({ print: Boolean(state.scan) });

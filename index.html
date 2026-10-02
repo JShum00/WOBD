@@ -117,6 +117,18 @@
           <button id="print-btn" type="button" class="btn" disabled>Print report</button>
           <button id="clear-btn" type="button" class="btn" disabled>Clear codes</button>
         </div>
+
+        <section id="conn-info" class="conn-info" aria-label="Adapter connection" hidden>
+          <dl id="conn-info-basic" class="info-list"></dl>
+          <p id="conn-info-note" class="info-note" hidden></p>
+          <button id="conn-info-toggle" type="button" class="link-button" aria-expanded="false" aria-controls="conn-info-more">More info</button>
+          <div id="conn-info-more" hidden>
+            <h3>Adapter</h3>
+            <dl id="conn-info-adapter" class="info-list"></dl>
+            <h3>Advanced</h3>
+            <dl id="conn-info-advanced" class="info-list"></dl>
+          </div>
+        </section>
       </div>
 
       <div id="panel-live" class="tab-panel" role="tabpanel" aria-labelledby="tab-live" hidden>

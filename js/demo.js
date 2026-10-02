@@ -59,6 +59,8 @@ export class DemoTransport {
   #reply(cmd) {
     if (cmd === 'ATZ') return ['', 'ELM327 v1.5'];
     if (cmd === 'ATDPN') return [`A${this.scenario.protocol}`];
+    if (cmd === 'ATI') return ['ELM327 v1.5'];
+    if (cmd === 'ATDP') return [this.isCan ? 'AUTO, ISO 15765-4 (CAN 11/500)' : 'AUTO, ISO 9141-2'];
     if (cmd === 'ATRV') return [`${(13.9 + Math.random() * 0.3).toFixed(1)}V`];
     if (cmd.startsWith('AT')) return ['OK'];
 
