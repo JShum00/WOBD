@@ -7,6 +7,7 @@ A free, browser-based car diagnostic tool. Plug a USB OBD-II adapter into a Chro
 - **Scan and clear codes**: Bob explains each stored trouble code in plain English.
 - **Live data dashboard**: a gauge cluster with radial dials (RPM, speed), vertical bars (throttle, load, fuel trims), and horizontal bars (coolant, intake air temp, airflow, manifold pressure, timing advance, O2 sensors, battery), plus open or closed loop status. On connect, WOBD asks the car which PIDs it supports (mode 01 PID 00) and only shows those gauges.
 - **Trouble code search** (`codes.html`): type a code like P0601 and Bob explains it, offline. You can enter your car's year, make, and model so the Google search link is specific to it. It covers about 9,500 generic SAE codes (P0, P2, P34, U0, U3, B0, C0). Manufacturer-specific codes (P1, P30-P33) get a message saying so instead of a guess. Bob's own hand-written notes win over the general database wherever both exist.
+- **Tested adapters** (`tested-adapters.html`): personal adapter test results loaded from `data/tested-adapters.json`.
 - **Installable and offline**: WOBD is a PWA. After the first load, the app shell works without a connection.
 
 > **Status:** in active testing and development. Results aren't guaranteed yet.
@@ -57,7 +58,7 @@ Try the whole flow without a car or adapter:
 
 | Path | What it is |
 | --- | --- |
-| `index.html`, `guide.html`, `codes.html` | The app, the How to use page, and the code search page |
+| `index.html`, `guide.html`, `codes.html`, `tested-adapters.html` | The app, the How to use page, code search, and tested adapter results |
 | `manifest.webmanifest`, `sw.js`, `js/pwa.js` | PWA manifest, service worker, and its registration |
 | `img/icons/` | App icons |
 | `css/` | Theme and layout (`style.css`), print report (`print.css`) |
@@ -65,6 +66,7 @@ Try the whole flow without a car or adapter:
 | `js/smartbauder.js` | Finds the adapter's baud rate with a quick ATI probe, ordered by USB chip and remembered per adapter (test: `node scripts/test-smartbauder.mjs`) |
 | `js/bob.js`, `js/voice.js` | Bob's explanations and optional read-aloud voice |
 | `js/codes.js` | The code search page |
+| `js/tested-adapters.js`, `data/tested-adapters.json` | Render and store the tested adapter results |
 | `js/ui.js`, `js/app.js` | Rendering (including the gauges) and app wiring |
 | `js/demo.js` | Pretend adapter for demo mode |
 | `data/codes.json` | Bob's code book (detailed explanations) |

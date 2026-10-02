@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tested Adapters · WOBD</title>
+  <meta name="description" content="Personal test results for OBD-II adapters used with WOBD.">
+  <link rel="icon" href="img/bob.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="img/icons/apple-touch-icon.png">
+  <meta name="theme-color" content="#1F3F8F">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/theme.js"></script>
+  <script type="module" src="js/tested-adapters.js"></script>
+  <script src="js/pwa.js" defer></script>
+</head>
+<body class="adapter-page">
+  <header class="site-header">
+    <a class="logo" href="./"><span class="logo-mark" aria-hidden="true"></span>WOBD</a>
+    <div class="header-right">
+      <a class="header-link" href="codes.html">Code search</a>
+      <a class="header-link" href="guide.html">How to use</a>
+      <a class="header-link" href="./">Back to WOBD</a>
+      <button id="theme-btn" type="button" class="theme-btn" aria-pressed="false" aria-label="Dark mode">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="currentColor"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></g></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="guide">
+    <h1>Tested Adapters</h1>
+    <p class="lede">The OBD protocol depends on the vehicle, not the adapter. These are my own test results; untested entries are marked.</p>
+
+    <section aria-label="Adapter test results">
+      <div class="adapter-table-wrap">
+        <table id="adapter-table" class="adapter-table" hidden>
+          <thead>
+            <tr>
+              <th scope="col">Product</th>
+              <th scope="col">Vehicle</th>
+              <th scope="col">Protocol</th>
+              <th scope="col">Baud</th>
+              <th scope="col">Read codes</th>
+              <th scope="col">Clear codes</th>
+              <th scope="col">Live data</th>
+              <th scope="col">Date tested</th>
+              <th scope="col">WOBD version</th>
+              <th scope="col">Notes</th>
+            </tr>
+          </thead>
+          <tbody id="adapter-results"></tbody>
+        </table>
+      </div>
+      <p id="adapter-message" class="adapter-message" role="status" aria-live="polite" hidden></p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>WOBD gives general information, not a professional diagnosis. Always confirm a problem before replacing parts.</p>
+    <p>WOBD is free. If it helped you out, you can <a href="https://buymeacoffee.com/jShumway00" target="_blank" rel="noopener noreferrer">buy me a coffee ☕</a></p>
+  </footer>
+</body>
+</html>
