@@ -8,3 +8,7 @@ README.md
 Assets
 Docs
 node_modules
+scripts
+.github
+package.json
+package-lock.json

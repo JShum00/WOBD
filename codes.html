@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Trouble code search · WOBD</title>
+  <meta name="description" content="Type an OBD-II trouble code like P0601 and Bob explains it in plain English. Works offline, no adapter needed.">
+  <meta name="theme-color" content="#1F3F8F">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="img/bob.png">
+  <link rel="apple-touch-icon" href="img/icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/theme.js"></script>
+  <script type="module" src="js/codes.js"></script>
+  <script src="js/pwa.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="logo" href="./"><span class="logo-mark" aria-hidden="true"></span>WOBD</a>
+    <div class="header-right">
+      <a class="header-link" href="./">Scanner</a>
+      <a class="header-link" href="guide.html">How to use</a>
+      <button id="theme-btn" type="button" class="theme-btn" aria-pressed="false" aria-label="Dark mode">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="currentColor"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></g></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="panel" aria-label="Trouble code search">
+      <h1 class="page-title">Trouble code search</h1>
+      <p class="lede">Type a code from your check engine light, like <strong>P0601</strong>, and Bob will explain it. This works offline and doesn't need an adapter.</p>
+
+      <form id="code-form" class="code-form" role="search" autocomplete="off">
+        <label for="code-input">Trouble code</label>
+        <div class="code-form-row">
+          <input id="code-input" type="text" inputmode="text" maxlength="8" placeholder="P0601" spellcheck="false" autocapitalize="characters" required>
+          <button type="submit" class="btn btn-primary">Ask Bob</button>
+        </div>
+      </form>
+
+      <form id="car-form" class="car-form car-form-page" aria-label="Your car" onsubmit="return false">
+        <span class="car-form-title">Your car (optional)</span>
+        <label class="sr-only" for="car-year">Year</label>
+        <select id="car-year"><option value="">Year</option></select>
+        <label class="sr-only" for="car-make">Make</label>
+        <select id="car-make"><option value="">Make</option></select>
+        <label class="sr-only" for="car-make-other">Make (other)</label>
+        <input id="car-make-other" type="text" placeholder="Make" autocomplete="off" hidden>
+        <label class="sr-only" for="car-model">Model</label>
+        <select id="car-model" disabled><option value="">Model</option></select>
+        <label class="sr-only" for="car-model-other">Model (other)</label>
+        <input id="car-model-other" type="text" placeholder="Model" autocomplete="off" hidden>
+      </form>
+
+      <p class="hint">Try:
+        <button type="button" class="code-chip" data-code="P0601">P0601</button>
+        <button type="button" class="code-chip" data-code="P0420">P0420</button>
+        <button type="button" class="code-chip" data-code="P2002">P2002</button>
+        <button type="button" class="code-chip" data-code="P1000">P1000</button>
+      </p>
+
+      <p class="hint">The offline list covers the standard (SAE generic) codes for the engine and transmission (P0, P2, P34), body (B0), chassis (C0), and network (U0, U3). Codes starting with P1, or P30-P33, are defined by each car maker, so Bob won't guess at them.</p>
+    </section>
+
+    <aside class="bob-panel" aria-label="Bob the mechanic">
+      <div id="bob-slot" class="bubble-slot"></div>
+      <div class="bob-figure"><img src="img/bob.png" alt="Bob the mechanic"></div>
+      <div class="bob-name-row"><p class="bob-name">Bob</p></div>
+      <div id="bob-live" class="sr-only" aria-live="polite"></div>
+    </aside>
+  </main>
+
+  <footer class="site-footer">
+    <p>WOBD gives general information, not a professional diagnosis. Always confirm a problem before replacing parts.</p>
+    <p>Free and open source. Nothing you type leaves this computer.</p>
+  </footer>
+</body>
+</html>

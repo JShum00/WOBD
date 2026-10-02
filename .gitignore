@@ -9,3 +9,5 @@ Docs/
 # Logs and scratch files
 *.log
 *.tmp
+.wrangler/
+node_modules/

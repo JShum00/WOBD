@@ -1,13 +1,15 @@
 // Wires the adapter, OBD requests, Bob, and the UI together and holds app state.
 import { SerialTransport, checkBrowser } from './serial.js';
-import { DemoTransport } from './demo.js';
+import { DemoTransport, DemoBaudTransport, BAUD_DEMOS } from './demo.js';
 import { ELM327, ElmError } from './elm327.js';
+import { abortOnUnplug, detectBaud, rateOptions } from './smartbauder.js';
 import * as obd from './obd.js';
-import { Bob, loadCodeBook, lookup } from './bob.js';
+import { Bob, loadCodeBook, loadGenericCodes, lookup } from './bob.js';
 import * as ui from './ui.js';
 import { Voice } from './voice.js';
 
-const BAUD_RATES = [38400, 9600, 115200];
+const SLOW_EVERY = 5;
+const DETECT_PROGRESS_DELAY = 300;  // ms before the baud-rate progress bar appears
 
 const params = new URLSearchParams(location.search);
 const demo = params.has('demo') ? params.get('demo') || 'can' : null;
@@ -46,14 +48,16 @@ async function start() {
   });
   ui.setConnection('idle', 'Not connected');
   ui.setControls({});
-  ui.renderGauges(new Set(obd.LIVE_PIDS.map((d) => d.pid)));
+  ui.renderGauges(new Set(obd.LIVE_PIDS.map((d) => d.pid)));  // preview until a car reports what it supports
 
   try {
-    const [makes] = await Promise.all([
+    const [makes, models] = await Promise.all([
       fetch('data/makes.json').then((res) => res.json()),
+      // The model list is a nicety: without it the model box is plain text.
+      fetch('data/models.json').then((res) => res.json()).catch(() => ({})),
       loadCodeBook(),
     ]);
-    ui.initCarForm(makes);
+    ui.initCarForm(makes, models);
   } catch (err) {
     showError(new Error(`I couldn't load my notes. ${err.message}`));
     return;
@@ -112,6 +116,10 @@ function showError(err) {
 
 // ---------- Connect ----------
 
+function demoTransport(name) {
+  return BAUD_DEMOS.includes(name) ? new DemoBaudTransport(name) : new DemoTransport(name);
+}
+
 async function onConnectClick() {
   if (state.elm) {
     await disconnect();
@@ -122,7 +130,7 @@ async function onConnectClick() {
   ui.setConnection('busy', 'Connecting…');
   let transport;
   try {
-    transport = demo ? new DemoTransport(demo) : await SerialTransport.request();
+    transport = demo ? demoTransport(demo) : await SerialTransport.request();
   } catch (err) {
     ui.setConnection('idle', 'Not connected');
     if (err.name === 'NotFoundError') {
@@ -137,9 +145,18 @@ async function onConnectClick() {
     return;
   }
 
+  await connectTo(transport);
+}
+
+// Opens the adapter and says hello to the car. baudRate skips detection (the manual Retry).
+async function connectTo(transport, { baudRate } = {}) {
+  ui.setConnection('busy', 'Connecting…');
   bob.say({ text: 'Looking for your adapter…' });
+
+  // Unplugging or cancelling stops detection at once.
+  const abort = abortOnUnplug(transport);
   try {
-    const elm = await openAdapter(transport);
+    const elm = await openAdapter(transport, { baudRate, abort });
     ui.setConnection('busy', 'Talking to the car…');
     bob.say({ text: "Found the adapter. Now I'm saying hello to the car. Older cars can take a few seconds." });
 
@@ -149,9 +166,16 @@ async function onConnectClick() {
     state.transport = transport;
     state.elm = elm;
   } catch (err) {
+    transport.onDisconnect = () => {};
     await transport.close();
     ui.setConnection('idle', 'Not connected');
-    showError(err);
+    if (err.code === 'CANCELLED') {
+      bob.say({ text: "Cancelled. Click Connect when you're ready to try again." });
+    } else if (err.rates) {
+      showBaudRetry(transport, err);
+    } else {
+      showError(err);
+    }
     return;
   }
 
@@ -170,22 +194,65 @@ async function onConnectClick() {
   if (state.tab === 'live') startLive();
 }
 
-// Tries each baud rate until an ELM327 answers the reset.
-async function openAdapter(transport) {
-  for (const baudRate of BAUD_RATES) {
-    await transport.open(baudRate);
-    const elm = new ELM327(transport);
-    try {
-      await elm.reset();
-      await elm.configure();
-      return elm;
-    } catch (err) {
-      await transport.close();
-      if (!(err instanceof ElmError)) throw err;
-    }
+// Detects the baud rate with a quick ID probe, then resets and configures the adapter once.
+async function openAdapter(transport, { baudRate, abort }) {
+  if (transport instanceof DemoTransport && !(transport instanceof DemoBaudTransport)) {
+    await transport.open();
+  } else {
+    await detect(transport, { baudRate, abort });
   }
-  throw new ElmError('NOT_ELM',
-    "The adapter didn't answer. Make sure it's an ELM327-compatible USB cable, then unplug it, plug it back in, and try again.");
+
+  const elm = new ELM327(transport);
+  try {
+    await elm.reset();
+    await elm.configure();
+    return elm;
+  } catch (err) {
+    await transport.close();
+    throw err;
+  }
+}
+
+async function detect(transport, { baudRate, abort }) {
+  let latest = null;
+  let view = null;
+  const timer = setTimeout(() => {
+    view = ui.createBaudProgress(() => abort.abort(new ElmError('CANCELLED', 'Cancelled.')));
+    if (latest) view.update(latest);
+    bob.say({ text: 'One second, checking the device baud rate...', details: [view.el] });
+  }, DETECT_PROGRESS_DELAY);
+
+  try {
+    const found = await detectBaud(transport, {
+      rates: baudRate ? [baudRate] : undefined,
+      signal: abort.signal,
+      onProgress: (progress) => {
+        latest = progress;
+        view?.update(progress);
+      },
+    });
+    if (found === null) {
+      throw Object.assign(new ElmError('NOT_ELM',
+        "The adapter didn't answer. Make sure it's an ELM327-compatible USB cable, then unplug it, plug it back in, and try again."),
+      { rates: rateOptions(transport.info) });
+    }
+  } finally {
+    clearTimeout(timer);
+    view?.remove();
+  }
+}
+
+// Offers a manual speed after automatic detection failed. The port stays granted, so Retry reuses it.
+function showBaudRetry(transport, err) {
+  bob.say({
+    tone: 'high',
+    mood: 'warning',
+    text: err.message,
+    details: [ui.baudRetryForm(err.rates, (rate) => {
+      if (state.elm) return;
+      connectTo(transport, { baudRate: rate });
+    })],
+  });
 }
 
 async function disconnect() {
@@ -227,6 +294,7 @@ async function scan() {
   bob.say({ text: 'Scanning… hang tight.' });
   const status = await obd.readStatus(state.elm);
   const codes = await obd.readStoredCodes(state.elm, state.protocol.isCan);
+  await loadGenericCodes(codes);
   const entries = codes.map(lookup);
 
   state.scan = { scannedAt: new Date(), status, entries };
@@ -312,16 +380,19 @@ async function startLive() {
   const run = ++state.liveRun;
   const { elm } = state;
   const active = () => run === state.liveRun && state.elm === elm;
-  const defs = obd.LIVE_PIDS.filter((def) => state.supportedPids.has(def.pid));
+  const defs = obd.supportedLivePids(state.supportedPids);
 
-  // One command at a time: each read waits for the last one.
-  while (active()) {
+  // One command at a time: each read waits for the last one. Slow-changing
+  // values are only polled every few rounds so the fast gauges stay lively.
+  for (let round = 0; active(); round++) {
+    const slowRound = round % SLOW_EVERY === 0;
     for (const def of defs) {
+      if (def.slow && !slowRound) continue;
       if (!active()) return;
       ui.updateGauge(def, await obd.readPid(elm, def).catch(() => null));
     }
     if (!active()) return;
-    ui.updateGauge(obd.BATTERY, await obd.readBatteryVoltage(elm).catch(() => null));
+    if (slowRound) ui.updateGauge(obd.BATTERY, await obd.readBatteryVoltage(elm).catch(() => null));
     await wait(50);
   }
 }

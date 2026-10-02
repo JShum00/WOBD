@@ -1,0 +1,16 @@
+{
+  "name": "WOBD: Web On-Board Diagnostics",
+  "short_name": "WOBD",
+  "description": "Read your car's trouble codes and live data in plain English with a USB OBD-II adapter.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F4F5F7",
+  "theme_color": "#1F3F8F",
+  "icons": [
+    { "src": "img/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "img/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "img/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

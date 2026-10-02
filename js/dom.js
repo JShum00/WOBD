@@ -13,3 +13,11 @@ export function h(tag, props = {}, ...children) {
   el.append(...children.flat().filter((c) => c != null && c !== false));
   return el;
 }
+
+// Same as h() but for SVG elements, which need their own namespace.
+export function svg(tag, attrs = {}, ...children) {
+  const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for (const [key, value] of Object.entries(attrs)) el.setAttribute(key, value);
+  el.append(...children.flat().filter((c) => c != null && c !== false));
+  return el;
+}

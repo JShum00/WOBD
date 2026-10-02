@@ -1,6 +1,6 @@
 // Rendering: tabs, the car form, the codes table, live gauges, dialogs, and
 // the printable report. No OBD logic lives here.
-import { h } from './dom.js';
+import { h, svg } from './dom.js';
 import { URGENCY, DIFFICULTY, urgencyBadge } from './bob.js';
 import { LIVE_PIDS, BATTERY } from './obd.js';
 
@@ -86,21 +86,44 @@ export function initTabs(onChange) {
 
 let carSkipped = false;
 
-export function initCarForm(makes) {
+const MODEL_OTHER = '__other';
+
+// models: { Make: [model, ...] } from data/models.json. Makes with no list get a text box.
+export function initCarForm(makes, models = {}) {
   const year = $('car-year');
   const newest = new Date().getFullYear() + 1;  // model years run a year ahead
   for (let y = newest; y >= 1996; y--) year.append(h('option', { value: String(y) }, String(y)));
 
   const make = $('car-make');
   const other = $('car-make-other');
+  const model = $('car-model');
+  const modelOther = $('car-model-other');
   make.append(...makes.map((m) => h('option', { value: m }, m)), h('option', { value: 'Other' }, 'Other'));
+
+  const fillModels = () => {
+    const list = models[make.value] ?? [];
+    const typed = make.value !== '' && list.length === 0;
+    model.replaceChildren(h('option', { value: '' }, 'Model'), ...list.map((m) => h('option', { value: m }, m)),
+      list.length > 0 && h('option', { value: MODEL_OTHER }, 'Other'));
+    model.hidden = typed;
+    model.disabled = make.value === '';
+    modelOther.hidden = !typed;
+    modelOther.value = '';
+  };
+  fillModels();
+
   make.addEventListener('change', () => {
     other.hidden = make.value !== 'Other';
+    fillModels();
     if (!other.hidden) other.focus();
   });
+  model.addEventListener('change', () => {
+    modelOther.hidden = model.value !== MODEL_OTHER;
+    if (!modelOther.hidden) modelOther.focus();
+  });
 
-  $('car-skip').addEventListener('click', () => setCarSkipped(true));
-  $('car-add').addEventListener('click', () => setCarSkipped(false));
+  $('car-skip')?.addEventListener('click', () => setCarSkipped(true));
+  $('car-add')?.addEventListener('click', () => setCarSkipped(false));
 }
 
 function setCarSkipped(skipped) {
@@ -113,7 +136,9 @@ function setCarSkipped(skipped) {
 export function getCar() {
   if (carSkipped) return {};
   const make = $('car-make').value === 'Other' ? $('car-make-other').value.trim() : $('car-make').value;
-  return { year: $('car-year').value, make, model: $('car-model').value.trim() };
+  const modelPicked = $('car-model').hidden || $('car-model').value === MODEL_OTHER;
+  const model = modelPicked ? $('car-model-other').value.trim() : $('car-model').value;
+  return { year: $('car-year').value, make, model };
 }
 
 export function carLabel(car) {
@@ -139,6 +164,48 @@ export function setControls({ scan = false, print = false, clear = false }) {
 export function setSummary(text) {
   $('scan-summary').hidden = !text;
   $('scan-summary').textContent = text ?? '';
+}
+
+// ---------- Baud rate detection ----------
+
+// Shown inside Bob's bubble when detection takes a moment. update() takes the onProgress payload.
+export function createBaudProgress(onCancel) {
+  const fill = h('div', { class: 'progress-fill' });
+  const bar = h('div', {
+    class: 'progress',
+    role: 'progressbar',
+    'aria-label': 'Checking the device baud rate',
+    'aria-valuemin': 0,
+    'aria-valuemax': 1,
+    'aria-valuenow': 0,
+  }, fill);
+  const el = h('div', { class: 'baud-progress' }, bar,
+    h('button', { type: 'button', class: 'link-button', onClick: onCancel }, 'Cancel'));
+  return {
+    el,
+    update({ attempt, total }) {
+      bar.setAttribute('aria-valuemax', String(total));
+      bar.setAttribute('aria-valuenow', String(attempt));
+      bar.setAttribute('aria-valuetext', `Trying speed ${attempt} of ${total}`);
+      fill.style.width = `${(attempt / total) * 100}%`;
+    },
+    remove() { el.remove(); },
+  };
+}
+
+// Manual fallback when no rate answered. onRetry gets the chosen rate.
+export function baudRetryForm(rates, onRetry) {
+  const select = h('select', {}, rates.map((rate) => h('option', { value: String(rate) }, `${rate} baud`)));
+  const button = h('button', { type: 'submit', class: 'btn' }, 'Retry');
+  return h('form', {
+    class: 'baud-retry',
+    onSubmit: (e) => {
+      e.preventDefault();
+      select.disabled = true;
+      button.disabled = true;
+      onRetry(Number(select.value));
+    },
+  }, h('label', {}, 'Try a specific speed ', select), button);
 }
 
 // ---------- Codes table ----------
@@ -169,25 +236,125 @@ export function focusCode(code) {
 
 // ---------- Live data ----------
 
-export function renderGauges(supportedPids) {
-  $('gauges').replaceChildren(...[...LIVE_PIDS, BATTERY].map((def) => {
-    const supported = def.pid === undefined || supportedPids.has(def.pid);
-    return h('div', { class: 'gauge', id: `gauge-${def.key}`, dataset: { state: supported ? 'ok' : 'unsupported' } },
-      h('p', { class: 'gauge-label' }, def.label),
-      h('p', { class: 'gauge-value' },
-        h('span', { class: 'gauge-number' }, supported ? '—' : 'Not reported by this car'),
-        supported && h('span', { class: 'gauge-unit' }, def.unit)),
-      h('div', { class: 'gauge-track' }, h('div', { class: 'gauge-fill' })));
-  }));
+const DIAL_RADIUS = 50;
+const DIAL_CIRCUMFERENCE = 2 * Math.PI * DIAL_RADIUS;
+const DIAL_ARC = DIAL_CIRCUMFERENCE * 0.75;  // 270 degrees, open at the bottom
+
+const gaugeNumber = () => h('span', { class: 'gauge-number' }, '—');
+const gaugeUnit = (def) => def.unit && h('span', { class: 'gauge-unit' }, def.unit);
+
+function gaugeShell(def, ...children) {
+  const meter = def.style !== 'status';
+  return h('div', {
+    class: `gauge gauge-${def.style}`,
+    id: `gauge-${def.key}`,
+    role: meter ? 'meter' : null,
+    'aria-label': meter ? def.label : null,
+    'aria-valuemin': meter ? def.min : null,
+    'aria-valuemax': meter ? def.max : null,
+    dataset: { zone: 'ok' },
+  }, ...children);
 }
 
+function radialGauge(def) {
+  const ring = (cls, dash) => svg('circle', {
+    class: cls, cx: 60, cy: 60, r: DIAL_RADIUS,
+    transform: 'rotate(135 60 60)', 'stroke-dasharray': `${dash} ${DIAL_CIRCUMFERENCE}`,
+  });
+  return gaugeShell(def,
+    h('div', { class: 'dial' },
+      svg('svg', { viewBox: '0 0 120 120', 'aria-hidden': 'true' }, ring('dial-track', DIAL_ARC), ring('dial-fill', 0)),
+      h('p', { class: 'gauge-value' }, gaugeNumber(), gaugeUnit(def)),
+      h('span', { class: 'dial-end dial-min' }, String(def.min)),
+      h('span', { class: 'dial-end dial-max' }, String(def.max))),
+    h('p', { class: 'gauge-label' }, def.label));
+}
+
+function verticalGauge(def) {
+  return gaugeShell(def,
+    h('p', { class: 'gauge-value' }, gaugeNumber(), gaugeUnit(def)),
+    h('div', { class: 'vbar-track' }, def.bipolar && h('span', { class: 'bar-zero' }), h('div', { class: 'bar-fill' })),
+    h('p', { class: 'gauge-label' }, def.label));
+}
+
+function horizontalGauge(def) {
+  return gaugeShell(def,
+    h('div', { class: 'hbar-head' },
+      h('p', { class: 'gauge-label' }, def.label),
+      h('p', { class: 'gauge-value' }, gaugeNumber(), gaugeUnit(def))),
+    h('div', { class: 'hbar-track' }, h('div', { class: 'bar-fill' })));
+}
+
+function statusGauge(def) {
+  return gaugeShell(def,
+    h('p', { class: 'gauge-label' }, def.label),
+    h('p', { class: 'gauge-value' }, h('span', { class: 'status-dot', 'aria-hidden': 'true' }), gaugeNumber()));
+}
+
+const GAUGE_BUILDERS = { radial: radialGauge, vbar: verticalGauge, hbar: horizontalGauge, status: statusGauge };
+
+// Only gauges for PIDs the car reported are drawn; battery comes from the adapter, not a PID.
+export function renderGauges(supportedPids) {
+  const defs = [...LIVE_PIDS.filter((def) => supportedPids.has(def.pid)), BATTERY];
+  const group = (cls, style) => {
+    const gauges = defs.filter((def) => (style === 'hbar' ? def.style === 'hbar' || def.style === 'status' : def.style === style));
+    return gauges.length > 0 && h('div', { class: `cluster ${cls}` }, gauges.map((def) => GAUGE_BUILDERS[def.style](def)));
+  };
+  $('gauges').replaceChildren(...[group('cluster-radial', 'radial'), group('cluster-vbar', 'vbar'), group('cluster-hbar', 'hbar')].filter(Boolean));
+}
+
+function zoneFor(def, value) {
+  const size = Math.abs(value);
+  if (def.danger != null && size >= def.danger) return 'danger';
+  if (def.warn != null && size >= def.warn) return 'warn';
+  return 'ok';
+}
+
+function statusZone(text) {
+  if (!text) return 'idle';
+  if (text.includes('fault')) return 'danger';
+  return text.startsWith('Closed') ? 'ok' : 'idle';
+}
+
+// value is a number, a string for status gauges, or null when the car didn't answer.
 export function updateGauge(def, value) {
   const gauge = $(`gauge-${def.key}`);
-  if (!gauge || gauge.dataset.state === 'unsupported') return;
-  const hasValue = value != null && Number.isFinite(value);
-  gauge.querySelector('.gauge-number').textContent = hasValue ? value.toFixed(def.digits) : '—';
-  const pct = hasValue ? Math.min(100, Math.max(0, ((value - def.min) / (def.max - def.min)) * 100)) : 0;
-  gauge.querySelector('.gauge-fill').style.width = `${pct}%`;
+  if (!gauge) return;
+  const number = gauge.querySelector('.gauge-number');
+
+  if (def.style === 'status') {
+    number.textContent = value ?? '—';
+    gauge.dataset.zone = statusZone(value);
+    return;
+  }
+
+  const hasValue = typeof value === 'number' && Number.isFinite(value);
+  const sign = def.bipolar && hasValue && value > 0 ? '+' : '';
+  number.textContent = hasValue
+    ? sign + value.toLocaleString(undefined, { minimumFractionDigits: def.digits, maximumFractionDigits: def.digits })
+    : '\u2014';
+  gauge.dataset.zone = hasValue ? zoneFor(def, value) : 'ok';
+  if (hasValue) gauge.setAttribute('aria-valuenow', value.toFixed(def.digits));
+  else gauge.removeAttribute('aria-valuenow');
+
+  const fraction = hasValue ? Math.min(1, Math.max(0, (value - def.min) / (def.max - def.min))) : 0;
+  if (def.style === 'radial') {
+    const fill = gauge.querySelector('.dial-fill');
+    fill.style.strokeDasharray = `${DIAL_ARC * fraction} ${DIAL_CIRCUMFERENCE}`;
+    fill.style.opacity = fraction > 0 ? '1' : '0';
+    return;
+  }
+
+  const fill = gauge.querySelector('.bar-fill');
+  const from = def.bipolar ? Math.min(fraction, 0.5) : 0;
+  const length = def.bipolar ? Math.abs(fraction - 0.5) : fraction;
+  if (def.style === 'vbar') {
+    fill.style.bottom = `${from * 100}%`;
+    fill.style.height = `${length * 100}%`;
+  } else {
+    fill.style.left = `${from * 100}%`;
+    fill.style.width = `${length * 100}%`;
+  }
 }
 
 // ---------- Clear codes dialog ----------

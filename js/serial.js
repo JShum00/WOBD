@@ -63,9 +63,15 @@ export class SerialTransport {
     this.onData = () => {};
     this.onDisconnect = () => {};
     this.closing = false;
-    port.addEventListener('disconnect', () => {
-      if (!this.closing) this.onDisconnect(new Error('The adapter was unplugged.'));
-    });
+    this.lost = false;
+    port.addEventListener('disconnect', () => this.#adapterLost());
+  }
+
+  // Fires onDisconnect once per open, whether the disconnect event or a read error arrives first.
+  #adapterLost() {
+    if (this.closing || this.lost) return;
+    this.lost = true;
+    this.onDisconnect(new Error('The adapter was unplugged.'));
   }
 
   // Must be called from a click handler: Web Serial needs a user gesture.
@@ -74,8 +80,14 @@ export class SerialTransport {
     return new SerialTransport(port);
   }
 
+  // { usbVendorId, usbProductId } for USB adapters, empty otherwise.
+  get info() {
+    return this.port.getInfo?.() ?? {};
+  }
+
   async open(baudRate) {
     await this.port.open({ baudRate });
+    this.lost = false;
     this.writer = this.port.writable.getWriter();
     this.readLoop = this.#read();
   }
@@ -92,8 +104,9 @@ export class SerialTransport {
           if (done) break;
           this.onData(decoder.decode(value, { stream: true }));
         }
-      } catch {
-        // Non-fatal read error; loop around and get a new reader.
+      } catch (err) {
+        // NetworkError means the device is gone. Other read errors are recoverable: get a new reader.
+        if (err?.name === 'NetworkError') this.#adapterLost();
       } finally {
         this.reader.releaseLock();
       }
@@ -106,17 +119,17 @@ export class SerialTransport {
 
   async close() {
     this.closing = true;
+    // Each step is guarded on its own so one failure can't leave the port open and locked.
+    await this.reader?.cancel().catch(() => {});
+    await this.readLoop?.catch(() => {});
     try {
-      await this.reader?.cancel();
-      await this.readLoop;
       this.writer?.releaseLock();
-      await this.port.close();
     } catch {
-      // Already closed or unplugged.
-    } finally {
-      this.reader = null;
-      this.writer = null;
-      this.closing = false;
+      // Still has a pending write; closing the port below drops it.
     }
+    await this.port.close().catch(() => {});  // already closed or unplugged
+    this.reader = null;
+    this.writer = null;
+    this.closing = false;
   }
 }

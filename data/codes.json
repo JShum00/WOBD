@@ -9,8 +9,8 @@
   },
   "P0016": {
     "title": "Crankshaft/Camshaft Position Correlation (Bank 1 Sensor A)",
-    "plain": "The crankshaft and camshaft aren't lined up the way the computer expects. That can mean the timing chain or belt has stretched or slipped.",
-    "urgency": "medium",
+    "plain": "The crankshaft and camshaft aren't lined up the way the computer expects, often from a stretched or slipped timing chain or belt. On many engines a jumped chain can bend valves, so avoid driving until it's checked.",
+    "urgency": "high",
     "causes": ["Stretched timing chain or slipped belt", "Faulty variable valve timing solenoid", "Bad cam or crank position sensor", "Low or dirty engine oil"],
     "difficulty": "shop",
     "tellMechanic": "I have a P0016 cam/crank correlation code. Can you check the timing chain and the VVT solenoid?"
@@ -22,6 +22,30 @@
     "causes": ["Dirty mass air flow sensor", "Clogged air filter", "Air leak between the sensor and the engine", "Failed mass air flow sensor"],
     "difficulty": "diy",
     "tellMechanic": "I have a P0101. Can you clean or test the MAF sensor and check for intake leaks?"
+  },
+  "P0102": {
+    "title": "Mass or Volume Air Flow Circuit Low",
+    "plain": "The mass airflow sensor is reporting less air than the engine should be taking in. A dirty sensor or an air leak is common.",
+    "urgency": "medium",
+    "causes": ["Dirty mass airflow sensor", "Loose or cracked intake tube after the sensor", "Damaged wiring or connector", "Failed sensor"],
+    "difficulty": "diy",
+    "tellMechanic": "I have a P0102. Can you check the MAF sensor and look for intake leaks?"
+  },
+  "P0103": {
+    "title": "Mass or Volume Air Flow Circuit High",
+    "plain": "The mass airflow sensor is reporting more air than the engine should be taking in. A contaminated sensor or a wiring problem is common.",
+    "urgency": "medium",
+    "causes": ["Dirty or contaminated mass airflow sensor", "Wiring short or poor ground", "Over-oiled aftermarket air filter", "Failed sensor"],
+    "difficulty": "diy",
+    "tellMechanic": "I have a P0103. Can you check the MAF sensor and its wiring?"
+  },
+  "P0106": {
+    "title": "Manifold Absolute Pressure/Barometric Pressure Circuit Range/Performance",
+    "plain": "The manifold pressure sensor's reading doesn't match what the engine is doing. A vacuum leak or a failing sensor is common.",
+    "urgency": "medium",
+    "causes": ["Cracked or loose vacuum hose", "Vacuum leak", "Failing MAP sensor"],
+    "difficulty": "moderate",
+    "tellMechanic": "I have a P0106. Can you smoke-test for vacuum leaks and check the MAP sensor?"
   },
   "P0113": {
     "title": "Intake Air Temperature Sensor Circuit High",
@@ -47,6 +71,22 @@
     "difficulty": "diy",
     "tellMechanic": "I have a P0118. Can you test the coolant temperature sensor and its connector?"
   },
+  "P0121": {
+    "title": "Throttle/Pedal Position Sensor/Switch A Circuit Range/Performance",
+    "plain": "The throttle position reading doesn't match how the engine is behaving. You may notice poor acceleration or an unsteady idle.",
+    "urgency": "medium",
+    "causes": ["Dirty throttle body", "Worn throttle position sensor", "Wiring or connector problem", "Failing electronic throttle"],
+    "difficulty": "moderate",
+    "tellMechanic": "I have a P0121. Can you clean the throttle body and check the throttle position sensor?"
+  },
+  "P0122": {
+    "title": "Throttle/Pedal Position Sensor/Switch A Circuit Low",
+    "plain": "The throttle position sensor is reporting very low voltage. You may notice stumbling, poor response, or reduced power.",
+    "urgency": "medium",
+    "causes": ["Loose or damaged wiring", "Failing throttle or pedal position sensor", "Failed throttle body"],
+    "difficulty": "moderate",
+    "tellMechanic": "I have a P0122. Can you check the throttle position sensor circuit and wiring?"
+  },
   "P0128": {
     "title": "Coolant Thermostat (Coolant Temperature Below Regulating Temperature)",
     "plain": "Your engine is taking too long to warm up. Usually the thermostat is stuck open.",
@@ -54,6 +94,14 @@
     "causes": ["Thermostat stuck open", "Faulty coolant temperature sensor", "Low coolant level"],
     "difficulty": "moderate",
     "tellMechanic": "I have a P0128. Can you check the thermostat and the coolant temp sensor?"
+  },
+  "P0131": {
+    "title": "O2 Sensor Circuit Low Voltage (Bank 1 Sensor 1)",
+    "plain": "The oxygen sensor ahead of the catalytic converter is reading low, which looks like a lean mixture. It may be the sensor, a leak, or a real lean condition.",
+    "urgency": "medium",
+    "causes": ["Exhaust leak near the sensor", "Failing oxygen sensor", "Damaged wiring", "Vacuum leak causing a real lean mixture"],
+    "difficulty": "moderate",
+    "tellMechanic": "I have a P0131. Can you check for exhaust and vacuum leaks before replacing the upstream O2 sensor?"
   },
   "P0133": {
     "title": "O2 Sensor Circuit Slow Response (Bank 1 Sensor 1)",
@@ -63,6 +111,14 @@
     "difficulty": "diy",
     "tellMechanic": "I have a P0133. Can you check for exhaust leaks before replacing the upstream O2 sensor?"
   },
+  "P0134": {
+    "title": "O2 Sensor Circuit No Activity Detected (Bank 1 Sensor 1)",
+    "plain": "The oxygen sensor ahead of the catalytic converter isn't responding. The computer can't fine-tune the fuel mixture, so mileage may drop.",
+    "urgency": "medium",
+    "causes": ["Failed oxygen sensor", "Blown fuse or damaged wiring", "Exhaust leak"],
+    "difficulty": "moderate",
+    "tellMechanic": "I have a P0134. Can you check the upstream O2 sensor, its heater circuit, and its wiring?"
+  },
   "P0135": {
     "title": "O2 Sensor Heater Circuit (Bank 1 Sensor 1)",
     "plain": "The built-in heater in the oxygen sensor before the catalytic converter isn't working, so the sensor takes longer to start reading.",
@@ -70,6 +126,14 @@
     "causes": ["Failed heater inside the oxygen sensor", "Blown fuse for the sensor heater", "Damaged wiring or connector"],
     "difficulty": "diy",
     "tellMechanic": "I have a P0135. Can you check the O2 heater fuse before replacing the sensor?"
+  },
+  "P0138": {
+    "title": "O2 Sensor Circuit High Voltage (Bank 1 Sensor 2)",
+    "plain": "The oxygen sensor after the catalytic converter is reading high. The sensor or its wiring is the usual cause, and the car usually drives normally.",
+    "urgency": "low",
+    "causes": ["Failing downstream oxygen sensor", "Wiring shorted to voltage", "Sensor contaminated by coolant or silicone"],
+    "difficulty": "moderate",
+    "tellMechanic": "I have a P0138. Can you check the downstream O2 sensor and its wiring?"
   },
   "P0141": {
     "title": "O2 Sensor Heater Circuit (Bank 1 Sensor 2)",
@@ -119,9 +183,17 @@
     "difficulty": "shop",
     "tellMechanic": "I have a P0217 overheat code. Can you pressure-test the cooling system and check the fan?"
   },
+  "P0299": {
+    "title": "Turbocharger/Supercharger Underboost",
+    "plain": "The turbo isn't building as much pressure as the computer asked for, so the car feels down on power. A boost leak is common.",
+    "urgency": "medium",
+    "causes": ["Loose or cracked boost hose or intercooler pipe", "Clogged air filter", "Stuck wastegate or boost control solenoid", "Worn turbocharger"],
+    "difficulty": "moderate",
+    "tellMechanic": "I have a P0299 underboost. Can you smoke-test the intake and boost hoses and check the wastegate?"
+  },
   "P0300": {
     "title": "Random/Multiple Cylinder Misfire Detected",
-    "plain": "The engine is misfiring, meaning cylinders aren't firing properly. You may feel shaking or hesitation, and unburned fuel can damage the catalytic converter.",
+    "plain": "The engine is misfiring, so cylinders aren't firing properly. You may feel shaking or hesitation. If the check engine light is flashing, stop driving and have it towed. A steady light means drive gently and get it checked soon.",
     "urgency": "high",
     "causes": ["Worn spark plugs", "Failing ignition coils or plug wires", "Vacuum leak", "Low fuel pressure"],
     "difficulty": "moderate",
@@ -129,7 +201,7 @@
   },
   "P0301": {
     "title": "Cylinder 1 Misfire Detected",
-    "plain": "Cylinder 1 isn't firing properly. You may feel shaking or hesitation, and unburned fuel can damage the catalytic converter.",
+    "plain": "Cylinder 1 isn't firing properly, so you may feel shaking or hesitation. If the check engine light is flashing, stop driving and have it towed. A steady light means drive gently and get it checked soon.",
     "urgency": "high",
     "causes": ["Worn spark plug in cylinder 1", "Failing ignition coil or plug wire", "Clogged or leaking fuel injector", "Low compression"],
     "difficulty": "moderate",
@@ -137,7 +209,7 @@
   },
   "P0302": {
     "title": "Cylinder 2 Misfire Detected",
-    "plain": "Cylinder 2 isn't firing properly. You may feel shaking or hesitation, and unburned fuel can damage the catalytic converter.",
+    "plain": "Cylinder 2 isn't firing properly, so you may feel shaking or hesitation. If the check engine light is flashing, stop driving and have it towed. A steady light means drive gently and get it checked soon.",
     "urgency": "high",
     "causes": ["Worn spark plug in cylinder 2", "Failing ignition coil or plug wire", "Clogged or leaking fuel injector", "Low compression"],
     "difficulty": "moderate",
@@ -145,7 +217,7 @@
   },
   "P0303": {
     "title": "Cylinder 3 Misfire Detected",
-    "plain": "Cylinder 3 isn't firing properly. You may feel shaking or hesitation, and unburned fuel can damage the catalytic converter.",
+    "plain": "Cylinder 3 isn't firing properly, so you may feel shaking or hesitation. If the check engine light is flashing, stop driving and have it towed. A steady light means drive gently and get it checked soon.",
     "urgency": "high",
     "causes": ["Worn spark plug in cylinder 3", "Failing ignition coil or plug wire", "Clogged or leaking fuel injector", "Low compression"],
     "difficulty": "moderate",
@@ -153,7 +225,7 @@
   },
   "P0304": {
     "title": "Cylinder 4 Misfire Detected",
-    "plain": "Cylinder 4 isn't firing properly. You may feel shaking or hesitation, and unburned fuel can damage the catalytic converter.",
+    "plain": "Cylinder 4 isn't firing properly, so you may feel shaking or hesitation. If the check engine light is flashing, stop driving and have it towed. A steady light means drive gently and get it checked soon.",
     "urgency": "high",
     "causes": ["Worn spark plug in cylinder 4", "Failing ignition coil or plug wire", "Clogged or leaking fuel injector", "Low compression"],
     "difficulty": "moderate",
@@ -161,7 +233,7 @@
   },
   "P0305": {
     "title": "Cylinder 5 Misfire Detected",
-    "plain": "Cylinder 5 isn't firing properly. You may feel shaking or hesitation, and unburned fuel can damage the catalytic converter.",
+    "plain": "Cylinder 5 isn't firing properly, so you may feel shaking or hesitation. If the check engine light is flashing, stop driving and have it towed. A steady light means drive gently and get it checked soon.",
     "urgency": "high",
     "causes": ["Worn spark plug in cylinder 5", "Failing ignition coil or plug wire", "Clogged or leaking fuel injector", "Low compression"],
     "difficulty": "moderate",
@@ -169,11 +241,27 @@
   },
   "P0306": {
     "title": "Cylinder 6 Misfire Detected",
-    "plain": "Cylinder 6 isn't firing properly. You may feel shaking or hesitation, and unburned fuel can damage the catalytic converter.",
+    "plain": "Cylinder 6 isn't firing properly, so you may feel shaking or hesitation. If the check engine light is flashing, stop driving and have it towed. A steady light means drive gently and get it checked soon.",
     "urgency": "high",
     "causes": ["Worn spark plug in cylinder 6", "Failing ignition coil or plug wire", "Clogged or leaking fuel injector", "Low compression"],
     "difficulty": "moderate",
     "tellMechanic": "I have a P0306. Can you swap the cylinder 6 coil with another cylinder to see if the misfire follows it?"
+  },
+  "P0307": {
+    "title": "Cylinder 7 Misfire Detected",
+    "plain": "Cylinder 7 isn't firing properly, so you may feel shaking or hesitation. If the check engine light is flashing, stop driving and have it towed. A steady light means drive gently and get it checked soon.",
+    "urgency": "high",
+    "causes": ["Worn spark plug in cylinder 7", "Failing ignition coil or plug wire", "Clogged or leaking fuel injector", "Low compression"],
+    "difficulty": "moderate",
+    "tellMechanic": "I have a P0307. Can you swap the cylinder 7 coil with another cylinder to see if the misfire follows it?"
+  },
+  "P0308": {
+    "title": "Cylinder 8 Misfire Detected",
+    "plain": "Cylinder 8 isn't firing properly, so you may feel shaking or hesitation. If the check engine light is flashing, stop driving and have it towed. A steady light means drive gently and get it checked soon.",
+    "urgency": "high",
+    "causes": ["Worn spark plug in cylinder 8", "Failing ignition coil or plug wire", "Clogged or leaking fuel injector", "Low compression"],
+    "difficulty": "moderate",
+    "tellMechanic": "I have a P0308. Can you swap the cylinder 8 coil with another cylinder to see if the misfire follows it?"
   },
   "P0325": {
     "title": "Knock Sensor 1 Circuit (Bank 1)",
@@ -223,6 +311,14 @@
     "difficulty": "shop",
     "tellMechanic": "I have a P0420. Can you check the O2 sensors and look for exhaust leaks before replacing the converter?"
   },
+  "P0421": {
+    "title": "Warm Up Catalyst Efficiency Below Threshold (Bank 1)",
+    "plain": "Your catalytic converter isn't cleaning the exhaust well enough while it warms up.",
+    "urgency": "low",
+    "causes": ["Faulty downstream oxygen sensor", "Exhaust leak", "Worn-out catalytic converter"],
+    "difficulty": "shop",
+    "tellMechanic": "I have a P0421. Can you check the O2 sensors and look for exhaust leaks before replacing the converter?"
+  },
   "P0430": {
     "title": "Catalyst System Efficiency Below Threshold (Bank 2)",
     "plain": "The catalytic converter on one side of the engine isn't cleaning the exhaust as well as it should.",
@@ -230,6 +326,14 @@
     "causes": ["Faulty downstream oxygen sensor", "Exhaust leak", "Worn-out catalytic converter"],
     "difficulty": "shop",
     "tellMechanic": "I have a P0430. Can you check the O2 sensors and look for exhaust leaks before replacing the converter?"
+  },
+  "P0431": {
+    "title": "Warm Up Catalyst Efficiency Below Threshold (Bank 2)",
+    "plain": "Your catalytic converter on bank 2 isn't cleaning the exhaust well enough while it warms up.",
+    "urgency": "low",
+    "causes": ["Faulty downstream oxygen sensor", "Exhaust leak", "Worn-out catalytic converter"],
+    "difficulty": "shop",
+    "tellMechanic": "I have a P0431. Can you check the bank 2 O2 sensors and look for exhaust leaks before replacing the converter?"
   },
   "P0440": {
     "title": "Evaporative Emission System Malfunction",
@@ -239,13 +343,29 @@
     "difficulty": "moderate",
     "tellMechanic": "I have a P0440. Can you smoke-test the EVAP system?"
   },
+  "P0441": {
+    "title": "Evaporative Emission System Incorrect Purge Flow",
+    "plain": "The system that sends fuel vapor to the engine isn't moving the right amount. A stuck purge valve is the usual reason.",
+    "urgency": "low",
+    "causes": ["Stuck purge valve", "Cracked or disconnected vapor hose", "Clogged charcoal canister"],
+    "difficulty": "moderate",
+    "tellMechanic": "I have a P0441. Can you check the EVAP purge valve and vapor hoses?"
+  },
   "P0442": {
     "title": "Evaporative Emission System Leak Detected (Small Leak)",
-    "plain": "The system that traps gas fumes has a small leak. Often it's just a gas cap that isn't sealing.",
+    "plain": "The system that traps gas fumes has a small leak. Often it's just a gas cap that isn't sealing, so tighten it until it clicks first.",
     "urgency": "low",
     "causes": ["Loose or worn gas cap", "Cracked vapor hose", "Faulty purge or vent valve"],
     "difficulty": "diy",
-    "tellMechanic": "I have a P0442. I've checked the gas cap. Can you smoke-test the EVAP system?"
+    "tellMechanic": "I have a P0442. Can you smoke-test the EVAP system and check the gas cap seal?"
+  },
+  "P0443": {
+    "title": "Evaporative Emission System Purge Control Valve Circuit",
+    "plain": "The computer can't control the valve that sends fuel vapor to the engine. The valve or its wiring is usually at fault.",
+    "urgency": "low",
+    "causes": ["Failed purge valve", "Loose or corroded connector", "Blown fuse", "Damaged wiring"],
+    "difficulty": "moderate",
+    "tellMechanic": "I have a P0443. Can you test the EVAP purge valve and its wiring?"
   },
   "P0446": {
     "title": "Evaporative Emission System Vent Control Circuit",
@@ -255,13 +375,21 @@
     "difficulty": "moderate",
     "tellMechanic": "I have a P0446. Can you check the EVAP vent valve and its wiring?"
   },
+  "P0449": {
+    "title": "Evaporative Emission System Vent Valve/Solenoid Circuit",
+    "plain": "The EVAP vent valve has an electrical fault. The valve near the fuel tank may be stuck, or its wiring corroded. You might also notice trouble filling the tank.",
+    "urgency": "low",
+    "causes": ["Failed vent valve", "Corroded connector or wiring near the tank", "Blown fuse"],
+    "difficulty": "moderate",
+    "tellMechanic": "I have a P0449. Can you test the EVAP vent valve and check its wiring and connector?"
+  },
   "P0455": {
     "title": "Evaporative Emission System Leak Detected (Large Leak)",
     "plain": "The system that traps gas fumes has a big leak. Check that the gas cap is on and clicked tight first.",
     "urgency": "low",
     "causes": ["Missing or loose gas cap", "Disconnected vapor hose", "Stuck-open vent valve", "Cracked charcoal canister"],
     "difficulty": "diy",
-    "tellMechanic": "I have a P0455. The gas cap is tight. Can you smoke-test the EVAP system?"
+    "tellMechanic": "I have a P0455. Can you smoke-test the EVAP system for a large leak, starting with the gas cap and vapor hoses?"
   },
   "P0456": {
     "title": "Evaporative Emission System Leak Detected (Very Small Leak)",
@@ -295,6 +423,14 @@
     "difficulty": "diy",
     "tellMechanic": "I have a P0505. Can you clean the throttle body and check the idle air control valve?"
   },
+  "P0507": {
+    "title": "Idle Control System RPM Higher Than Expected",
+    "plain": "The engine is idling faster than the computer wants. A dirty throttle body or a vacuum leak is the usual reason.",
+    "urgency": "medium",
+    "causes": ["Dirty throttle body", "Vacuum leak from a cracked hose or intake gasket", "Faulty idle air control valve or throttle actuator", "Stuck-open PCV valve"],
+    "difficulty": "moderate",
+    "tellMechanic": "I have a P0507 high idle. Can you clean the throttle body, smoke-test for vacuum leaks, and do a throttle relearn?"
+  },
   "P0524": {
     "title": "Engine Oil Pressure Too Low",
     "plain": "Your engine oil pressure is too low. Stop driving as soon as it's safe and check the oil level, because low oil pressure can ruin an engine fast.",
@@ -326,5 +462,69 @@
     "causes": ["A fault stored in the transmission computer", "Failing shift solenoid", "Low or old transmission fluid"],
     "difficulty": "shop",
     "tellMechanic": "I have a P0700. Can you read the transmission computer's codes?"
+  },
+  "P0730": {
+    "title": "Incorrect Gear Ratio",
+    "plain": "The transmission isn't in the gear ratio the computer expects, which usually means slipping. Driving on it can damage the transmission.",
+    "urgency": "high",
+    "causes": ["Low or burnt transmission fluid", "Worn clutches or bands", "Failing shift solenoid or valve body"],
+    "difficulty": "shop",
+    "tellMechanic": "I have a P0730 incorrect gear ratio. Can you check the transmission fluid and test for slipping?"
+  },
+  "P0740": {
+    "title": "Torque Converter Clutch Circuit/Open",
+    "plain": "The torque converter clutch circuit has a fault. You may feel a shudder, notice high revs at highway speed, or get worse mileage.",
+    "urgency": "medium",
+    "causes": ["Low or old transmission fluid", "Failed torque converter clutch solenoid", "Wiring problem", "Worn torque converter"],
+    "difficulty": "shop",
+    "tellMechanic": "I have a P0740. Can you check the transmission fluid and the torque converter clutch solenoid?"
+  },
+  "P0741": {
+    "title": "Torque Converter Clutch Circuit Performance or Stuck Off",
+    "plain": "The torque converter clutch isn't locking when it should. You may notice higher revs at highway speed and worse mileage.",
+    "urgency": "medium",
+    "causes": ["Low or burnt transmission fluid", "Worn torque converter clutch solenoid", "Worn torque converter"],
+    "difficulty": "shop",
+    "tellMechanic": "I have a P0741. Can you check the transmission fluid and test the torque converter clutch?"
+  },
+  "P2096": {
+    "title": "Post Catalyst Fuel Trim System Too Lean (Bank 1)",
+    "plain": "The exhaust after the catalytic converter looks too lean. An exhaust leak or a faulty downstream sensor is common.",
+    "urgency": "medium",
+    "causes": ["Exhaust leak before the downstream sensor", "Faulty downstream oxygen sensor", "Vacuum leak or weak fuel delivery"],
+    "difficulty": "moderate",
+    "tellMechanic": "I have a P2096. Can you check for exhaust leaks and test the downstream O2 sensor?"
+  },
+  "P2097": {
+    "title": "Post Catalyst Fuel Trim System Too Rich (Bank 1)",
+    "plain": "The exhaust after the catalytic converter looks too rich. A faulty downstream sensor or too much fuel is common.",
+    "urgency": "medium",
+    "causes": ["Faulty downstream oxygen sensor", "Leaking fuel injector or high fuel pressure", "Dirty air filter or MAF sensor"],
+    "difficulty": "moderate",
+    "tellMechanic": "I have a P2097. Can you test the downstream O2 sensor and check fuel pressure?"
+  },
+  "P2135": {
+    "title": "Throttle/Pedal Position Sensor/Switch A/B Voltage Correlation",
+    "plain": "The two throttle sensors disagree with each other. The computer may limit engine power (limp mode) to stay safe.",
+    "urgency": "medium",
+    "causes": ["Dirty throttle body", "Wiring or connector problem", "Failing electronic throttle body"],
+    "difficulty": "shop",
+    "tellMechanic": "I have a P2135. Can you check the throttle body and both position sensor signals?"
+  },
+  "U0100": {
+    "title": "Lost Communication With ECM/PCM \"A\"",
+    "plain": "The car's other computers can't talk to the engine computer. The engine may stall or not start, and other warning lights may come on.",
+    "urgency": "high",
+    "causes": ["Weak battery or loose battery connection", "Blown fuse or bad power or ground to the engine computer", "Damaged network (CAN) wiring", "Failed engine computer"],
+    "difficulty": "shop",
+    "tellMechanic": "I have a U0100 lost communication with the engine computer. Can you check the battery, fuses, and network wiring first?"
+  },
+  "U0101": {
+    "title": "Lost Communication With TCM",
+    "plain": "The car's other computers can't talk to the transmission computer. The transmission may shift oddly or stay in one gear.",
+    "urgency": "medium",
+    "causes": ["Weak battery or loose battery connection", "Blown fuse or bad power or ground to the transmission computer", "Damaged network (CAN) wiring", "Failed transmission computer"],
+    "difficulty": "shop",
+    "tellMechanic": "I have a U0101 lost communication with the transmission computer. Can you check the battery, fuses, and network wiring first?"
   }
 }

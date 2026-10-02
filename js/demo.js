@@ -1,6 +1,8 @@
 // A pretend ELM327 for trying WOBD without a car. Open the site with ?demo
 // (a CAN car with codes), ?demo=iso (an older ISO 9141 car, like a 2001
 // PT Cruiser, with no VIN support), or ?demo=clear (no codes).
+// ?demo=slowbaud and ?demo=nobaud go through baud rate detection (see DemoBaudTransport).
+import { BASE_RATES } from './smartbauder.js';
 
 const SCENARIOS = {
   can: { protocol: '6', vin: '1HGCM82633A004352', codes: ['P0301', 'P0171', 'P0442'] },
@@ -62,7 +64,7 @@ export class DemoTransport {
 
     const prefix = this.searched ? [] : [this.isCan ? 'SEARCHING...' : 'BUS INIT: ...OK'];
     switch (cmd) {
-      case '0100': return [...prefix, '4100BE3EB811'];
+      case '0100': return [...prefix, '4100BE3FB811'];
       case '0101': {
         const a = (this.codes.length ? 0x80 : 0) | this.codes.length;
         return [`4101${hex2(a)}076500`];
@@ -111,8 +113,67 @@ export class DemoTransport {
       case '0111':
         e.throttle = wobble(e.throttle, 0.8, 13, 16);
         return [`4111${hex2(e.throttle * 255 / 100)}`];
+      case '0103':
+        // 01 = open loop while warming up, 02 = closed loop.
+        return [`4103${e.coolant < 160 ? '01' : '02'}00`];
+      case '0106':
+        return [`4106${hex2(128 + wobble(0, 8, -6, 6) * 128 / 100)}`];
+      case '0107': {
+        const lean = this.scenario.codes.includes('P0171') ? 12 : 2;
+        return [`4107${hex2(128 + lean * 128 / 100)}`];
+      }
+      case '010B':
+        return [`410B${hex2(wobble(32, 4, 28, 36))}`];
+      case '010E':
+        return [`410E${hex2((wobble(12, 3, 9, 15) + 64) * 2)}`];
+      case '010F':
+        return [`410F${hex2(30 + 40)}`];
+      case '0110': {
+        const maf = Math.round(wobble(3.6, 0.4, 3.2, 4) * 100);
+        return [`4110${hex2(maf >> 8)}${hex2(maf & 0xFF)}`];
+      }
+      case '0114': {
+        // Upstream sensor swings between lean and rich while in closed loop.
+        const volts = 0.45 + 0.4 * Math.sin((performance.now() - this.startedAt) / 700);
+        return [`4114${hex2(volts * 200)}FF`];
+      }
+      case '0115':
+        return [`4115${hex2(wobble(0.7, 0.04, 0.68, 0.72) * 200)}FF`];
       default:
         return null;
     }
+  }
+}
+
+export const BAUD_DEMOS = ['slowbaud', 'nobaud'];
+
+// Demo adapters that, unlike DemoTransport, make WOBD run baud rate detection.
+// No `info`, so detectBaud never touches the real baud cache.
+//   slowbaud: silent until the fourth rate it tries, then acts like the normal demo car.
+//   nobaud:   silent through the whole automatic sweep; any rate picked in the Retry form answers.
+export class DemoBaudTransport extends DemoTransport {
+  constructor(name) {
+    super('can');
+    this.mode = name;
+    this.baudRate = null;
+    this.opens = 0;
+  }
+
+  async open(baudRate) {
+    this.baudRate = baudRate;
+    this.opens++;
+  }
+
+  #answers() {
+    return this.mode === 'slowbaud' ? this.baudRate === BASE_RATES[3] : this.opens > BASE_RATES.length;
+  }
+
+  async write(text) {
+    if (!this.#answers()) return;
+    if (text.trim().toUpperCase() === 'ATI') {
+      setTimeout(() => this.onData('ELM327 v1.5\r\r>'), 40);
+      return;
+    }
+    await super.write(text);
   }
 }

@@ -40,11 +40,29 @@ const P0_GROUPS = {
 };
 
 let codeBook = {};
+let generic = {};  // definitions from data/generic/, filled in by loadGenericCodes()
+const genericLoads = new Map();
+const GENERIC_FAMILIES = new Set(['P0', 'P2', 'P3', 'U0', 'U3', 'B0', 'C0']);
 
 export async function loadCodeBook(url = 'data/codes.json') {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Couldn't load Bob's code book (${res.status}).`);
   codeBook = await res.json();
+}
+
+// Loads the generic definitions for the code families these codes belong to (P0, U3, ...).
+// A failed download just leaves Bob with his own notes.
+export async function loadGenericCodes(codes) {
+  const families = new Set(codes.map((code) => code.slice(0, 2)).filter((f) => GENERIC_FAMILIES.has(f)));
+  await Promise.all([...families].map((family) => {
+    if (!genericLoads.has(family)) {
+      genericLoads.set(family, fetch(`data/generic/${family}.json`)
+        .then((res) => (res.ok ? res.json() : Promise.reject(new Error(String(res.status)))))
+        .then((data) => { Object.assign(generic, data); })
+        .catch(() => { genericLoads.delete(family); }));
+    }
+    return genericLoads.get(family);
+  }));
 }
 
 // P1xxx, P30-P33xx, and C/B/U 1xxx-2xxx are defined by each car brand.
@@ -54,7 +72,7 @@ export function isManufacturerCode(code) {
   return d1 === '1' || d1 === '2';
 }
 
-function describeCategory(code) {
+export function describeCategory(code) {
   const [letter, d1, d2] = code;
   if (letter === 'P' && d1 === '0' && P0_GROUPS[d2]) return `a P0${d2}xx code is ${P0_GROUPS[d2]}`;
   return `${letter} codes are about the ${SYSTEMS[letter]}`;
@@ -64,6 +82,21 @@ function describeCategory(code) {
 export function lookup(code) {
   const entry = codeBook[code];
   if (entry) return { code, known: true, ...entry };
+
+  const general = generic[code];
+  if (general) {
+    return {
+      code,
+      known: false,
+      generic: true,
+      plain: general.title,
+      urgency: 'unknown',
+      causes: [],
+      difficulty: null,
+      tellMechanic: `I have a ${code}, ${general.title}. Can you diagnose it?`,
+      ...general,
+    };
+  }
 
   const manufacturer = isManufacturerCode(code);
   return {
@@ -156,8 +189,11 @@ export class Bob {
       entry.difficulty && h('p', {}, h('strong', {}, 'DIY or shop: '), DIFFICULTY[entry.difficulty]),
       h('h4', {}, 'Tell your mechanic'),
       h('p', { class: 'tell' }, `“${entry.tellMechanic}”`),
+      entry.generic && h('p', { class: 'hint' },
+        "This is a general description from an open code database, not one of my own notes. Details can vary by car."),
       !entry.known && h('p', {},
-        h('a', { href: searchUrl(entry.code, this.getCar()), target: '_blank', rel: 'noopener noreferrer' },
+        h('a', { href: searchUrl(entry.code, this.getCar()), target: '_blank', rel: 'noopener noreferrer',
+          dataset: { searchCode: entry.code } },
           'Search Google for this code')),
     ].filter(Boolean);
 
@@ -170,7 +206,7 @@ export class Bob {
       `Tell your mechanic: ${entry.tellMechanic}`,
     ].filter(Boolean).join(' ');
 
-    const mood = entry.urgency === 'high' ? 'warning' : entry.known ? null : 'question';
+    const mood = entry.urgency === 'high' ? 'warning' : entry.known || entry.generic ? null : 'question';
     return this.say({
       tone: entry.known ? entry.urgency : 'unknown',
       mood,

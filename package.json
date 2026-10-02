@@ -1,0 +1,9 @@
+{
+  "name": "wobd",
+  "private": true,
+  "type": "module",
+  "description": "WOBD is a static site. This file only lists the dev tools the data scripts use.",
+  "devDependencies": {
+    "yaml": "^2.9.0"
+  }
+}

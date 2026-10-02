@@ -16,20 +16,53 @@ export const PROTOCOLS = {
   C: 'User CAN 2',
 };
 
+// style picks the gauge look: radial, vbar, hbar, or status (text only).
+// warn/danger are the values where a gauge changes color. slow PIDs are
+// polled less often so the fast ones refresh quicker. bipolar bars fill
+// outward from the middle. Fuel trims show -25..+25 %: the real range is
+// -100..+99 %, but healthy trims sit well inside it.
 export const LIVE_PIDS = [
-  { pid: 0x0C, key: 'rpm', label: 'Engine RPM', unit: 'rpm', min: 0, max: 7000, digits: 0,
-    decode: ([a, b]) => (a * 256 + b) / 4 },
-  { pid: 0x0D, key: 'speed', label: 'Speed', unit: 'mph', min: 0, max: 120, digits: 0,
+  { pid: 0x0C, key: 'rpm', label: 'Engine RPM', unit: 'rpm', style: 'radial', min: 0, max: 7000, digits: 0,
+    warn: 5500, danger: 6500, decode: ([a, b]) => (a * 256 + b) / 4 },
+  { pid: 0x0D, key: 'speed', label: 'Speed', unit: 'mph', style: 'radial', min: 0, max: 120, digits: 0,
     decode: ([a]) => a * 0.621371 },
-  { pid: 0x05, key: 'coolant', label: 'Coolant temp', unit: '°F', min: 100, max: 260, digits: 0,
-    decode: ([a]) => (a - 40) * 9 / 5 + 32 },
-  { pid: 0x04, key: 'load', label: 'Engine load', unit: '%', min: 0, max: 100, digits: 0,
+  { pid: 0x11, key: 'throttle', label: 'Throttle', unit: '%', style: 'vbar', min: 0, max: 100, digits: 0,
     decode: ([a]) => a * 100 / 255 },
-  { pid: 0x11, key: 'throttle', label: 'Throttle', unit: '%', min: 0, max: 100, digits: 0,
+  { pid: 0x04, key: 'load', label: 'Engine load', unit: '%', style: 'vbar', min: 0, max: 100, digits: 0,
     decode: ([a]) => a * 100 / 255 },
+  { pid: 0x06, key: 'stft', label: 'Short-term fuel trim', unit: '%', style: 'vbar', min: -25, max: 25, digits: 1,
+    bipolar: true, warn: 15, danger: 25, decode: ([a]) => (a - 128) * 100 / 128 },
+  { pid: 0x07, key: 'ltft', label: 'Long-term fuel trim', unit: '%', style: 'vbar', min: -25, max: 25, digits: 1,
+    bipolar: true, warn: 15, danger: 25, slow: true, decode: ([a]) => (a - 128) * 100 / 128 },
+  { pid: 0x05, key: 'coolant', label: 'Coolant temp', unit: '°F', style: 'hbar', min: 100, max: 260, digits: 0,
+    warn: 230, danger: 245, slow: true, decode: ([a]) => (a - 40) * 9 / 5 + 32 },
+  { pid: 0x0F, key: 'iat', label: 'Intake air temp', unit: '°F', style: 'hbar', min: 0, max: 160, digits: 0,
+    slow: true, decode: ([a]) => (a - 40) * 9 / 5 + 32 },
+  { pid: 0x10, key: 'maf', label: 'Mass airflow', unit: 'g/s', style: 'hbar', min: 0, max: 250, digits: 1,
+    decode: ([a, b]) => (a * 256 + b) / 100 },
+  { pid: 0x0B, key: 'map', label: 'Intake manifold pressure', unit: 'kPa', style: 'hbar', min: 0, max: 255, digits: 0,
+    decode: ([a]) => a },
+  { pid: 0x0E, key: 'timing', label: 'Timing advance', unit: '°', style: 'hbar', min: -10, max: 50, digits: 1,
+    decode: ([a]) => a / 2 - 64 },
+  { pid: 0x14, key: 'o2b1s1', label: 'O2 sensor, bank 1 sensor 1', unit: 'V', style: 'hbar', min: 0, max: 1.2, digits: 2,
+    decode: ([a]) => a / 200 },
+  { pid: 0x15, key: 'o2b1s2', label: 'O2 sensor, bank 1 sensor 2', unit: 'V', style: 'hbar', min: 0, max: 1.2, digits: 2,
+    decode: ([a]) => a / 200 },
+  { pid: 0x03, key: 'fuelsys', label: 'Fuel system', style: 'status', slow: true,
+    decode: ([a]) => FUEL_SYSTEM_STATUS[a] ?? null },
 ];
 
-export const BATTERY = { key: 'battery', label: 'Battery', unit: 'V', min: 10, max: 15, digits: 1 };
+// PID 03 reports one bit per state; only one is ever set per bank.
+const FUEL_SYSTEM_STATUS = {
+  0x01: 'Open loop · engine warming up',
+  0x02: 'Closed loop',
+  0x04: 'Open loop · load or coasting',
+  0x08: 'Open loop · system fault',
+  0x10: 'Closed loop · sensor fault',
+};
+
+export const BATTERY = { key: 'battery', label: 'Battery', unit: 'V', style: 'hbar', min: 10, max: 15, digits: 1,
+  slow: true };
 
 const hex2 = (n) => n.toString(16).toUpperCase().padStart(2, '0');
 
@@ -175,6 +208,11 @@ export async function readVin(elm) {
 export async function readPid(elm, def) {
   const m = findReply(toMessages(await elm.send(`01${hex2(def.pid)}`)), 0x01, def.pid);
   return m ? def.decode(m.slice(2)) : null;
+}
+
+// PIDs with a gauge that this car reports, in display order.
+export function supportedLivePids(supported) {
+  return LIVE_PIDS.filter((def) => supported.has(def.pid));
 }
 
 export async function readBatteryVoltage(elm) {

@@ -194,7 +194,7 @@ a:hover { color: var(--link-hover); }
 #car-year { width: 6rem; }
 #car-make { width: 9.5rem; }
 #car-make-other { width: 8rem; }
-#car-model { flex: 1 1 8rem; max-width: 14rem; }
+#car-model, #car-model-other { flex: 1 1 8rem; max-width: 14rem; }
 
 
 .header-right {
@@ -435,28 +435,159 @@ a:hover { color: var(--link-hover); }
   font-size: 0.95rem;
 }
 
+/* Gauge cluster: radial dials, vertical bars, then horizontal bars. */
 .gauges {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-  gap: 0.9rem;
+  --g-track: var(--row-stripe);
+  --g-ok: #2F7DE1;
+  --g-warn: #E0A800;
+  --g-danger: #D32F2F;
+  --g-idle: var(--muted);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
+:root[data-theme="dark"] .gauges {
+  --g-track: #263250;
+  --g-ok: #5B9DFF;
+  --g-warn: #F2C94C;
+  --g-danger: #FF6B62;
+}
+
+.cluster { display: grid; gap: 0.9rem; }
+.cluster-radial { grid-template-columns: repeat(auto-fit, minmax(190px, 250px)); justify-content: center; }
+.cluster-vbar { grid-template-columns: repeat(auto-fit, minmax(105px, 1fr)); }
+.cluster-hbar { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
+
 .gauge {
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 0.8rem 0.9rem;
+  --g-color: var(--g-ok);
+  background: linear-gradient(160deg, var(--surface), var(--row-stripe));
+  border: 1px solid color-mix(in srgb, var(--line) 50%, transparent);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
 }
-.gauge-label { margin: 0; font-size: 0.85rem; color: var(--muted); font-weight: 600; }
+.gauge[data-zone="warn"] { --g-color: var(--g-warn); }
+.gauge[data-zone="danger"] { --g-color: var(--g-danger); }
+.gauge[data-zone="idle"] { --g-color: var(--g-idle); }
+
+.gauge-label { margin: 0; font-size: 0.82rem; font-weight: 600; color: var(--muted); line-height: 1.25; }
 .gauge-value {
-  margin: 0.2rem 0 0.5rem;
-  font-size: 1.9rem;
+  margin: 0;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--heading);
 }
-.gauge-unit { font-size: 0.95rem; font-weight: 600; color: var(--muted); margin-left: 0.2rem; }
-.gauge-track { height: 6px; border-radius: 3px; background: var(--row-stripe); overflow: hidden; }
-.gauge-fill { height: 100%; width: 0; background: var(--primary); transition: width 0.3s ease-out; }
-.gauge[data-state="unsupported"] .gauge-value { font-size: 1rem; color: var(--muted); font-weight: 500; }
+.gauge-unit { font-size: 0.8em; font-weight: 600; color: var(--muted); margin-left: 0.25rem; }
+
+.bar-fill {
+  position: absolute;
+  background: var(--g-color);
+  transition: height 0.3s ease-out, bottom 0.3s ease-out, width 0.3s ease-out, left 0.3s ease-out, background-color 0.3s;
+}
+
+/* Radial */
+.gauge-radial { padding: 0.9rem 0.9rem 0.8rem; text-align: center; }
+.dial { position: relative; width: 100%; max-width: 220px; margin: 0 auto 0.2rem; aspect-ratio: 1; }
+.dial svg { display: block; width: 100%; height: 100%; }
+.dial circle { fill: none; stroke-width: 9; stroke-linecap: round; }
+.dial-track { stroke: var(--g-track); }
+.dial-fill {
+  stroke: var(--g-color);
+  opacity: 0;
+  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--g-color) 55%, transparent));
+  transition: stroke-dasharray 0.35s ease-out, opacity 0.2s, stroke 0.3s;
+}
+.dial .gauge-value {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 0.5rem;
+}
+.gauge-radial .gauge-number { font-size: 2.4rem; line-height: 1.1; }
+.gauge-radial .gauge-unit { margin: 0; font-size: 0.9rem; }
+.dial-end { position: absolute; bottom: 5%; font-size: 0.72rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.dial-min { left: 17%; }
+.dial-max { right: 17%; }
+.gauge-radial .gauge-label { font-size: 0.9rem; letter-spacing: 0.02em; }
+
+/* Vertical bar */
+.gauge-vbar { display: flex; flex-direction: column; align-items: center; gap: 0.55rem; padding: 0.8rem 0.4rem; text-align: center; }
+.gauge-vbar .gauge-value { font-size: 1.3rem; line-height: 1.1; }
+.gauge-vbar .gauge-unit { margin-left: 0.1rem; }
+.vbar-track { position: relative; width: 30px; height: 150px; border-radius: 15px; background: var(--g-track); overflow: hidden; }
+.vbar-track .bar-fill { left: 0; right: 0; bottom: 0; height: 0; border-radius: 15px; }
+.bar-zero { position: absolute; left: 0; right: 0; top: 50%; height: 2px; margin-top: -1px; background: var(--muted); opacity: 0.55; z-index: 1; }
+
+/* Horizontal bar */
+.gauge-hbar { padding: 0.7rem 0.95rem 0.85rem; }
+.hbar-head { display: flex; justify-content: space-between; align-items: baseline; gap: 0.6rem; margin-bottom: 0.5rem; }
+.gauge-hbar .gauge-value { font-size: 1.25rem; white-space: nowrap; }
+.hbar-track { position: relative; height: 10px; border-radius: 5px; background: var(--g-track); overflow: hidden; }
+.hbar-track .bar-fill { top: 0; bottom: 0; left: 0; width: 0; border-radius: 5px; }
+
+/* Status text (open or closed loop) */
+.gauge-status { padding: 0.7rem 0.95rem 0.8rem; }
+.gauge-status .gauge-value { display: flex; align-items: center; gap: 0.55rem; margin-top: 0.25rem; font-size: 1.05rem; }
+.status-dot {
+  flex: none;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  background: var(--g-color);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--g-color) 60%, transparent);
+}
+
+/* ---------- Code search page ---------- */
+
+.page-title { margin: 0.75rem 0 0.25rem; color: var(--heading); font-size: 1.5rem; }
+.panel .lede { margin: 0 0 1.25rem; color: var(--muted); }
+.code-form label { display: block; font-weight: 600; margin-bottom: 0.3rem; }
+.code-form-row { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+#code-input {
+  flex: 1 1 10rem;
+  max-width: 18rem;
+  font: 600 1.25rem ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.45rem 0.8rem;
+  border: 2px solid var(--field-border);
+  border-radius: 8px;
+  background: var(--field-bg);
+  color: var(--text);
+}
+.code-chip {
+  font: 600 0.9rem ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  padding: 0.15rem 0.6rem;
+  margin-right: 0.3rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--link);
+  cursor: pointer;
+}
+.code-chip:hover { background: var(--hover-bg); border-color: var(--link); }
+.car-form-page { margin: 1.25rem 0 0; }
+.car-form-title { flex-basis: 100%; font-weight: 600; }
+
+/* ---------- Baud rate detection ---------- */
+
+.baud-progress { display: flex; align-items: center; gap: 0.75rem; margin-top: 0.5rem; }
+.progress { flex: 1; height: 8px; border-radius: 4px; background: var(--row-stripe); overflow: hidden; }
+.progress-fill { height: 100%; width: 0; background: var(--primary); transition: width 0.3s ease-out; }
+.baud-retry { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
+.baud-retry select {
+  font: inherit;
+  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid var(--field-border);
+  background: var(--field-bg);
+  color: var(--text);
+}
+@media (prefers-reduced-motion: reduce) {
+  .progress-fill { transition: none; }
+}
 
 /* ---------- Bob panel ---------- */
 
