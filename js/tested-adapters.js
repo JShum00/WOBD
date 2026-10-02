@@ -1,35 +1,9 @@
-// Add a test by appending one object with the same fields to data/tested-adapters.json.
+// Test records and their validation live in js/adapter-data.js.
+import { hasReports, loadResults, notTested, vehicleName } from './adapter-data.js';
+
 const body = document.querySelector('#adapter-results');
 const message = document.querySelector('#adapter-message');
 const table = document.querySelector('#adapter-table');
-const notTested = 'Not tested yet';
-
-function isNullableString(value) {
-  return value === null || typeof value === 'string';
-}
-
-function isNullableTextOrNumber(value) {
-  return isNullableString(value) || typeof value === 'number';
-}
-
-function isResult(result) {
-  return result !== null
-    && typeof result === 'object'
-    && typeof result.product === 'string'
-    && result.vehicle !== null
-    && typeof result.vehicle === 'object'
-    && isNullableTextOrNumber(result.vehicle.year)
-    && isNullableString(result.vehicle.make)
-    && isNullableString(result.vehicle.model)
-    && isNullableString(result.protocol)
-    && isNullableTextOrNumber(result.baud)
-    && [result.readCodes, result.clearCodes, result.liveData].every((value) => (
-      value === null || typeof value === 'boolean'
-    ))
-    && isNullableString(result.dateTested)
-    && isNullableString(result.wobdVersion)
-    && isNullableString(result.notes);
-}
 
 function field(value) {
   const cell = document.createElement('td');
@@ -59,10 +33,21 @@ function capability(value) {
   return cell;
 }
 
-function vehicleName(vehicle) {
-  return [vehicle.year, vehicle.make, vehicle.model]
-    .map((value) => value === null ? notTested : String(value))
-    .join(' ');
+function reportsLink(result) {
+  const cell = document.createElement('td');
+  cell.className = 'adapter-reports';
+  if (hasReports(result)) {
+    const link = document.createElement('a');
+    link.href = `report.html?id=${encodeURIComponent(result.id)}`;
+    link.textContent = 'View reports';
+    cell.append(link);
+  } else {
+    const placeholder = document.createElement('span');
+    placeholder.className = 'adapter-not-tested';
+    placeholder.textContent = 'None';
+    cell.append(placeholder);
+  }
+  return cell;
 }
 
 function vehicleSortName(vehicle) {
@@ -90,17 +75,13 @@ function rowFor(result) {
     field(result.dateTested),
     field(result.wobdVersion),
     field(result.notes),
+    reportsLink(result),
   );
   return row;
 }
 
 try {
-  const response = await fetch('data/tested-adapters.json');
-  if (!response.ok) throw new Error(`HTTP ${response.status}`);
-  const results = await response.json();
-  if (!Array.isArray(results) || !results.every(isResult)) {
-    throw new TypeError('Adapter results must be an array of valid test records');
-  }
+  const results = await loadResults();
 
   if (results.length === 0) {
     message.textContent = 'No adapter test results are available yet.';

@@ -375,7 +375,7 @@ export function confirmClear() {
 
 // ---------- Printable report ----------
 
-export function renderReport({ scannedAt, car, vin, status, entries }) {
+export function renderReport({ scannedAt, car, vin, status, entries, connection }) {
   const vehicle = carLabel(car);
   const codeCount = `${entries.length} code${entries.length === 1 ? '' : 's'} found`;
 
@@ -385,7 +385,8 @@ export function renderReport({ scannedAt, car, vin, status, entries }) {
       h('p', { class: 'report-meta' },
         `Scanned ${scannedAt.toLocaleString()}`,
         h('br'), vehicle || 'Vehicle not entered',
-        vin && [h('br'), `VIN ${vin}`])),
+        vin && [h('br'), `VIN ${vin}`],
+        connection && [h('br'), connection])),
     h('p', { class: 'report-status' },
       h('strong', {}, 'Check engine light: '), status ? (status.milOn ? 'ON' : 'OFF') : 'Unknown',
       ` · ${codeCount}`),

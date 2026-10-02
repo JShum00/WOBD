@@ -68,6 +68,12 @@ function judgeAdapter(version) {
   return /v1\.5/i.test(version) ? 'Probably a clone' : 'Unknown';
 }
 
+// "115200 baud" for the rate SmartBauder connected at, or "baud unknown" when
+// detection didn't run or record one (the plain demos skip detection).
+export function baudLabel(baudRate) {
+  return Number.isInteger(baudRate) ? `${baudRate} baud` : 'baud unknown';
+}
+
 export function isLowBattery(info) {
   return info?.volts != null && info.volts < LOW_BATTERY;
 }
@@ -82,11 +88,11 @@ function row(label, value) {
     h('dd', { class: value == null ? 'info-missing' : null }, value ?? 'Not available'));
 }
 
-export function renderConnInfo(info) {
+export function renderConnInfo(info, { baudRate = null } = {}) {
   const panel = $('conn-info');
   const status = info.carResponding === null ? null
     : info.carResponding ? 'Connected, car is answering' : 'Adapter connected, car is not answering';
-  const protocol = info.protocolName ?? null;
+  const protocol = `${info.protocolName ?? 'Protocol unknown'} · ${baudLabel(baudRate)}`;
 
   $('conn-info-basic').replaceChildren(
     row('Protocol', protocol),

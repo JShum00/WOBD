@@ -1,5 +1,6 @@
 [
   {
+    "id": "vlinker-fs-usb-pt-cruiser-2026-10-02",
     "product": "Vgate vLinker FS USB",
     "vehicle": {
       "year": 2001,
@@ -13,6 +14,10 @@
     "liveData": true,
     "dateTested": "2026-10-02",
     "wobdVersion": null,
-    "notes": "Read codes matched an O'Reilly shop scan code-for-code (6 codes). Clear confirmed via before/after PDF exports. Live data streamed all PIDs; occasional brief dropouts recovered instantly."
+    "notes": "Read codes matched an O'Reilly shop scan code-for-code (6 codes). Clear confirmed via before/after PDF exports. Live data streamed all PIDs; occasional brief dropouts recovered instantly.",
+    "reports": {
+      "before": "reports/vlinker-fs-usb-pt-cruiser-2026-10-02/before-cleared.pdf",
+      "after": "reports/vlinker-fs-usb-pt-cruiser-2026-10-02/after-cleared.pdf"
+    }
   }
 ]

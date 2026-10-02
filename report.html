@@ -3,23 +3,24 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Tested Adapters · WOBD</title>
-  <meta name="description" content="Personal test results for OBD-II adapters used with WOBD.">
+  <title>Adapter Report · WOBD</title>
+  <meta name="description" content="Before and after scan reports from an OBD-II adapter test with WOBD.">
   <link rel="icon" href="img/bob.png">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="img/icons/apple-touch-icon.png">
   <meta name="theme-color" content="#1F3F8F">
   <link rel="stylesheet" href="css/style.css">
   <script src="js/theme.js"></script>
-  <script type="module" src="js/tested-adapters.js"></script>
+  <script type="module" src="js/report.js"></script>
   <script src="js/pwa.js" defer></script>
 </head>
-<body class="adapter-page">
+<body class="report-page">
   <header class="site-header">
     <a class="logo" href="./"><span class="logo-mark" aria-hidden="true"></span>WOBD</a>
     <div class="header-right">
       <a class="header-link" href="codes.html">Code search</a>
       <a class="header-link" href="guide.html">How to use</a>
+      <a class="header-link" href="tested-adapters.html">Tested adapters</a>
       <a class="header-link" href="./">Back to WOBD</a>
       <button id="theme-btn" type="button" class="theme-btn" aria-pressed="false" aria-label="Dark mode">
         <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="currentColor"/></svg>
@@ -29,32 +30,16 @@
   </header>
 
   <main class="guide">
-    <h1>Tested Adapters</h1>
-    <p class="lede">The OBD protocol depends on the vehicle, not the adapter. These are my own test results; untested entries are marked.</p>
+    <p class="report-back"><a href="tested-adapters.html">← Back to tested adapters</a></p>
+    <h1 id="report-title">Adapter report</h1>
 
-    <section aria-label="Adapter test results">
-      <div class="adapter-table-wrap">
-        <table id="adapter-table" class="adapter-table" hidden>
-          <thead>
-            <tr>
-              <th scope="col">Product</th>
-              <th scope="col">Vehicle</th>
-              <th scope="col">Protocol</th>
-              <th scope="col">Baud</th>
-              <th scope="col">Read codes</th>
-              <th scope="col">Clear codes</th>
-              <th scope="col">Live data</th>
-              <th scope="col">Date tested</th>
-              <th scope="col">WOBD version</th>
-              <th scope="col">Notes</th>
-              <th scope="col" class="adapter-reports">Reports</th>
-            </tr>
-          </thead>
-          <tbody id="adapter-results"></tbody>
-        </table>
-      </div>
-      <p id="adapter-message" class="adapter-message" role="status" aria-live="polite" hidden></p>
+    <section id="report-content" aria-labelledby="report-title" hidden>
+      <p id="report-vehicle" class="lede"></p>
+      <p id="report-stats" class="report-stats"></p>
+      <p id="report-notes"></p>
+      <div id="report-pdfs" class="report-pdfs"></div>
     </section>
+    <p id="report-message" class="adapter-message" role="status" aria-live="polite" hidden></p>
   </main>
 
   <footer class="site-footer">

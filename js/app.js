@@ -7,7 +7,9 @@ import * as obd from './obd.js';
 import { Bob, loadCodeBook, loadGenericCodes, lookup } from './bob.js';
 import * as ui from './ui.js';
 import { Voice } from './voice.js';
-import { collectConnInfo, friendlyError, hideConnInfo, initConnInfo, isLowBattery, renderConnInfo, FRIENDLY } from './conninfo.js';
+import { DriveLock, Recording } from './recorder.js';
+import { RecordLock } from './record-lock.js';
+import { baudLabel, collectConnInfo, friendlyError, hideConnInfo, initConnInfo, isLowBattery, renderConnInfo, FRIENDLY } from './conninfo.js';
 
 const SLOW_EVERY = 5;
 const DETECT_PROGRESS_DELAY = 300;  // ms before the baud-rate progress bar appears
@@ -23,6 +25,7 @@ const state = {
   transport: null,
   elm: null,
   protocol: null,
+  baudRate: null,    // the rate SmartBauder connected at; null when detection didn't run
   supportedPids: new Set(),
   vin: null,
   scan: null,        // { scannedAt, status, entries }
@@ -30,10 +33,13 @@ const state = {
   tab: 'scan',
   busy: false,
   liveRun: 0,        // bumping this stops the live data loop
+  recording: null,   // { data: Recording, lock: DriveLock } while recording live data
+  wakeLock: null,
 };
 
 const voice = new Voice();
 const bob = new Bob({ slot: $('bob-slot'), live: $('bob-live'), getCar: ui.getCar, voice });
+const recordLock = new RecordLock({ onSave: saveRecording, onKeep: keepRecording });
 
 start();
 
@@ -69,6 +75,9 @@ async function start() {
   $('scan-btn').addEventListener('click', () => busy('Scanning…', scan));
   $('clear-btn').addEventListener('click', onClearClick);
   $('print-btn').addEventListener('click', () => window.print());
+  $('record-btn').addEventListener('click', startRecording);
+  window.addEventListener('beforeunload', (e) => { if (state.recording) e.preventDefault(); });
+  document.addEventListener('visibilitychange', keepScreenOn);
   window.addEventListener('beforeprint', renderReport);
   document.addEventListener('keydown', onKeydown);
 
@@ -157,7 +166,7 @@ async function connectTo(transport, { baudRate } = {}) {
   // Unplugging or cancelling stops detection at once.
   const abort = abortOnUnplug(transport);
   try {
-    const elm = await openAdapter(transport, { baudRate, abort });
+    const { elm, baudRate: connectedBaud } = await openAdapter(transport, { baudRate, abort });
     ui.setConnection('busy', 'Talking to the car…');
     bob.say({ text: "Found the adapter. Now I'm saying hello to the car. Older cars can take a few seconds." });
 
@@ -165,6 +174,7 @@ async function connectTo(transport, { baudRate } = {}) {
     state.protocol = await obd.readProtocol(elm);
     state.vin = await obd.readVin(elm);
     state.connInfo = await collectConnInfo(elm);
+    state.baudRate = connectedBaud;
     state.transport = transport;
     state.elm = elm;
   } catch (err) {
@@ -186,31 +196,36 @@ async function connectTo(transport, { baudRate } = {}) {
     bob.say({
       tone: 'high',
       mood: 'warning',
-      text: 'I lost the adapter. Check that the cable is plugged in, then click Connect.',
+      text: state.recording
+        ? "I lost the adapter mid-recording, but I kept everything up to that point. Once you're parked, save the CSV, then check the cable."
+        : 'I lost the adapter. Check that the cable is plugged in, then click Connect.',
     });
   };
   ui.renderGauges(state.supportedPids);
   ui.setWelcomeVisible(false);
   showConnected();
-  renderConnInfo(state.connInfo);
+  console.info('[WOBD] Connected. Baud rate:', state.baudRate ?? 'unknown (detection skipped)');
+  renderConnInfo(state.connInfo, { baudRate: state.baudRate });
   bobIdle();
   if (isLowBattery(state.connInfo)) bob.say({ tone: 'medium', mood: 'warning', text: FRIENDLY.lowBattery });
   if (state.tab === 'live') startLive();
 }
 
 // Detects the baud rate with a quick ID probe, then resets and configures the adapter once.
+// Resolves with the adapter and the rate it answered at (null when detection was skipped).
 async function openAdapter(transport, { baudRate, abort }) {
+  let detected = null;
   if (transport instanceof DemoTransport && !(transport instanceof DemoBaudTransport)) {
     await transport.open();
   } else {
-    await detect(transport, { baudRate, abort });
+    detected = await detect(transport, { baudRate, abort });
   }
 
   const elm = new ELM327(transport);
   try {
     await elm.reset();
     await elm.configure();
-    return elm;
+    return { elm, baudRate: detected };
   } catch (err) {
     await transport.close();
     throw err;
@@ -240,6 +255,7 @@ async function detect(transport, { baudRate, abort }) {
         "The adapter didn't answer. Make sure it's an ELM327-compatible USB cable, then unplug it, plug it back in, and try again."),
       { rates: rateOptions(transport.info) });
     }
+    return found;
   } finally {
     clearTimeout(timer);
     view?.remove();
@@ -261,6 +277,7 @@ function showBaudRetry(transport, err) {
 
 async function disconnect() {
   stopLive();
+  if (state.recording) recordLock.setUnplugged();
   const { transport } = state;
   state.transport = null;
   state.elm = null;
@@ -268,13 +285,20 @@ async function disconnect() {
   await transport?.close();
   ui.setConnection('idle', 'Not connected');
   ui.setControls({ print: Boolean(state.scan) });
+  $('record-btn').disabled = true;
   ui.setWelcomeVisible(!state.scan);
 }
 
+// "SAE J1850 VPW · 115200 baud", the same wording everywhere the connection is shown.
+function connectionLabel() {
+  return `${state.protocol?.name ?? 'Protocol unknown'} · ${baudLabel(state.baudRate)}`;
+}
+
 function showConnected() {
-  ui.setConnection('connected', `Connected · ${state.protocol.name}`);
+  ui.setConnection('connected', `Connected · ${connectionLabel()}`);
   const hasProblems = Boolean(state.scan && (state.scan.entries.length || state.scan.status?.milOn));
   ui.setControls({ scan: true, print: Boolean(state.scan), clear: hasProblems });
+  $('record-btn').disabled = false;
 }
 
 // Runs an adapter job with the controls locked.
@@ -283,6 +307,7 @@ async function busy(label, job) {
   state.busy = true;
   ui.setConnection('busy', label);
   ui.setControls({});
+  $('record-btn').disabled = true;
   try {
     await job();
   } catch (err) {
@@ -302,7 +327,8 @@ async function scan() {
   await loadGenericCodes(codes);
   const entries = codes.map(lookup);
 
-  state.scan = { scannedAt: new Date(), status, entries };
+  // The connection is copied in, so the printout matches the scan even after a reconnect.
+  state.scan = { scannedAt: new Date(), status, entries, connection: connectionLabel() };
   state.selected = null;
   ui.renderCodes(entries, onSelectCode);
   ui.setEmptyMessage('No stored trouble codes.');
@@ -341,7 +367,7 @@ function onSelectCode(entry) {
 }
 
 function onKeydown(e) {
-  if (e.key !== 'Escape' || $('clear-dialog').open || !bob.isOpen) return;
+  if (e.key !== 'Escape' || $('clear-dialog').open || recordLock.isOpen || !bob.isOpen) return;
   const code = state.selected;
   state.selected = null;
   ui.selectCode(null);
@@ -394,14 +420,87 @@ async function startLive() {
     for (const def of defs) {
       if (def.slow && !slowRound) continue;
       if (!active()) return;
-      ui.updateGauge(def, await obd.readPid(elm, def).catch(() => null));
+      reading(def, await obd.readPid(elm, def).catch(() => null));
     }
     if (!active()) return;
-    if (slowRound) ui.updateGauge(obd.BATTERY, await obd.readBatteryVoltage(elm).catch(() => null));
+    if (slowRound) reading(obd.BATTERY, await obd.readBatteryVoltage(elm).catch(() => null));
     await wait(50);
   }
 }
 
 function stopLive() {
   state.liveRun++;
+}
+
+// Every live reading lands here: the gauge always, the recording when one is running.
+function reading(def, value) {
+  ui.updateGauge(def, value);
+  if (!state.recording) return;
+  const now = Date.now();
+  state.recording.data.add(def, value, now);
+  state.recording.lock.update(def, value, now);
+}
+
+// ---------- Recording ----------
+
+// Records whatever the live loop already polls; it never sends commands of its own.
+function startRecording() {
+  if (!state.elm || state.busy || state.recording || state.tab !== 'live') return;
+  const now = Date.now();
+  const has = (pid) => state.supportedPids.has(pid);
+  state.recording = {
+    data: new Recording(now, { protocol: state.protocol?.name, baudRate: state.baudRate }),
+    lock: new DriveLock({
+      hasSpeed: has(0x0D),
+      hasRpm: has(0x0C),
+      hasPids: obd.supportedLivePids(state.supportedPids).length > 0,
+    }, now),
+  };
+  recordLock.open({ startedAt: now, lock: state.recording.lock });
+  keepScreenOn();
+  bob.say({
+    tone: 'medium',
+    mood: 'warning',
+    text: "Recording! Next time, hit Record before you pull out. Once you're moving, hands off the screen. I've got it from here.",
+  });
+}
+
+// Keep Recording after a stop: same log, and the lock starts over as if the car just started.
+function keepRecording() {
+  state.recording?.lock.reset(Date.now());
+}
+
+function saveRecording() {
+  const { recording } = state;
+  if (!recording) return;
+  downloadCsv(recording.data.toCsv(), recording.data.filename());
+  state.recording = null;
+  recordLock.close();
+  state.wakeLock?.release().catch(() => {});
+  state.wakeLock = null;
+  bob.say({
+    tone: 'low',
+    mood: 'check',
+    text: `Saved! Your drive is in your Downloads folder as ${recording.data.filename()}. Open it in a spreadsheet to graph it.`,
+  });
+}
+
+function downloadCsv(text, filename) {
+  const url = URL.createObjectURL(new Blob([text], { type: 'text/csv' }));
+  const link = Object.assign(document.createElement('a'), { href: url, download: filename });
+  document.body.append(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+// A sleeping screen can throttle the page and leave gaps in the log. Browsers
+// drop the wake lock when the tab is hidden, so this runs again when it's back.
+async function keepScreenOn() {
+  if (!state.recording || document.visibilityState !== 'visible' || !navigator.wakeLock) return;
+  try {
+    state.wakeLock = await navigator.wakeLock.request('screen');
+  } catch {
+    // Not allowed (battery saver, etc.). Recording still works.
+  }
 }

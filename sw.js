@@ -1,7 +1,7 @@
 // Service worker: caches the static app shell only. Web Serial talks to the
 // USB adapter directly and never goes through fetch, so nothing here can touch
 // it. Bump CACHE_VERSION to force every returning user onto fresh files.
-const CACHE_VERSION = 'v9';
+const CACHE_VERSION = 'v11';
 const CACHE_NAME = `wobd-cache-${CACHE_VERSION}`;
 
 const APP_SHELL = [
@@ -10,9 +10,11 @@ const APP_SHELL = [
   'guide.html',
   'codes.html',
   'tested-adapters.html',
+  'report.html',
   'manifest.webmanifest',
   'css/style.css',
   'css/print.css',
+  'js/adapter-data.js',
   'js/app.js',
   'js/bob.js',
   'js/codes.js',
@@ -21,6 +23,9 @@ const APP_SHELL = [
   'js/elm327.js',
   'js/obd.js',
   'js/pwa.js',
+  'js/record-lock.js',
+  'js/recorder.js',
+  'js/report.js',
   'js/serial.js',
   'js/smartbauder.js',
   'js/theme.js',
@@ -79,8 +84,11 @@ async function fromCache(request) {
   const hit = await cache.match(request, { ignoreSearch: true });
   if (hit || request.mode !== 'navigate') return hit;
 
-  // Pretty URLs: "/" is index.html and "/guide" is guide.html.
-  const page = url.pathname.endsWith('/') ? 'index.html' : `${url.pathname.split('/').pop()}.html`;
+  // Pretty URLs: "/" is index.html and "/guide" is guide.html. Real files that
+  // aren't cached, like report PDFs, go to the network instead of the home page.
+  const name = url.pathname.split('/').pop();
+  if (name.includes('.')) return undefined;
+  const page = name === '' ? 'index.html' : `${name}.html`;
   return (await cache.match(page)) ?? (await cache.match('index.html'));
 }
 
