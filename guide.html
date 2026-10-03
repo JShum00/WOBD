@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>How to use WOBD</title>
-  <meta name="description" content="What you need, where to find your car's OBD port, and how to read, understand, and clear trouble codes with WOBD.">
+  <meta name="description" content="What you need, where to find your car's OBD port, and how to scan, understand, and clear trouble codes with WOBD.">
   <link rel="icon" href="img/bob.png">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="img/icons/apple-touch-icon.png">
@@ -36,18 +36,18 @@
       <ul>
         <li><strong>A car with OBD-II.</strong> In the US, that's every car and light truck from model year 1996 on.</li>
         <li><strong>A USB ELM327-compatible adapter.</strong> See the next section.</li>
-        <li><strong>A Chromebook or laptop</strong> running Chrome, Edge, or Opera. Firefox, Safari, and phones can't talk to the adapter.</li>
+        <li><strong>A laptop or Chromebook</strong> running Chrome, Edge, or Opera. Phones and tablets aren't supported. WOBD needs an HTTPS connection (or localhost when running it locally).</li>
       </ul>
     </section>
 
     <section id="adapter">
       <h2>2. How to get an adapter</h2>
-      <p>OBD-II adapters are sold at auto parts stores and online. When you shop:</p>
+      <p>OBD-II adapters are sold at auto parts stores and online. WOBD connects to a USB adapter through your computer's serial port. When you shop:</p>
       <ul>
         <li>Buy a <strong>USB cable</strong> adapter, not Bluetooth or Wi-Fi.</li>
         <li>Check that it says <strong>ELM327-compatible</strong>.</li>
       </ul>
-      <p>See the <a href="tested-adapters.html">Tested Adapters</a> page for my test results.</p>
+      <p>WOBD checks the adapter's baud rate automatically. If it doesn't get an answer, you can choose a speed and retry. See the <a href="tested-adapters.html">Tested Adapters</a> page for personal test results; an untested adapter may or may not work.</p>
     </section>
 
     <section id="port">
@@ -77,41 +77,53 @@
       <h2>4. Using the site</h2>
       <ol>
         <li>Plug the adapter into the car and into your computer.</li>
-        <li>Turn the ignition on. The engine can stay off.</li>
-        <li>Open WOBD and click <strong>Connect</strong>, then pick your adapter from the list.</li>
-        <li>Tell Bob your car's year, make, and model, or click <strong>Skip</strong>.</li>
-        <li>Click <strong>Scan</strong>.</li>
-        <li>Click any code to hear what Bob has to say about it.</li>
-        <li>Use <strong>Print report</strong> to take the results to a shop. Choose "Save as PDF" in the print dialog to keep a copy.</li>
+        <li>Plug the adapter into the car's OBD-II port and your computer's USB port.</li>
+        <li>Turn the ignition to On. The engine can stay off for a code scan.</li>
+        <li>Open WOBD and click <strong>Connect</strong>. Choose your adapter in the browser's device picker and allow the connection.</li>
+        <li>Wait while WOBD detects the adapter speed and talks to the car. Older cars can take a few seconds. If detection fails, choose a baud rate in Bob's message and click <strong>Retry</strong>; click <strong>Cancel</strong> to stop detection.</li>
+        <li>Enter the car's year, make, and model at the top, or click <strong>Skip</strong>. These details are optional and only personalize the external code-search link and report.</li>
+        <li>Click <strong>Scan</strong>. The summary shows the check-engine-light state when available and the stored code count.</li>
+        <li>Select a code to see Bob's explanation, urgency, common causes, and what to tell a mechanic. Generic database entries are labeled as general information.</li>
+        <li>Use <strong>Print report</strong> to take the results to a shop. Choose "Save as PDF" in the print dialog to keep a copy; the report includes the scan details and VIN when the car provides one.</li>
       </ol>
+      <p>After connecting, the connection panel shows the protocol, whether the car is responding, and adapter voltage. Open <strong>More info</strong> for adapter identification and advanced details. The adapter's reported version can suggest that it is a clone, but WOBD can't verify authenticity.</p>
     </section>
 
     <section id="live-data">
       <h2>5. Live data</h2>
-      <p>Open the <strong>Live data</strong> tab to see real-time readings from the engine. <strong>Only watch it while parked or from the passenger seat.</strong></p>
+      <p>With the adapter connected, open the <strong>Live data</strong> tab to see real-time readings. WOBD asks the car which readings it supports and shows those gauges, plus adapter voltage. Some cars report only a few readings. <strong>Only watch live data while parked or from the passenger seat.</strong></p>
       <ul>
         <li><strong>Engine RPM:</strong> how fast the engine is turning. A warm engine usually idles between 600 and 900.</li>
-        <li><strong>Speed:</strong> the speed the car's computer sees.</li>
-        <li><strong>Coolant temp:</strong> engine temperature. Most engines run around 195 to 220 °F once warm.</li>
-        <li><strong>Engine load:</strong> how hard the engine is working, as a percentage.</li>
-        <li><strong>Throttle:</strong> how far the throttle is open.</li>
-        <li><strong>Battery:</strong> voltage at the OBD port. About 12.4 to 12.7 V with the engine off, and 13.5 to 14.7 V running.</li>
+        <li><strong>Speed:</strong> the speed the car's computer reports, in miles per hour.</li>
+        <li><strong>Coolant and intake-air temperature:</strong> temperatures reported by the engine computer.</li>
+        <li><strong>Engine load and throttle:</strong> percentages reported by the car.</li>
+        <li><strong>Fuel trims:</strong> how the computer is adjusting fuel delivery.</li>
+        <li><strong>Airflow, manifold pressure, timing, and oxygen sensors:</strong> readings appear when the car reports support for them.</li>
+        <li><strong>Fuel system:</strong> open- or closed-loop status, when supported.</li>
+        <li><strong>Battery:</strong> adapter voltage. About 12.4 to 12.7 V with the engine off, and 13.5 to 14.7 V running.</li>
       </ul>
+      <p>When Bob's read-aloud control is available, you can turn it on to hear his speech bubble. It uses your browser's speech synthesis and remembers your choice on this device.</p>
     </section>
 
     <section id="clearing">
       <h2>6. Clearing codes</h2>
-      <p>Clear codes after a repair to turn off the check engine light. If the problem isn't really fixed, the light will come back.</p>
+      <p>Clear stored codes after a repair. WOBD asks you to confirm that the ignition is on and the engine is off before sending the clear command. If the problem isn't fixed, the warning light or code may return.</p>
       <p><strong>Don't clear codes right before an emissions inspection.</strong> Clearing also resets the car's readiness monitors, and the car has to be driven for a while before it's ready to pass again.</p>
     </section>
 
     <section id="troubleshooting">
       <h2>7. Troubleshooting</h2>
       <ul>
-        <li><strong>The adapter doesn't appear in the Connect list:</strong> unplug and reseat the cable, or try another USB port.</li>
-        <li><strong>"Unable to connect":</strong> make sure the ignition is on and the adapter is pushed all the way into the car's port.</li>
-        <li><strong>The page won't connect in Firefox or Safari:</strong> those browsers can't talk to USB adapters. Switch to Chrome or Edge.</li>
+        <li><strong>The adapter doesn't appear in the browser's device picker:</strong> unplug and reseat the cable, try another USB port, then click Connect again.</li>
+        <li><strong>Baud detection gets no answer:</strong> confirm that the cable is ELM327-compatible, then choose a baud rate in Bob's retry form. You can cancel and reconnect to start over.</li>
+        <li><strong>The adapter connects but the car doesn't respond:</strong> turn the ignition to On, check that the adapter is fully seated, and try again. Some older vehicles take longer to respond.</li>
+        <li><strong>WOBD says the browser can't connect:</strong> use Chrome, Edge, or Opera on a laptop or Chromebook, and open the site over HTTPS (or localhost during local development). Phones and tablets aren't supported.</li>
       </ul>
+    </section>
+
+    <section id="privacy">
+      <h2>8. Your data</h2>
+      <p>Scans run in your browser and aren't uploaded. The app shell and code databases are cached for offline use after the first visit. If you choose a Google search link, that search opens outside WOBD and includes the code and any vehicle details you entered.</p>
     </section>
   </main>
 
