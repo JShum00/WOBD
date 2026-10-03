@@ -14,6 +14,7 @@
   <script src="js/theme.js"></script>
   <script type="module" src="js/app.js"></script>
   <script src="js/pwa.js" defer></script>
+  <script src="js/version.js" defer></script>
 </head>
 <body>
   <header class="site-header">
@@ -108,8 +109,9 @@
             </div>
             <ul class="demo-list">
               <li><a href="?demo" data-demo="can">Newer car with trouble codes <small>CAN · a misfire, a lean code, and an EVAP leak</small></a></li>
-              <li><a href="?demo=iso" data-demo="iso">Older car, like a 2001 PT Cruiser <small>ISO 9141 · includes a brand-specific code</small></a></li>
+              <li><a href="?demo=iso" data-demo="iso">Older car, like a 2001 PT Cruiser <small>J1850 VPW · includes a brand-specific code</small></a></li>
               <li><a href="?demo=clear" data-demo="clear">Healthy car <small>No trouble codes</small></a></li>
+              <li><a href="?demo=drive" data-demo="drive">A short drive <small>Try Live data recording: idles, drives, then stops</small></a></li>
             </ul>
           </div>
         </section>
@@ -134,7 +136,15 @@
 
       <div id="panel-live" class="tab-panel" role="tabpanel" aria-labelledby="tab-live" hidden>
         <p class="safety-note"><strong>Parked or passenger only.</strong> Don't watch live data while you're driving.</p>
-        <div id="gauges" class="gauges"></div>
+        <section id="gauge-picker" class="gauge-picker" aria-label="Pick your gauges" hidden></section>
+        <div id="live-dashboard">
+          <div class="record-bar">
+            <button id="record-btn" type="button" class="btn btn-danger" disabled><span aria-hidden="true">●</span> Start Recording</button>
+            <button id="gauges-btn" type="button" class="btn" disabled>Change gauges</button>
+            <p class="record-hint">Logs these readings to a CSV you can graph later. The screen locks until you stop. Saved a drive? <a href="replay.html">Replay it</a>.</p>
+          </div>
+          <div id="gauges" class="gauges"></div>
+        </div>
       </div>
     </section>
 
@@ -188,6 +198,25 @@
         <button id="clear-confirm" type="submit" value="clear" class="btn btn-danger" disabled>Clear codes</button>
       </div>
     </form>
+  </dialog>
+
+  <dialog id="record-lock" class="record-lock" aria-labelledby="record-title" aria-describedby="record-text" tabindex="-1" data-view="locked">
+    <div class="record-lock-inner">
+      <div class="record-bob"><img src="img/bob.png" alt=""></div>
+      <div class="record-copy">
+        <h2 id="record-title">EYES ON THE ROAD.</h2>
+        <p id="record-text" class="record-text">Recording in progress. Pull over and stop to unlock.</p>
+        <p class="record-status"><span class="record-dot" aria-hidden="true">●</span> REC <span id="record-elapsed">0:00</span></p>
+        <div id="record-unlock" class="record-unlock" hidden>
+          <button id="record-unlock-btn" type="button" class="btn btn-light">Unlock</button>
+          <p id="record-note" class="record-note" hidden>Driving detection isn't available on this car, so I can't tell when you've stopped. Only unlock once you're parked.</p>
+        </div>
+        <div id="record-choose" class="record-choose" hidden>
+          <button id="record-save" type="button" class="btn btn-danger">Stop &amp; Save CSV</button>
+          <button id="record-keep" type="button" class="btn btn-light">Keep Recording</button>
+        </div>
+      </div>
+    </div>
   </dialog>
 </body>
 </html>

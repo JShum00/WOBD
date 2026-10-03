@@ -64,6 +64,43 @@ const FUEL_SYSTEM_STATUS = {
 export const BATTERY = { key: 'battery', label: 'Battery', unit: 'V', style: 'hbar', min: 10, max: 15, digits: 1,
   slow: true };
 
+// Live loop timing: slow PIDs are read every SLOW_EVERY rounds, with a short
+// pause after each round. The picker's refresh estimate uses the same numbers.
+export const SLOW_EVERY = 5;
+export const ROUND_PAUSE_MS = 50;
+
+// The gauges the dashboard showed before the picker existed: every decoder plus battery.
+export const DEFAULT_GAUGES = [...LIVE_PIDS.map((def) => def.key), BATTERY.key];
+
+// Picker presets, by gauge key. keys: null means every gauge this car offers.
+export const PRESETS = [
+  { id: 'basics', label: 'Basics', keys: ['rpm', 'speed', 'coolant', 'throttle', 'battery'] },
+  { id: 'fuel', label: 'Fuel diagnosis', keys: ['stft', 'ltft', 'o2b1s1', 'o2b1s2', 'map', 'iat', 'coolant', 'fuelsys', 'load'] },
+  { id: 'all', label: 'Select all', keys: null },
+];
+
+// Standard Mode 01 names (SAE J1979), so a supported PID WOBD can't decode yet
+// still gets a readable name in the picker.
+export const PID_NAMES = {
+  0x01: 'Monitor status', 0x02: 'Freeze frame code', 0x08: 'Short-term fuel trim, bank 2',
+  0x09: 'Long-term fuel trim, bank 2', 0x0A: 'Fuel pressure', 0x12: 'Secondary air status',
+  0x13: 'O2 sensors present', 0x16: 'O2 sensor, bank 1 sensor 3', 0x17: 'O2 sensor, bank 1 sensor 4',
+  0x18: 'O2 sensor, bank 2 sensor 1', 0x19: 'O2 sensor, bank 2 sensor 2', 0x1A: 'O2 sensor, bank 2 sensor 3',
+  0x1B: 'O2 sensor, bank 2 sensor 4', 0x1C: 'OBD standard', 0x1D: 'O2 sensors present (4 banks)',
+  0x1E: 'Auxiliary input status', 0x1F: 'Run time since engine start', 0x21: 'Distance with check engine light on',
+  0x22: 'Fuel rail pressure (vacuum)', 0x23: 'Fuel rail pressure', 0x2C: 'Commanded EGR', 0x2D: 'EGR error',
+  0x2E: 'Commanded evaporative purge', 0x2F: 'Fuel tank level', 0x30: 'Warm-ups since codes cleared',
+  0x31: 'Distance since codes cleared', 0x32: 'Evap system vapor pressure', 0x33: 'Barometric pressure',
+  0x3C: 'Catalyst temperature, bank 1 sensor 1', 0x3D: 'Catalyst temperature, bank 2 sensor 1',
+  0x3E: 'Catalyst temperature, bank 1 sensor 2', 0x3F: 'Catalyst temperature, bank 2 sensor 2',
+  0x41: 'Monitor status this drive cycle', 0x42: 'Control module voltage', 0x43: 'Absolute load',
+  0x44: 'Commanded air-fuel ratio', 0x45: 'Relative throttle position', 0x46: 'Ambient air temperature',
+  0x47: 'Throttle position B', 0x49: 'Accelerator pedal position D', 0x4A: 'Accelerator pedal position E',
+  0x4C: 'Commanded throttle actuator', 0x4D: 'Time run with check engine light on', 0x4E: 'Time since codes cleared',
+  0x51: 'Fuel type', 0x52: 'Ethanol fuel %', 0x5A: 'Relative accelerator pedal position',
+  0x5B: 'Hybrid battery remaining life', 0x5C: 'Engine oil temperature', 0x5E: 'Engine fuel rate',
+};
+
 const hex2 = (n) => n.toString(16).toUpperCase().padStart(2, '0');
 
 // ---------- Decoders ----------
@@ -138,19 +175,27 @@ export function decodeDtcs(messages, isCan) {
   return codes;
 }
 
-// Mode 01 PID 00: bitmap of which PIDs 01-20 the car supports.
-export function decodeSupportedPids(messages) {
-  const supported = new Set();
+// Mode 01 PID 00, 20, 40, ...: a 4-byte bitmap of which of the next 32 PIDs the
+// car supports. Byte A bit 7 is base+1, byte D bit 0 is base+0x20 (which also
+// means "ask about the next 32"). Every ECU's reply is OR'd together. Short or
+// garbled lines are skipped; valid is false when no ECU sent a full reply.
+export function decodeSupportedPids(messages, base = 0x00) {
+  const pids = new Set();
+  let valid = false;
   for (const m of messages) {
-    if (m[0] !== 0x41 || m[1] !== 0x00) continue;
+    if (m[0] !== 0x41 || m[1] !== base || m.length < 6) continue;
+    valid = true;
     m.slice(2, 6).forEach((byte, i) => {
       for (let bit = 0; bit < 8; bit++) {
-        if (byte & (0x80 >> bit)) supported.add(i * 8 + bit + 1);
+        if (byte & (0x80 >> bit)) pids.add(base + i * 8 + bit + 1);
       }
     });
   }
-  return supported;
+  return { pids, valid };
 }
+
+// The bitmap PIDs themselves. They only describe other PIDs, so they're never gauges.
+export const isChainPid = (pid) => pid % 0x20 === 0;
 
 // Mode 01 PID 01: check engine light and stored code count.
 export function decodeStatus(messages) {
@@ -171,10 +216,35 @@ export function decodeVin(messages) {
 
 // ---------- Requests ----------
 
-// The first request also makes the adapter search for the car's protocol,
-// which can take several seconds on older cars.
+// Asks 0100, then follows the chain (0120, 0140, ...) while any ECU sets the
+// "more" bit. The first request also makes the adapter search for the car's
+// protocol, which can take several seconds on older cars.
+// Resolves with { pids, replies }, or null when the car won't say what it
+// supports (NO DATA, "?", a timeout, or garbage), so the caller can offer the
+// usual gauges instead. UNABLE TO CONNECT still throws: then no car is talking.
 export async function readSupportedPids(elm) {
-  return decodeSupportedPids(toMessages(await elm.send('0100', 20000)));
+  const pids = new Set();
+  const replies = [];
+  for (let base = 0x00; base <= 0xE0; base += 0x20) {
+    let lines;
+    try {
+      lines = await elm.send(`01${hex2(base)}`, base === 0 ? 20000 : undefined);
+    } catch (err) {
+      if (base === 0 && err.code === 'UNABLE_TO_CONNECT') throw err;
+      if (base === 0) return null;
+      break;  // a later page failing just ends the chain
+    }
+    const page = decodeSupportedPids(toMessages(lines), base);
+    if (!page.valid) {
+      if (base === 0) return null;
+      break;
+    }
+    replies.push(`01${hex2(base)}: ${lines.join(' | ')}`);
+    page.pids.forEach((pid) => pids.add(pid));
+    if (!page.pids.has(base + 0x20)) break;
+  }
+  for (const pid of pids) if (isChainPid(pid)) pids.delete(pid);
+  return { pids, replies };
 }
 
 export async function readProtocol(elm) {
@@ -210,9 +280,15 @@ export async function readPid(elm, def) {
   return m ? def.decode(m.slice(2)) : null;
 }
 
-// PIDs with a gauge that this car reports, in display order.
-export function supportedLivePids(supported) {
-  return LIVE_PIDS.filter((def) => supported.has(def.pid));
+// The gauges this car can show, in display order. Battery comes from the adapter,
+// not the car, so it is always offered.
+export function gaugeDefs(supported) {
+  return [...LIVE_PIDS.filter((def) => supported.has(def.pid)), BATTERY];
+}
+
+// "0x0F", or "ATRV" for the battery (an adapter command, not a PID).
+export function pidLabel(def) {
+  return def.pid === undefined ? 'ATRV' : `0x${hex2(def.pid)}`;
 }
 
 export async function readBatteryVoltage(elm) {

@@ -43,9 +43,14 @@ export async function collectConnInfo(elm) {
   const volts = parseFloat(await query(elm, 'ATRV'));
   const version = await query(elm, 'ATI');
 
+  // Timing this ordinary car request gives the gauge picker a real per-reading
+  // speed for this protocol without sending anything extra.
   let ecuCount = null;
+  let requestMs = null;
   try {
+    const started = performance.now();
     ecuCount = toMessages(await elm.send('0100', QUERY_TIMEOUT)).length;
+    requestMs = performance.now() - started;
   } catch (err) {
     console.warn('[WOBD] ECU count failed:', err);
   }
@@ -59,6 +64,7 @@ export async function collectConnInfo(elm) {
     volts: Number.isFinite(volts) ? volts : null,
     version,
     authenticity: judgeAdapter(version),
+    requestMs,
   };
 }
 
@@ -66,6 +72,12 @@ export async function collectConnInfo(elm) {
 function judgeAdapter(version) {
   if (!version) return null;
   return /v1\.5/i.test(version) ? 'Probably a clone' : 'Unknown';
+}
+
+// "115200 baud" for the rate SmartBauder connected at, or "baud unknown" when
+// detection didn't run or record one (the plain demos skip detection).
+export function baudLabel(baudRate) {
+  return Number.isInteger(baudRate) ? `${baudRate} baud` : 'baud unknown';
 }
 
 export function isLowBattery(info) {
@@ -82,11 +94,11 @@ function row(label, value) {
     h('dd', { class: value == null ? 'info-missing' : null }, value ?? 'Not available'));
 }
 
-export function renderConnInfo(info) {
+export function renderConnInfo(info, { baudRate = null } = {}) {
   const panel = $('conn-info');
   const status = info.carResponding === null ? null
     : info.carResponding ? 'Connected, car is answering' : 'Adapter connected, car is not answering';
-  const protocol = info.protocolName ?? null;
+  const protocol = `${info.protocolName ?? 'Protocol unknown'} · ${baudLabel(baudRate)}`;
 
   $('conn-info-basic').replaceChildren(
     row('Protocol', protocol),
