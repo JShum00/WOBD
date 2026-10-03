@@ -2,7 +2,6 @@
 // the printable report. No OBD logic lives here.
 import { h, svg } from './dom.js';
 import { URGENCY, DIFFICULTY, urgencyBadge } from './bob.js';
-import { LIVE_PIDS, BATTERY } from './obd.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -293,9 +292,8 @@ function statusGauge(def) {
 
 const GAUGE_BUILDERS = { radial: radialGauge, vbar: verticalGauge, hbar: horizontalGauge, status: statusGauge };
 
-// Only gauges for PIDs the car reported are drawn; battery comes from the adapter, not a PID.
-export function renderGauges(supportedPids) {
-  const defs = [...LIVE_PIDS.filter((def) => supportedPids.has(def.pid)), BATTERY];
+// Draws exactly these gauges (the picker's choice, or a replay's readings), grouped by style.
+export function renderGauges(defs) {
   const group = (cls, style) => {
     const gauges = defs.filter((def) => (style === 'hbar' ? def.style === 'hbar' || def.style === 'status' : def.style === style));
     return gauges.length > 0 && h('div', { class: `cluster ${cls}` }, gauges.map((def) => GAUGE_BUILDERS[def.style](def)));

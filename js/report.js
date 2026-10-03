@@ -1,4 +1,5 @@
-// Report page: report.html?id=<test id> shows that test's before/after scan PDFs.
+// Report page: report.html?id=<test id> shows that test's before/after scan PDFs
+// and, when there is one, a live data recording: its CSV (download or replay) and a graph image.
 import { hasReports, loadResults, vehicleName } from './adapter-data.js';
 
 const title = document.querySelector('#report-title');
@@ -6,9 +7,16 @@ const content = document.querySelector('#report-content');
 const message = document.querySelector('#report-message');
 
 const sections = [
-  { key: 'before', label: 'Before clearing codes' },
-  { key: 'after', label: 'After clearing codes' },
+  { key: 'before', label: 'Before clearing codes', type: 'pdf' },
+  { key: 'after', label: 'After clearing codes', type: 'pdf' },
+  { key: 'graph', label: 'Live data recording', type: 'recording' },
 ];
+
+const has = (reports, { key, type }) => Boolean(reports[key] || (type === 'recording' && reports.csv));
+
+function link(href, text, props = {}) {
+  return Object.assign(document.createElement('a'), { href, textContent: text }, props);
+}
 
 function showError(text) {
   message.textContent = text;
@@ -22,9 +30,9 @@ function yesNo(value) {
   return 'Not tested';
 }
 
-// The PDF iframe is only built the first time its section opens, so closed
+// The PDF or image is only built the first time its section opens, so closed
 // sections never download anything.
-function pdfSection({ label }, src) {
+function reportSection({ label, type }, src, csv) {
   const details = document.createElement('details');
   details.className = 'report-pdf';
 
@@ -33,22 +41,34 @@ function pdfSection({ label }, src) {
 
   const panel = document.createElement('div');
   panel.className = 'report-pdf-body';
-  const open = document.createElement('a');
-  open.href = src;
-  open.target = '_blank';
-  open.rel = 'noopener';
-  open.textContent = 'Open PDF in a new tab';
-  const fallback = document.createElement('p');
-  fallback.className = 'report-pdf-link';
-  fallback.append(open);
-  panel.append(fallback);
+  const links = document.createElement('p');
+  links.className = 'report-pdf-link';
+  if (csv) {
+    const name = csv.split('/').pop();
+    links.append(
+      link(csv, 'Download the CSV', { download: name }), ' · ',
+      link(`replay.html?csv=${encodeURIComponent(csv)}`, 'Replay this drive →'));
+  }
+  if (src) {
+    if (csv) links.append(' · ');
+    links.append(link(src, type === 'pdf' ? 'Open PDF in a new tab' : 'Open graph full size', { target: '_blank', rel: 'noopener' }));
+  }
+  panel.append(links);
 
   details.addEventListener('toggle', () => {
-    if (!details.open || panel.querySelector('iframe')) return;
-    const frame = document.createElement('iframe');
-    frame.src = src;
-    frame.title = `${label} scan report (PDF)`;
-    panel.append(frame);
+    if (!details.open || !src || panel.querySelector('iframe, img')) return;
+    if (type === 'pdf') {
+      const frame = document.createElement('iframe');
+      frame.src = src;
+      frame.title = `${label} scan report (PDF)`;
+      panel.append(frame);
+    } else {
+      const image = document.createElement('img');
+      image.src = src;
+      image.alt = 'Graphs from a live data recording on a short drive: speed and RPM, fuel trims, O2 sensors, '
+        + 'manifold pressure with throttle and load, and coolant temperature with battery voltage.';
+      panel.append(image);
+    }
   });
 
   details.append(summary, panel);
@@ -79,8 +99,9 @@ try {
 
   if (!hasReports(result)) throw new RangeError('This test has no scan reports yet.');
   document.querySelector('#report-pdfs').replaceChildren(...sections
-    .filter(({ key }) => result.reports[key])
-    .map((section) => pdfSection(section, result.reports[section.key])));
+    .filter((section) => has(result.reports, section))
+    .map((section) => reportSection(section, result.reports[section.key],
+      section.type === 'recording' ? result.reports.csv : null)));
   content.hidden = false;
 } catch (error) {
   if (error instanceof RangeError) {

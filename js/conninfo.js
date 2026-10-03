@@ -43,9 +43,14 @@ export async function collectConnInfo(elm) {
   const volts = parseFloat(await query(elm, 'ATRV'));
   const version = await query(elm, 'ATI');
 
+  // Timing this ordinary car request gives the gauge picker a real per-reading
+  // speed for this protocol without sending anything extra.
   let ecuCount = null;
+  let requestMs = null;
   try {
+    const started = performance.now();
     ecuCount = toMessages(await elm.send('0100', QUERY_TIMEOUT)).length;
+    requestMs = performance.now() - started;
   } catch (err) {
     console.warn('[WOBD] ECU count failed:', err);
   }
@@ -59,6 +64,7 @@ export async function collectConnInfo(elm) {
     volts: Number.isFinite(volts) ? volts : null,
     version,
     authenticity: judgeAdapter(version),
+    requestMs,
   };
 }
 

@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Replay a Drive · WOBD</title>
+  <meta name="description" content="Replay a WOBD live data recording with gauges and graphs. Your file stays in your browser.">
+  <link rel="icon" href="img/bob.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="img/icons/apple-touch-icon.png">
+  <meta name="theme-color" content="#1F3F8F">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/theme.js"></script>
+  <script type="module" src="js/replay.js"></script>
+  <script src="js/pwa.js" defer></script>
+  <script src="js/version.js" defer></script>
+</head>
+<body class="replay-page">
+  <header class="site-header">
+    <a class="logo" href="./"><span class="logo-mark" aria-hidden="true"></span>WOBD</a>
+    <div class="header-right">
+      <a class="header-link" href="guide.html">How to use</a>
+      <a class="header-link" href="tested-adapters.html">Tested adapters</a>
+      <a class="header-link" href="./">Back to WOBD</a>
+      <button id="theme-btn" type="button" class="theme-btn" aria-pressed="false" aria-label="Dark mode">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="currentColor"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></g></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="guide replay">
+    <h1>Replay a Drive</h1>
+    <p class="lede">Watch a WOBD live data recording play back on the same gauges, with graphs that build up as it goes.</p>
+
+    <section id="replay-load" class="replay-load" aria-labelledby="replay-load-title">
+      <h2 id="replay-load-title" class="sr-only">Choose a recording</h2>
+      <div class="replay-load-actions">
+        <label class="btn btn-primary replay-file">
+          Choose a CSV file
+          <input id="replay-file" type="file" accept=".csv,text/csv">
+        </label>
+        <button id="replay-sample" type="button" class="btn">Try the PT Cruiser drive</button>
+      </div>
+      <p class="replay-load-note">Or drop a CSV anywhere on this page. Your file is read right here in your browser. Nothing is uploaded.</p>
+      <p class="replay-load-note">Make one with <strong>Start Recording</strong> on WOBD's <a href="./">Live data</a> tab.</p>
+      <p id="replay-message" class="adapter-message" role="status" aria-live="polite" hidden></p>
+    </section>
+
+    <div id="replay-view" hidden>
+      <p id="replay-summary" class="replay-summary"></p>
+      <p id="replay-unknown" class="replay-load-note" hidden></p>
+
+      <div class="replay-controls" role="group" aria-label="Playback">
+        <button id="replay-play" type="button" class="btn btn-primary replay-play" aria-label="Play">
+          <svg class="icon-play" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
+          <svg class="icon-pause" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor"/></svg>
+        </button>
+        <input id="replay-scrub" class="replay-scrub" type="range" min="0" max="0" step="100" value="0" aria-label="Position in the recording">
+        <span id="replay-time" class="replay-time">0:00 / 0:00</span>
+        <label class="replay-speed">
+          <span class="sr-only">Playback speed</span>
+          <select id="replay-speed">
+            <option value="1">1×</option>
+            <option value="2">2×</option>
+            <option value="5">5×</option>
+            <option value="10" selected>10×</option>
+            <option value="30">30×</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="replay-body">
+        <section class="replay-gauges" aria-label="Gauges at this point in the drive">
+          <div id="gauges" class="gauges"></div>
+        </section>
+        <section class="replay-charts" aria-labelledby="replay-charts-title">
+          <h2 id="replay-charts-title" class="replay-charts-title">Graphs <span>· hover to read a value, click to jump there</span></h2>
+          <div id="replay-strips" class="replay-strips"></div>
+          <p id="replay-chart-summary" class="sr-only"></p>
+        </section>
+      </div>
+      <div id="replay-tooltip" class="replay-tooltip" hidden></div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>WOBD gives general information, not a professional diagnosis. Always confirm a problem before replacing parts.</p>
+    <p>WOBD is free. If it helped you out, you can <a href="https://buymeacoffee.com/jShumway00" target="_blank" rel="noopener noreferrer">buy me a coffee ☕</a></p>
+  </footer>
+</body>
+</html>

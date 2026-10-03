@@ -2,6 +2,7 @@
 // decides when the driving lock may offer to unlock. No DOM here, and every
 // method takes the time as `now` (ms), so scripts/test-recorder.mjs can replay
 // a drive without a car or a browser.
+import { pidLabel } from './obd.js';
 
 export const DRIVING_SPEED_MPH = 5;        // faster than this counts as driving
 export const STOPPED_UNLOCK_MS = 15000;    // valid 0 mph this long after driving unlocks
@@ -13,11 +14,6 @@ const RPM = 0x0C;
 
 const isValid = (value) => (typeof value === 'number' ? Number.isFinite(value) : value != null);
 const pad = (n, size = 2) => String(n).padStart(size, '0');
-
-// Battery voltage is an adapter command, not an OBD PID.
-export function pidLabel(def) {
-  return def.pid === undefined ? 'ATRV' : `0x${def.pid.toString(16).toUpperCase().padStart(2, '0')}`;
-}
 
 function csvField(value) {
   const text = String(value);
@@ -73,6 +69,7 @@ export class DriveLock {
     this.hasRpm = hasRpm;
     this.hasPids = hasPids;
     this.lastValidAt = now;
+    this.speedSeen = false;  // a car can list Speed and still never answer it
     this.reset(now);
   }
 
@@ -99,6 +96,7 @@ export class DriveLock {
 
   #speed(mph, now) {
     this.speed = mph;
+    this.speedSeen = true;
     if (mph > DRIVING_SPEED_MPH && this.phase !== 'driving') {
       // Moving again before anyone pressed Unlock locks it back up.
       this.phase = 'driving';
@@ -124,10 +122,12 @@ export class DriveLock {
   }
 
   status(now) {
-    const fallback = !this.hasSpeed && now - this.startedAt >= NO_DETECTION_UNLOCK_MS;
+    // No speed to watch: a plain unlock after a short delay, flagged on the overlay.
+    const noSpeed = !this.hasSpeed || (!this.speedSeen && now - this.startedAt >= NO_DETECTION_UNLOCK_MS);
+    const fallback = noSpeed && now - this.startedAt >= NO_DETECTION_UNLOCK_MS;
     return {
       unlocked: this.phase === 'unlocked' || fallback,
-      detectionUnavailable: !this.hasSpeed,
+      detectionUnavailable: noSpeed,
       lost: this.hasPids && now - this.lastValidAt >= LOST_AFTER_MS,
     };
   }

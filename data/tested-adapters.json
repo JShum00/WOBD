@@ -8,16 +8,18 @@
       "model": "PT Cruiser"
     },
     "protocol": "SAE J1850 VPW",
-    "baud": null,
+    "baud": "115200",
     "readCodes": true,
     "clearCodes": true,
     "liveData": true,
     "dateTested": "2026-10-02",
-    "wobdVersion": null,
+    "wobdVersion": "1.0",
     "notes": "Read codes matched an O'Reilly shop scan code-for-code (6 codes). Clear confirmed via before/after PDF exports. Live data streamed all PIDs; occasional brief dropouts recovered instantly.",
     "reports": {
       "before": "reports/vlinker-fs-usb-pt-cruiser-2026-10-02/before-cleared.pdf",
-      "after": "reports/vlinker-fs-usb-pt-cruiser-2026-10-02/after-cleared.pdf"
+      "after": "reports/vlinker-fs-usb-pt-cruiser-2026-10-02/after-cleared.pdf",
+      "graph": "reports/vlinker-fs-usb-pt-cruiser-2026-10-02/pt-cruiser-wobd-graphs.png",
+      "csv": "reports/vlinker-fs-usb-pt-cruiser-2026-10-02/wobd-recording-2026-10-02-192055.csv"
     }
   }
 ]

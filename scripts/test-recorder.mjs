@@ -111,6 +111,17 @@ const cases = [
     assert.equal(lock.status(NO_DETECTION_UNLOCK_MS - 1).unlocked, false);
     assert.deepEqual(lock.status(NO_DETECTION_UNLOCK_MS), { unlocked: true, detectionUnavailable: true, lost: true });
   }],
+  ['speed listed but never answered falls back to a plain unlock', () => {
+    const lock = newLock();
+    const now = drive(lock, repeat([null, 750], NO_DETECTION_UNLOCK_MS));
+    assert.deepEqual(lock.status(now), { unlocked: true, detectionUnavailable: true, lost: false });
+  }],
+  ['speed answering normally never takes the fallback', () => {
+    const lock = newLock();
+    const now = drive(lock, repeat([0, 750], NO_DETECTION_UNLOCK_MS * 3));
+    assert.equal(lock.status(now).unlocked, false);
+    assert.equal(lock.status(now).detectionUnavailable, false);
+  }],
   ['no speed PID, but rpm 0 unlocks early', () => {
     const lock = new DriveLock({ hasSpeed: false, hasRpm: true }, 0);
     const now = drive(lock, [[undefined, 0]]);

@@ -8,6 +8,8 @@
   --leather: #6B4423;       /* belt and boots */
 
   --surface: #FFFFFF;
+  --chart-line: #2F7DE1;      /* validated against --surface (dataviz checks) */
+  --chart-grid: #E3E6EB;
   --text: #1B1F27;
   --muted: #5A6270;
   --row-stripe: #F0F2F5;
@@ -48,6 +50,8 @@
 :root[data-theme="dark"] {
   --bg: #0E1320;
   --surface: #171E2E;
+  --chart-line: #4F93F5;      /* dark step, validated against the dark surface */
+  --chart-grid: #2A3347;
   --text: #E4E8F0;
   --muted: #A2AABA;
   --row-stripe: #1C2436;
@@ -785,6 +789,48 @@ dialog h2 { margin: 0 0 0.5rem; font-size: 1.2rem; color: var(--heading); }
 .check-row input { margin-top: 0.3rem; width: 1.05rem; height: 1.05rem; }
 .dialog-actions { display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.25rem; }
 
+/* ---------- Gauge picker ---------- */
+
+.gauge-picker { display: flex; flex-direction: column; gap: 0.75rem; }
+.picker-title { margin: 0; font-size: 1.15rem; color: var(--heading); }
+.picker-lede, .picker-skipped, .picker-estimate { margin: 0; font-size: 0.9rem; color: var(--muted); }
+.picker-estimate { color: var(--text); }
+.picker-presets { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.picker-preset { font-size: 0.9rem; padding: 0.35rem 0.9rem; }
+.picker-list {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 0.35rem 1rem;
+}
+.picker-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.4rem 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.picker-option:hover { background: var(--hover-bg); }
+.picker-option input { width: 1.05rem; height: 1.05rem; flex: none; margin: 0.2rem 0 0; }
+.picker-name { flex: 1; }
+.picker-pid { padding-top: 0.2rem; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.75rem; color: var(--muted); }
+.picker-option.is-disabled { cursor: default; color: var(--muted); }
+.picker-option.is-disabled:hover { background: none; }
+.picker-undecoded summary { cursor: pointer; font-size: 0.9rem; color: var(--muted); }
+.picker-undecoded ul {
+  list-style: none;
+  margin: 0.4rem 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 0 1rem;
+}
+.picker-undecoded li { margin: 0; }
+.picker-actions { display: flex; justify-content: flex-end; }
+
 /* ---------- Live data recording ---------- */
 
 .record-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.9rem; margin: 0 0 1rem; }
@@ -851,6 +897,74 @@ dialog.record-lock .btn { font-size: 1.15rem; padding: 0.7rem 1.4rem; }
   .record-choose { justify-content: center; }
 }
 
+/* ---------- Replay page ---------- */
+
+.guide.replay { max-width: 1180px; }
+.replay-load-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
+.replay-file { position: relative; }
+.replay-file input {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  opacity: 0; cursor: pointer;
+}
+.replay-file:focus-within { outline: 3px solid var(--focus); outline-offset: 2px; }
+.replay-load-note { margin: 0.6rem 0 0; font-size: 0.9rem; color: var(--muted); }
+.replay-load .adapter-message { margin-top: 0.75rem; }
+.replay-summary { margin: 0 0 0.75rem; font-size: 0.9rem; color: var(--muted); overflow-wrap: anywhere; }
+
+/* Stays in reach while scrolling down the graphs. */
+.replay-controls {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.9rem;
+  margin-bottom: 1rem;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.replay-play { display: inline-flex; align-items: center; justify-content: center; width: 2.75rem; height: 2.75rem; padding: 0; flex: none; }
+.replay-play svg { width: 1.3rem; height: 1.3rem; }
+.replay-play .icon-pause, .replay-play[data-playing="true"] .icon-play { display: none; }
+.replay-play[data-playing="true"] .icon-pause { display: block; }
+.replay-scrub { flex: 1; min-width: 0; accent-color: var(--primary); }
+.replay-time { font-variant-numeric: tabular-nums; font-size: 0.9rem; white-space: nowrap; }
+.replay-speed select {
+  font: inherit; padding: 0.3rem 0.4rem; border-radius: 6px;
+  border: 1px solid var(--field-border); background: var(--field-bg); color: var(--text);
+}
+
+.replay-body { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 1rem; align-items: start; }
+.guide .replay-body section { margin: 0; }
+.replay-charts-title { font-size: 1rem; margin: 0 0 0.5rem; }
+.replay-charts-title span { font-weight: 400; font-size: 0.85rem; color: var(--muted); }
+.replay-strip + .replay-strip { margin-top: 0.4rem; }
+.replay-strip-title { margin: 0; padding-left: 44px; font-size: 0.8rem; font-weight: 600; color: var(--text); }
+.replay-canvas { display: block; width: 100%; cursor: crosshair; touch-action: pan-y; }
+.replay-tooltip {
+  position: fixed;
+  z-index: 20;
+  pointer-events: none;
+  padding: 0.3rem 0.55rem;
+  border-radius: 6px;
+  background: var(--text);
+  color: var(--surface);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .replay-body { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 520px) {
+  .replay-controls { flex-wrap: wrap; gap: 0.5rem; }
+  .replay-scrub { flex-basis: calc(100% - 3.5rem); }
+  .replay-time { margin-left: auto; }
+}
+
 /* ---------- Footer ---------- */
 
 .site-footer {
@@ -860,6 +974,21 @@ dialog.record-lock .btn { font-size: 1.15rem; padding: 0.7rem 1.4rem; }
   padding: 1rem 1.25rem 1.5rem;
 }
 .site-footer p { margin: 0.2rem 0; }
+.site-footer { position: relative; }
+.site-footer .site-version {
+  position: absolute;
+  right: 1.25rem;
+  bottom: 1.5rem;
+  margin: 0;
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 760px) {
+  .site-footer .site-version { position: static; text-align: right; margin-top: 0.5rem; }
+}
+@media print {
+  .site-version { display: none; }
+}
 
 /* The printable report is built on demand and only shown by print.css. */
 .report { display: none; }
@@ -974,6 +1103,14 @@ dialog.record-lock .btn { font-size: 1.15rem; padding: 0.7rem 1.4rem; }
 .report-pdf[open] summary { border-bottom: 1px solid var(--line); }
 .report-pdf-body { padding: 0.5rem 1rem 1rem; }
 .report-pdf-link { margin: 0 0 0.5rem; font-size: 0.9rem; }
+.report-pdf img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: #fff;
+}
 .report-pdf iframe {
   display: block;
   width: 100%;
@@ -989,7 +1126,8 @@ dialog.record-lock .btn { font-size: 1.15rem; padding: 0.7rem 1.4rem; }
 @media (max-width: 860px) {
   .layout { grid-template-columns: minmax(0, 1fr); padding: 1rem; }
   .bob-panel { position: static; max-width: 420px; width: 100%; justify-self: center; }
-  .header-right { margin-left: 0; }
+  /* Wrap the links so Connect never ends up off the right edge on a phone. */
+  .header-right { margin-left: 0; flex-wrap: wrap; gap: 0.5rem 1rem; }
   .panel { padding: 0.5rem 1rem 1rem; }
   .welcome { flex-direction: column; }
   .welcome-art { flex-basis: auto; width: 130px; }

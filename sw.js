@@ -1,7 +1,7 @@
 // Service worker: caches the static app shell only. Web Serial talks to the
 // USB adapter directly and never goes through fetch, so nothing here can touch
 // it. Bump CACHE_VERSION to force every returning user onto fresh files.
-const CACHE_VERSION = 'v11';
+const CACHE_VERSION = 'v16';
 const CACHE_NAME = `wobd-cache-${CACHE_VERSION}`;
 
 const APP_SHELL = [
@@ -11,6 +11,7 @@ const APP_SHELL = [
   'codes.html',
   'tested-adapters.html',
   'report.html',
+  'replay.html',
   'manifest.webmanifest',
   'css/style.css',
   'css/print.css',
@@ -18,19 +19,24 @@ const APP_SHELL = [
   'js/app.js',
   'js/bob.js',
   'js/codes.js',
+  'js/conninfo.js',
   'js/demo.js',
   'js/dom.js',
   'js/elm327.js',
+  'js/gauge-picker.js',
   'js/obd.js',
   'js/pwa.js',
   'js/record-lock.js',
   'js/recorder.js',
+  'js/replay-data.js',
+  'js/replay.js',
   'js/report.js',
   'js/serial.js',
   'js/smartbauder.js',
   'js/theme.js',
   'js/tested-adapters.js',
   'js/ui.js',
+  'js/version.js',
   'js/voice.js',
   'data/codes.json',
   'data/tested-adapters.json',

@@ -32,7 +32,7 @@ Then open http://localhost:8000 in Chrome or Edge.
 
 The service worker (`sw.js`) only registers on HTTPS or localhost. It caches static files only (pages, CSS, JS, and the code databases). Web Serial talks to the adapter directly and never goes through it, so caching can't affect the connection.
 
-Cached files are served first, so to ship an update, bump `CACHE_VERSION` in `sw.js` and add any new files to `APP_SHELL`. Returning users get the new version, and old caches are deleted.
+Cached files are served first, so to ship an update, bump `CACHE_VERSION` in `sw.js` and add any new files to `APP_SHELL`. Returning users get the new version, and old caches are deleted. The version shown in every page's footer is `WOBD_VERSION` in `js/version.js`; bump it with each release.
 
 ### Vehicle models
 

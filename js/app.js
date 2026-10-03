@@ -9,9 +9,9 @@ import * as ui from './ui.js';
 import { Voice } from './voice.js';
 import { DriveLock, Recording } from './recorder.js';
 import { RecordLock } from './record-lock.js';
+import { GaugePicker, defaultKeys, pickerChoices } from './gauge-picker.js';
 import { baudLabel, collectConnInfo, friendlyError, hideConnInfo, initConnInfo, isLowBattery, renderConnInfo, FRIENDLY } from './conninfo.js';
 
-const SLOW_EVERY = 5;
 const DETECT_PROGRESS_DELAY = 300;  // ms before the baud-rate progress bar appears
 
 const params = new URLSearchParams(location.search);
@@ -26,7 +26,13 @@ const state = {
   elm: null,
   protocol: null,
   baudRate: null,    // the rate SmartBauder connected at; null when detection didn't run
-  supportedPids: new Set(),
+  supportedPids: null,  // Set of PIDs the car reported, or null if it wouldn't say
+  offered: [],       // gauge defs the picker offers for this car
+  undecoded: [],     // supported PIDs with no gauge yet, for the picker's list
+  gauges: null,      // gauge defs the user picked; null until picked on this connection
+  requestMs: null,   // measured time per car request (connect, then the live loop)
+  pickerIntroDone: false,
+  lastHint: null,    // preset Bob last explained in the picker
   vin: null,
   scan: null,        // { scannedAt, status, entries }
   selected: null,    // code Bob is explaining
@@ -40,6 +46,14 @@ const state = {
 const voice = new Voice();
 const bob = new Bob({ slot: $('bob-slot'), live: $('bob-live'), getCar: ui.getCar, voice });
 const recordLock = new RecordLock({ onSave: saveRecording, onKeep: keepRecording });
+const picker = new GaugePicker({ root: $('gauge-picker'), onApply: applyGauges, onPresetHint: presetHint });
+
+// What Bob says about each picker preset when it's pointed at or tapped.
+const PRESET_LINES = {
+  basics: { tone: 'low', text: 'The everyday four plus battery. Quick to refresh, and a good first look at any car.' },
+  fuel: { text: "Good for checking if the engine's running lean or rich. Watch the fuel trims and the O2 sensors together." },
+  all: { tone: 'medium', text: 'Everything your car offers. Handy, but on older cars each gauge updates slower.' },
+};
 
 start();
 
@@ -56,7 +70,7 @@ async function start() {
   });
   ui.setConnection('idle', 'Not connected');
   ui.setControls({});
-  ui.renderGauges(new Set(obd.LIVE_PIDS.map((d) => d.pid)));  // preview until a car reports what it supports
+  ui.renderGauges(pickerChoices(null).offered);  // preview until a car reports what it supports
 
   try {
     const [makes, models] = await Promise.all([
@@ -76,6 +90,7 @@ async function start() {
   $('clear-btn').addEventListener('click', onClearClick);
   $('print-btn').addEventListener('click', () => window.print());
   $('record-btn').addEventListener('click', startRecording);
+  $('gauges-btn').addEventListener('click', changeGauges);
   window.addEventListener('beforeunload', (e) => { if (state.recording) e.preventDefault(); });
   document.addEventListener('visibilitychange', keepScreenOn);
   window.addEventListener('beforeprint', renderReport);
@@ -170,11 +185,17 @@ async function connectTo(transport, { baudRate } = {}) {
     ui.setConnection('busy', 'Talking to the car…');
     bob.say({ text: "Found the adapter. Now I'm saying hello to the car. Older cars can take a few seconds." });
 
-    state.supportedPids = await obd.readSupportedPids(elm);
+    const supported = await obd.readSupportedPids(elm);
+    state.supportedPids = supported?.pids ?? null;
+    if (supported) console.info('[WOBD] Supported PID replies:', supported.replies.join(' · '));
+    else console.info("[WOBD] The car didn't report its supported PIDs; offering the default gauges.");
     state.protocol = await obd.readProtocol(elm);
     state.vin = await obd.readVin(elm);
     state.connInfo = await collectConnInfo(elm);
     state.baudRate = connectedBaud;
+    state.requestMs = state.connInfo.requestMs;
+    ({ offered: state.offered, undecoded: state.undecoded } = pickerChoices(state.supportedPids));
+    state.gauges = null;
     state.transport = transport;
     state.elm = elm;
   } catch (err) {
@@ -201,15 +222,21 @@ async function connectTo(transport, { baudRate } = {}) {
         : 'I lost the adapter. Check that the cable is plugged in, then click Connect.',
     });
   };
-  ui.renderGauges(state.supportedPids);
   ui.setWelcomeVisible(false);
   showConnected();
   console.info('[WOBD] Connected. Baud rate:', state.baudRate ?? 'unknown (detection skipped)');
   renderConnInfo(state.connInfo, { baudRate: state.baudRate });
   bobIdle();
+  if (!state.supportedPids) bob.say(FALLBACK_LINE);
+  if (state.tab === 'live') showLive();  // the picker's intro mentions the fallback too
   if (isLowBattery(state.connInfo)) bob.say({ tone: 'medium', mood: 'warning', text: FRIENDLY.lowBattery });
-  if (state.tab === 'live') startLive();
 }
+
+const FALLBACK_LINE = {
+  tone: 'unknown',
+  mood: 'question',
+  text: "Your car didn't tell me which live readings it supports, so I'll offer my usual set. A few gauges might stay blank.",
+};
 
 // Detects the baud rate with a quick ID probe, then resets and configures the adapter once.
 // Resolves with the adapter and the rate it answered at (null when detection was skipped).
@@ -277,6 +304,8 @@ function showBaudRetry(transport, err) {
 
 async function disconnect() {
   stopLive();
+  picker.hide();
+  $('live-dashboard').hidden = false;
   if (state.recording) recordLock.setUnplugged();
   const { transport } = state;
   state.transport = null;
@@ -299,6 +328,7 @@ function showConnected() {
   const hasProblems = Boolean(state.scan && (state.scan.entries.length || state.scan.status?.milOn));
   ui.setControls({ scan: true, print: Boolean(state.scan), clear: hasProblems });
   $('record-btn').disabled = false;
+  $('gauges-btn').disabled = false;
 }
 
 // Runs an adapter job with the controls locked.
@@ -308,6 +338,7 @@ async function busy(label, job) {
   ui.setConnection('busy', label);
   ui.setControls({});
   $('record-btn').disabled = true;
+  $('gauges-btn').disabled = true;
   try {
     await job();
   } catch (err) {
@@ -401,30 +432,94 @@ function renderReport() {
 
 function onTabChange(tab) {
   state.tab = tab;
-  if (tab === 'live') startLive();
-  else stopLive();
   bobIdle();
+  if (tab === 'live') showLive();
+  else stopLive();
+}
+
+// The Live data tab: the gauge picker until gauges are picked on this connection, then the dashboard.
+function showLive() {
+  if (!state.elm) return;
+  if (state.gauges) {
+    startLive();
+    return;
+  }
+  showPicker(defaultKeys(state.offered));
+}
+
+function showPicker(checked) {
+  stopLive();
+  state.lastHint = null;
+  $('live-dashboard').hidden = true;
+  picker.show({
+    offered: state.offered,
+    undecoded: state.undecoded,
+    checked,
+    timing: state.requestMs
+      ? { requestMs: state.requestMs, measured: true }
+      : { requestMs: state.protocol?.isCan ? 50 : 150, measured: false },  // a guess until measured
+  });
+  if (!state.pickerIntroDone) {
+    state.pickerIntroDone = true;
+    bob.say(state.supportedPids ? {
+      tone: 'low',
+      mood: 'check',
+      text: 'Your car told me which live readings it supports. Pick what you want to watch. Fewer gauges means each one updates faster.',
+    } : {
+      ...FALLBACK_LINE,
+      text: `${FALLBACK_LINE.text} Pick what you want to watch. Fewer gauges means each one updates faster.`,
+    });
+  }
+}
+
+function applyGauges(defs) {
+  state.gauges = defs;
+  picker.hide();
+  ui.renderGauges(defs);
+  $('live-dashboard').hidden = false;
+  bobIdle();
+  startLive();
+}
+
+// Back to the picker with today's choices ticked. Not while recording: the
+// recording logs whatever the dashboard polls.
+function changeGauges() {
+  if (!state.elm || state.busy || state.recording) return;
+  showPicker(new Set(state.gauges.map((def) => def.key)));
+}
+
+// Pointing at a preset makes Bob explain it; the same preset twice in a row
+// doesn't restart his bubble.
+function presetHint(preset) {
+  if (!picker.isOpen || state.lastHint === preset.id) return;
+  state.lastHint = preset.id;
+  bob.say(PRESET_LINES[preset.id]);
 }
 
 async function startLive() {
-  if (!state.elm || state.tab !== 'live') return;
+  if (!state.elm || state.tab !== 'live' || !state.gauges) return;
   const run = ++state.liveRun;
   const { elm } = state;
   const active = () => run === state.liveRun && state.elm === elm;
-  const defs = obd.supportedLivePids(state.supportedPids);
+  const defs = state.gauges.filter((def) => def.pid !== undefined);
+  const battery = state.gauges.includes(obd.BATTERY);
 
   // One command at a time: each read waits for the last one. Slow-changing
   // values are only polled every few rounds so the fast gauges stay lively.
   for (let round = 0; active(); round++) {
-    const slowRound = round % SLOW_EVERY === 0;
+    const slowRound = round % obd.SLOW_EVERY === 0;
     for (const def of defs) {
       if (def.slow && !slowRound) continue;
       if (!active()) return;
-      reading(def, await obd.readPid(elm, def).catch(() => null));
+      const started = performance.now();
+      const value = await obd.readPid(elm, def).catch(() => null);
+      // Answered reads keep the picker's refresh estimate honest for this car.
+      if (value !== null) state.requestMs = 0.8 * (state.requestMs ?? 0) + 0.2 * (performance.now() - started);
+      reading(def, value);
     }
     if (!active()) return;
-    if (slowRound) reading(obd.BATTERY, await obd.readBatteryVoltage(elm).catch(() => null));
-    await wait(50);
+    if (battery && slowRound) reading(obd.BATTERY, await obd.readBatteryVoltage(elm).catch(() => null));
+    await wait(obd.ROUND_PAUSE_MS);
   }
 }
 
@@ -445,15 +540,25 @@ function reading(def, value) {
 
 // Records whatever the live loop already polls; it never sends commands of its own.
 function startRecording() {
-  if (!state.elm || state.busy || state.recording || state.tab !== 'live') return;
+  if (!state.elm || state.busy || state.recording || state.tab !== 'live' || !state.gauges) return;
+  // The driving lock only unlocks once Speed shows the car has stopped, so a
+  // car that has Speed must have it on the dashboard to record.
+  const watching = (key) => state.gauges.some((def) => def.key === key);
+  if (state.offered.some((def) => def.key === 'speed') && !watching('speed')) {
+    bob.say({
+      tone: 'medium',
+      mood: 'warning',
+      text: "I need Speed on the dashboard to know when you've stopped, so I can unlock the screen safely. Add it with Change gauges, then record.",
+    });
+    return;
+  }
   const now = Date.now();
-  const has = (pid) => state.supportedPids.has(pid);
   state.recording = {
     data: new Recording(now, { protocol: state.protocol?.name, baudRate: state.baudRate }),
     lock: new DriveLock({
-      hasSpeed: has(0x0D),
-      hasRpm: has(0x0C),
-      hasPids: obd.supportedLivePids(state.supportedPids).length > 0,
+      hasSpeed: watching('speed'),
+      hasRpm: watching('rpm'),
+      hasPids: state.gauges.some((def) => def.pid !== undefined),
     }, now),
   };
   recordLock.open({ startedAt: now, lock: state.recording.lock });
@@ -481,7 +586,8 @@ function saveRecording() {
   bob.say({
     tone: 'low',
     mood: 'check',
-    text: `Saved! Your drive is in your Downloads folder as ${recording.data.filename()}. Open it in a spreadsheet to graph it.`,
+    text: `Saved! Your drive is in your Downloads folder as ${recording.data.filename()}. Open it in a spreadsheet to graph it, or watch it play back on the Replay a Drive page.`,
+    details: [Object.assign(document.createElement('a'), { href: 'replay.html', textContent: 'Replay a drive →' })],
   });
 }
 

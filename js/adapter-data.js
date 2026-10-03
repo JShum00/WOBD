@@ -1,6 +1,7 @@
 // Shared loader for data/tested-adapters.json, used by the table and report pages.
 // Add a test by appending one object (with a unique "id") to that file. Put its
-// before/after PDFs in reports/<id>/ and point "reports" at them, or use null.
+// before/after PDFs (and optionally a live data recording "csv" and its "graph" image) in reports/<id>/
+// and point "reports" at them, or use null.
 export const notTested = 'Not tested yet';
 
 function isNullableString(value) {
@@ -16,7 +17,8 @@ function isReports(reports) {
     || reports === null
     || (typeof reports === 'object'
       && isNullableString(reports.before)
-      && isNullableString(reports.after));
+      && isNullableString(reports.after)
+      && [reports.graph, reports.csv].every((path) => path === undefined || isNullableString(path)));
 }
 
 function isResult(result) {
@@ -41,7 +43,8 @@ function isResult(result) {
 }
 
 export function hasReports(result) {
-  return Boolean(result.reports && (result.reports.before || result.reports.after));
+  const { reports } = result;
+  return Boolean(reports && (reports.before || reports.after || reports.graph || reports.csv));
 }
 
 export function vehicleName(vehicle) {
