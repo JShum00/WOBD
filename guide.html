@@ -82,13 +82,14 @@
         <li>Plug the adapter into the car's OBD-II port and your computer's USB port.</li>
         <li>Turn the ignition to On. The engine can stay off for a code scan.</li>
         <li>Open WOBD and click <strong>Connect</strong>. Choose your adapter in the browser's device picker and allow the connection.</li>
-        <li>Wait while WOBD detects the adapter speed and talks to the car. Older cars can take a few seconds. If detection fails, choose a baud rate in Bob's message and click <strong>Retry</strong>; click <strong>Cancel</strong> to stop detection.</li>
+        <li>Wait while WOBD detects the adapter speed and talks to the car. Older cars can take a few seconds. If detection fails, choose a baud rate in Bob's message and click <strong>Retry</strong>; click <strong>Cancel</strong> to stop detection. WOBD selects the vehicle protocol automatically by default.</li>
         <li>Enter the car's year, make, and model at the top, or click <strong>Skip</strong>. These details are optional and only personalize the external code-search link and report.</li>
         <li>Click <strong>Scan</strong>. The summary shows the check-engine-light state when available and the stored code count.</li>
         <li>Select a code to see Bob's explanation, urgency, common causes, and what to tell a mechanic. Generic database entries are labeled as general information.</li>
         <li>Use <strong>Print report</strong> to take the results to a shop. Choose "Save as PDF" in the print dialog to keep a copy; the report includes the scan details and VIN when the car provides one.</li>
       </ol>
       <p>After connecting, the connection panel shows the protocol, whether the car is responding, and adapter voltage. Open <strong>More info</strong> for adapter identification and advanced details. The adapter's reported version can suggest that it is a clone, but WOBD can't verify authenticity.</p>
+      <p>For troubleshooting, you can select <strong>Override automatic protocol selection</strong> in Connection options before connecting, then choose a protocol from the list. Leave it unchecked for normal use; older vehicles may require a different protocol. The choice only changes WOBD's protocol command for the connection and does not alter the vehicle. For example, Protocol 6 is 11-bit 500 kbps CAN and Protocol 7 is 29-bit 500 kbps CAN. These are diagnostic alternatives to try on a modern CAN vehicle, not a general fix.</p>
     </section>
 
     <section id="live-data">
@@ -118,7 +119,8 @@
       <ul>
         <li><strong>The adapter doesn't appear in the browser's device picker:</strong> unplug and reseat the cable, try another USB port, then click Connect again.</li>
         <li><strong>Baud detection gets no answer:</strong> confirm that the cable is ELM327-compatible, then choose a baud rate in Bob's retry form. You can cancel and reconnect to start over.</li>
-        <li><strong>The adapter connects but the car doesn't respond:</strong> turn the ignition to On, check that the adapter is fully seated, and try again. Some older vehicles take longer to respond.</li>
+        <li><strong>The adapter connects but the car doesn't respond:</strong> the adapter answering WOBD does not necessarily mean the vehicle has answered. Turn the ignition to On, check that the adapter is fully seated, and try again. Some older vehicles take longer to respond. For a modern CAN vehicle, you can test Protocol 6 (11-bit 500 kbps CAN) or Protocol 7 (29-bit 500 kbps CAN): check <strong>Override automatic protocol selection</strong>, choose one, then connect again. Uncheck it afterward to return to automatic selection.</li>
+        <li><strong>A forced protocol still gets no response:</strong> reconnect with automatic selection or try another protocol only if you have a reason to suspect it. After an unanswered initial vehicle request, WOBD logs the adapter's reported protocol (<code>ATDP</code> and <code>ATDPN</code>) in the browser's developer console. This can help distinguish a failed automatic search from a protocol the adapter selected; it doesn't prove the vehicle or every ECU is reachable.</li>
         <li><strong>WOBD says the browser can't connect:</strong> use Chrome, Edge, or Opera on a laptop or Chromebook, and open the site over HTTPS (or localhost during local development). Phones and tablets aren't supported.</li>
       </ul>
     </section>

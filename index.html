@@ -72,6 +72,15 @@
           <p id="conn-status" class="status" role="status">Not connected</p>
           <button id="scan-btn" type="button" class="btn btn-primary" disabled>Scan</button>
         </div>
+        <fieldset id="protocol-options" class="protocol-options">
+          <legend>Connection options</legend>
+          <label><input id="protocol-override" type="checkbox"> Override automatic protocol selection</label>
+          <label for="protocol-select">Protocol</label>
+          <select id="protocol-select" disabled aria-describedby="protocol-help">
+            <option value="">Choose a protocol</option>
+          </select>
+          <span id="protocol-help" class="hint">Leave unchecked to let the adapter detect the protocol.</span>
+        </fieldset>
         <p id="scan-summary" class="scan-summary" hidden></p>
 
         <table id="codes-table" class="codes-table" hidden>

@@ -61,6 +61,7 @@ async function start() {
   if (!browser.supported) ui.showBrowserAlert(browser, { demo });
   if (demo) ui.showDemoBadge();
   ui.initWelcome(demo);
+  ui.initProtocolOverride(obd.PROTOCOLS);
 
   initConnInfo();
   ui.initTabs(onTabChange);
@@ -152,6 +153,12 @@ async function onConnectClick() {
     return;
   }
 
+  const protocol = ui.getProtocolOverride();
+  if (protocol === '') {
+    bob.say({ tone: 'medium', mood: 'question', text: 'Choose a protocol or uncheck the override to use automatic selection.' });
+    return;
+  }
+
   ui.setConnection('busy', 'Connecting…');
   let transport;
   try {
@@ -170,28 +177,40 @@ async function onConnectClick() {
     return;
   }
 
-  await connectTo(transport);
+  await connectTo(transport, { protocol });
 }
 
 // Opens the adapter and says hello to the car. baudRate skips detection (the manual Retry).
-async function connectTo(transport, { baudRate } = {}) {
+async function connectTo(transport, { baudRate, protocol } = {}) {
   ui.setConnection('busy', 'Connecting…');
   bob.say({ text: 'Looking for your adapter…' });
 
   // Unplugging or cancelling stops detection at once.
   const abort = abortOnUnplug(transport);
   try {
-    const { elm, baudRate: connectedBaud } = await openAdapter(transport, { baudRate, abort });
+    const { elm, baudRate: connectedBaud } = await openAdapter(transport, { baudRate, protocol, abort });
     ui.setConnection('busy', 'Talking to the car…');
     bob.say({ text: "Found the adapter. Now I'm saying hello to the car. Older cars can take a few seconds." });
 
-    const supported = await obd.readSupportedPids(elm);
+    let supported;
+    try {
+      supported = await obd.readSupportedPids(elm);
+    } catch (err) {
+      if (err.code === 'UNABLE_TO_CONNECT') await logAdapterProtocol(elm);
+      throw err;
+    }
     state.supportedPids = supported?.pids ?? null;
     if (supported) console.info('[WOBD] Supported PID replies:', supported.replies.join(' · '));
     else console.info("[WOBD] The car didn't report its supported PIDs; offering the default gauges.");
     state.protocol = await obd.readProtocol(elm);
     state.vin = await obd.readVin(elm);
     state.connInfo = await collectConnInfo(elm);
+    if (!supported) {
+      console.info('[WOBD] Adapter protocol after unanswered 0100:', {
+        ATDP: state.connInfo.protocolName,
+        ATDPN: state.connInfo.protocolNumber,
+      });
+    }
     state.baudRate = connectedBaud;
     state.requestMs = state.connInfo.requestMs;
     ({ offered: state.offered, undecoded: state.undecoded } = pickerChoices(state.supportedPids));
@@ -240,7 +259,7 @@ const FALLBACK_LINE = {
 
 // Detects the baud rate with a quick ID probe, then resets and configures the adapter once.
 // Resolves with the adapter and the rate it answered at (null when detection was skipped).
-async function openAdapter(transport, { baudRate, abort }) {
+async function openAdapter(transport, { baudRate, protocol, abort }) {
   let detected = null;
   if (transport instanceof DemoTransport && !(transport instanceof DemoBaudTransport)) {
     await transport.open();
@@ -251,12 +270,26 @@ async function openAdapter(transport, { baudRate, abort }) {
   const elm = new ELM327(transport);
   try {
     await elm.reset();
-    await elm.configure();
+    await elm.configure(protocol ?? '0');
     return { elm, baudRate: detected };
   } catch (err) {
     await transport.close();
     throw err;
   }
+}
+
+async function logAdapterProtocol(elm) {
+  const readings = {};
+  for (const command of ['ATDP', 'ATDPN']) {
+    try {
+      const [reply = ''] = await elm.send(command);
+      readings[command] = reply || '(empty reply)';
+    } catch (err) {
+      readings[command] = `failed: ${err.message}`;
+      console.warn(`[WOBD] ${command} failed while checking protocol after no vehicle response:`, err);
+    }
+  }
+  console.info('[WOBD] Adapter protocol after failed vehicle request:', readings);
 }
 
 async function detect(transport, { baudRate, abort }) {
@@ -297,7 +330,7 @@ function showBaudRetry(transport, err) {
     text: err.message,
     details: [ui.baudRetryForm(err.rates, (rate) => {
       if (state.elm) return;
-      connectTo(transport, { baudRate: rate });
+      connectTo(transport, { baudRate: rate, protocol: ui.getProtocolOverride() });
     })],
   });
 }

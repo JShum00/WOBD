@@ -32,6 +32,20 @@ export function initWelcome(demo) {
   }
 }
 
+export function initProtocolOverride(protocols) {
+  const select = $('protocol-select');
+  for (const [number, name] of Object.entries(protocols)) {
+    select.append(h('option', { value: number }, `${number} · ${name}`));
+  }
+  $('protocol-override').addEventListener('change', () => {
+    select.disabled = !$('protocol-override').checked || $('protocol-options').disabled;
+  });
+}
+
+export function getProtocolOverride() {
+  return $('protocol-override').checked ? $('protocol-select').value : null;
+}
+
 // Shown until the first connection. Afterwards the codes area takes over.
 export function setWelcomeVisible(visible) {
   $('welcome').hidden = !visible;
@@ -152,6 +166,8 @@ export function setConnection(state, text) {
   $('conn-status').textContent = text;
   $('connect-btn').textContent = state === 'connected' ? 'Disconnect' : 'Connect';
   $('connect-btn').disabled = connectBlocked || state === 'busy';
+  $('protocol-options').disabled = state !== 'idle';
+  $('protocol-select').disabled = !$('protocol-override').checked || state !== 'idle';
 }
 
 export function setControls({ scan = false, print = false, clear = false }) {

@@ -77,9 +77,12 @@ export class ELM327 {
     return id;
   }
 
-  // Echo off, linefeeds off, spaces off, headers off, automatic protocol.
-  async configure() {
-    for (const command of ['ATE0', 'ATL0', 'ATS0', 'ATH0', 'ATSP0']) {
+  // Echo off, linefeeds off, spaces off, headers off, then select the protocol.
+  async configure(protocol = '0') {
+    if (!/^(?:0|[1-9A-C])$/.test(protocol)) {
+      throw new TypeError(`Invalid ELM327 protocol "${protocol}".`);
+    }
+    for (const command of ['ATE0', 'ATL0', 'ATS0', 'ATH0', `ATSP${protocol}`]) {
       await this.send(command);
     }
   }

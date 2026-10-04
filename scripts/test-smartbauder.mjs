@@ -31,6 +31,7 @@ class FakeTransport {
   constructor({ rate, info = {}, wrong = 'silent', questionFirst = false }) {
     Object.assign(this, { rate, info, wrong, questionFirst });
     this.opens = [];
+    this.commands = [];
     this.resets = 0;
     this.asked = 0;
     this.isOpen = false;
@@ -48,6 +49,7 @@ class FakeTransport {
 
   async write(text) {
     const command = text.trim();
+    this.commands.push(command);
     if (this.cur !== this.rate) {
       if (this.wrong === 'garbage') setTimeout(() => this.onData('\u00ff\u00fe\u0000>\u00c3>'), 5);
       return;
@@ -152,9 +154,12 @@ async function detectCase(row, transport, expected, detectOptions = {}) {
     assert.equal(transport.isOpen, true, 'port open after success');
     const elm = new ELM327(transport);
     await elm.reset();
-    await elm.configure();
+    await elm.configure(expected.protocol ?? '0');
     row.ATZ = transport.resets;
     assert.equal(transport.resets, 1, 'ATZ sent exactly once');
+    assert.ok(transport.commands.includes(`ATSP${expected.protocol ?? '0'}`), 'selected protocol configured');
+    assert.equal(transport.commands.some((command) => /^ATSP[1-9A-C]$/.test(command)), Boolean(expected.protocol),
+      'automatic selection remains default unless overridden');
   }
   if (expected.cache) assert.deepEqual(Object.fromEntries(store), expected.cache, 'cache contents');
 }
@@ -232,6 +237,13 @@ await test('Manual rate [9600] works and is cached', async (row) => {
   resetStorage();
   await detectCase(row, new FakeTransport({ rate: 9600, info: CH340 }),
     { rate: 9600, opens: [9600], cache: { [CH340_KEY]: '9600' } }, { rates: [9600] });
+});
+
+await test('Explicit CAN protocol configures ATSP6 instead of auto mode', async (row) => {
+  resetStorage();
+  await detectCase(row, new FakeTransport({ rate: 38400 }), {
+    rate: 38400, opens: [115200, 38400], protocol: '6',
+  });
 });
 
 await test('Storage that throws does not break detection', async (row) => {
