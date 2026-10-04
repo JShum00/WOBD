@@ -8,6 +8,11 @@
 // For the gauge picker: ?demo=ptcruiser is a slow J1850 VPW car reporting the
 // PT Cruiser's PIDs, ?demo=multiecu has two ECUs whose supported-PID lists
 // chain past 0x20, and ?demo=nopids answers NO DATA when asked what it supports.
+//
+// Like a real ELM327, the pretend adapter only talks to the car when the
+// protocol it was told to use (ATSPn) matches the car's, or is 0 for automatic.
+// Anything else answers UNABLE TO CONNECT. ?demo=sim builds the car from the
+// year, make, and model (see vehicles.js); the Simulator page does the same.
 import { BASE_RATES } from './smartbauder.js';
 
 const SCENARIOS = {
@@ -27,7 +32,17 @@ const SCENARIOS = {
   nopids: { protocol: '6', vin: '1HGCM82633A004352', codes: ['P0171'], supported: { '0100': ['NO DATA'] } },
 };
 
-const DESCRIBE_PROTOCOL = { 2: 'AUTO, SAE J1850 VPW', 3: 'AUTO, ISO 9141-2', 6: 'AUTO, ISO 15765-4 (CAN 11/500)' };
+// What ATDP calls each protocol.
+const DESCRIBE_PROTOCOL = {
+  1: 'SAE J1850 PWM', 2: 'SAE J1850 VPW', 3: 'ISO 9141-2', 4: 'ISO 14230-4 (KWP 5BAUD)',
+  5: 'ISO 14230-4 (KWP FAST)', 6: 'ISO 15765-4 (CAN 11/500)', 7: 'ISO 15765-4 (CAN 29/500)',
+  8: 'ISO 15765-4 (CAN 11/250)', 9: 'ISO 15765-4 (CAN 29/250)', A: 'SAE J1939 (CAN 29/250)',
+};
+
+const isCanProtocol = (protocol) => /^[6-9A-C]$/.test(protocol);
+// Protocols that wake the car with a "BUS INIT" handshake.
+const BUS_INIT = new Set(['3', '4', '5']);
+const MISMATCH_MS = 1500;  // default time a wrong protocol takes to give up
 
 // The ?demo=drive trip, repeating: [seconds into the loop, mph]. Speed is
 // interpolated between points. The 35 s stop lets the driving lock unlock.
@@ -64,17 +79,20 @@ function canLines(bytes) {
 }
 
 export class DemoTransport {
-  constructor(name) {
-    this.scenario = SCENARIOS[name] ?? SCENARIOS.can;
+  // scenario: the name of a SCENARIOS entry, or a vehicle profile from vehicles.js.
+  constructor(scenario) {
+    this.scenario = typeof scenario === 'object' ? scenario : SCENARIOS[scenario] ?? SCENARIOS.can;
     this.codes = [...this.scenario.codes];
     this.onData = () => {};
     this.onDisconnect = () => {};
-    this.searched = false;
+    this.tap = null;  // (direction, text) => void, to watch the traffic ('tx' or 'rx')
+    this.selected = '0';  // what ATSP asked for; 0 is automatic
+    this.linked = false;  // true once a request has reached the car
     this.startedAt = performance.now();
     this.engine = { rpm: 760, coolant: 150, load: 21, throttle: 14 };
   }
 
-  get isCan() { return this.scenario.protocol === '6'; }
+  get isCan() { return isCanProtocol(this.scenario.protocol); }
 
   async open() {
     if (this.scenario.unplugAfter) {
@@ -92,26 +110,73 @@ export class DemoTransport {
   async write(text) {
     if (this.unplugged) return;
     const command = text.trim().toUpperCase().replace(/\s+/g, '');
-    const lines = this.#reply(command);
-    const latency = this.scenario.latency ? this.scenario.latency * (0.85 + Math.random() * 0.3) : 40 + Math.random() * 60;
-    const delay = command === '0100' && !this.searched ? 1400 : latency;
-    if (command === '0100') this.searched = true;
-    setTimeout(() => this.onData(`${lines.join('\r')}\r\r>`), delay);
+    this.tap?.('tx', command);
+    const { lines, delay } = this.#respond(command);
+    setTimeout(() => {
+      const reply = `${lines.join('\r')}\r\r>`;
+      this.tap?.('rx', reply);
+      this.onData(reply);
+    }, delay);
+  }
+
+  #latency() {
+    const { latency } = this.scenario;
+    return latency ? latency * (0.85 + Math.random() * 0.3) : 40 + Math.random() * 60;
+  }
+
+  // Talking to the car: finds the protocol first, as the ELM327 does on the first request.
+  #respond(cmd) {
+    if (!/^0[1-9A]/.test(cmd)) {
+      return { lines: this.#reply(cmd), delay: this.#latency() };
+    }
+    if (!this.linked) {
+      const link = this.#connect();
+      if (!link.ok) return { lines: link.lines, delay: this.scenario.mismatchMs ?? MISMATCH_MS };
+      this.linked = true;
+      return { lines: [...link.lines, ...this.#reply(cmd)], delay: link.delay };
+    }
+    return { lines: this.#reply(cmd), delay: this.#latency() };
+  }
+
+  #connect() {
+    const { protocol, autoFails } = this.scenario;
+    const initMs = this.scenario.initMs ?? (this.isCan ? 1400 : 2000);
+    const fixed = this.selected !== '0';
+    if (fixed && this.selected === protocol) {
+      return { ok: true, lines: BUS_INIT.has(protocol) ? ['BUS INIT: ...OK'] : [], delay: initMs };
+    }
+    if (!fixed && !autoFails) {
+      return { ok: true, lines: ['SEARCHING...', ...(BUS_INIT.has(protocol) ? ['BUS INIT: ...OK'] : [])], delay: initMs + 800 };
+    }
+    return { ok: false, lines: [...(BUS_INIT.has(this.selected) ? ['BUS INIT: ...ERROR'] : []), 'UNABLE TO CONNECT'] };
   }
 
   #reply(cmd) {
-    if (cmd === 'ATZ') return ['', 'ELM327 v1.5'];
-    if (cmd === 'ATDPN') return [`A${this.scenario.protocol}`];
+    if (cmd === 'ATZ') {
+      this.linked = false;
+      return ['', 'ELM327 v1.5'];
+    }
     if (cmd === 'ATI') return ['ELM327 v1.5'];
-    if (cmd === 'ATDP') return [DESCRIBE_PROTOCOL[this.scenario.protocol]];
     if (cmd === 'ATRV') return [`${(13.9 + Math.random() * 0.3).toFixed(1)}V`];
+    if (cmd.startsWith('ATSP')) {
+      const protocol = cmd.slice(4);
+      if (!/^(?:0|[1-9A-C])$/.test(protocol)) return ['?'];
+      this.selected = protocol;
+      this.linked = false;
+      return ['OK'];
+    }
+    if (cmd === 'ATDPN' || cmd === 'ATDP') {
+      const auto = this.selected === '0';
+      const active = this.linked ? this.scenario.protocol : this.selected;
+      if (cmd === 'ATDPN') return [auto ? `A${active}` : active];
+      return [active === '0' ? 'AUTO' : `${auto ? 'AUTO, ' : ''}${DESCRIBE_PROTOCOL[active] ?? 'USER1'}`];
+    }
     if (cmd.startsWith('AT')) return ['OK'];
 
-    const prefix = this.searched ? [] : [this.isCan ? 'SEARCHING...' : 'BUS INIT: ...OK'];
     const supported = this.scenario.supported?.[cmd];
-    if (supported) return [...prefix, ...supported];
+    if (supported) return supported;
     switch (cmd) {
-      case '0100': return [...prefix, `4100BE${this.scenario.pids ?? '3F'}B811`];
+      case '0100': return [`4100BE${this.scenario.pids ?? '3F'}B811`];
       case '0101': {
         const a = (this.codes.length ? 0x80 : 0) | this.codes.length;
         return [`4101${hex2(a)}076500`];
@@ -218,9 +283,16 @@ export class DemoBaudTransport extends DemoTransport {
   }
 
   async write(text) {
-    if (!this.#answers()) return;
+    if (!this.#answers()) {
+      this.tap?.('tx', text.trim());
+      return;
+    }
     if (text.trim().toUpperCase() === 'ATI') {
-      setTimeout(() => this.onData('ELM327 v1.5\r\r>'), 40);
+      this.tap?.('tx', 'ATI');
+      setTimeout(() => {
+        this.tap?.('rx', 'ELM327 v1.5\r\r>');
+        this.onData('ELM327 v1.5\r\r>');
+      }, 40);
       return;
     }
     await super.write(text);

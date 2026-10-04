@@ -1,12 +1,14 @@
 // Wires the adapter, OBD requests, Bob, and the UI together and holds app state.
 import { SerialTransport, checkBrowser } from './serial.js';
 import { DemoTransport, DemoBaudTransport, BAUD_DEMOS } from './demo.js';
+import { vehicleProfile } from './vehicles.js';
 import { ELM327, ElmError } from './elm327.js';
 import { abortOnUnplug, detectBaud, rateOptions } from './smartbauder.js';
 import * as obd from './obd.js';
 import { Bob, loadCodeBook, loadGenericCodes, lookup } from './bob.js';
 import * as ui from './ui.js';
 import { Voice } from './voice.js';
+import { createTrafficView } from './traffic.js';
 import { DriveLock, Recording } from './recorder.js';
 import { RecordLock } from './record-lock.js';
 import { GaugePicker, defaultKeys, pickerChoices } from './gauge-picker.js';
@@ -42,6 +44,29 @@ const state = {
   recording: null,   // { data: Recording, lock: DriveLock } while recording live data
   wakeLock: null,
 };
+
+const traffic = createTrafficView({
+  pre: $('traffic-log'),
+  details: $('traffic'),
+  copy: $('traffic-copy'),
+  clear: $('traffic-clear'),
+  mask: $('traffic-mask'),
+  header: trafficHeader,
+  onFirstEntry: () => { $('traffic').hidden = false; },
+});
+// The version line is added by version.js, so this reads it when copying, not at load.
+function trafficHeader() {
+  const version = document.querySelector('.site-version')?.textContent ?? 'WOBD';
+  const protocol = ui.getProtocolOverride();
+  return [
+    version,
+    `Browser: ${navigator.userAgent}`,
+    `Date: ${new Date().toISOString()}`,
+    `Baud rate: ${state.baudRate ?? 'not detected'}`,
+    `Protocol: ${protocol === null ? 'automatic' : `${protocol} chosen`}${state.protocol ? `, connected on ${state.protocol.number} (${state.protocol.name})` : ''}`,
+    `Adapter: ${state.connInfo?.version ?? 'unknown'}`,
+  ].join('\n');
+}
 
 const voice = new Voice();
 const bob = new Bob({ slot: $('bob-slot'), live: $('bob-live'), getCar: ui.getCar, voice });
@@ -81,6 +106,7 @@ async function start() {
       loadCodeBook(),
     ]);
     ui.initCarForm(makes, models);
+    if (demo === 'sim') ui.setCar({ year: params.get('year'), make: params.get('make'), model: params.get('model') });
   } catch (err) {
     showError(new Error(`I couldn't load my notes. ${err.message}`));
     return;
@@ -142,7 +168,15 @@ function showError(err) {
 
 // ---------- Connect ----------
 
+// ?demo=sim builds the car from the year, make, and model in the header when you connect.
 function demoTransport(name) {
+  if (name === 'sim') {
+    return new DemoTransport(vehicleProfile({
+      ...ui.getCar(),
+      codeSet: params.get('codes') ?? undefined,
+      autoFails: params.has('noauto'),
+    }));
+  }
   return BAUD_DEMOS.includes(name) ? new DemoBaudTransport(name) : new DemoTransport(name);
 }
 
@@ -177,6 +211,7 @@ async function onConnectClick() {
     return;
   }
 
+  traffic.begin(`New connection, ${protocol === null ? 'automatic protocol' : `protocol ${protocol} chosen`}`);
   await connectTo(transport, { protocol });
 }
 
@@ -187,6 +222,7 @@ async function connectTo(transport, { baudRate, protocol } = {}) {
 
   // Unplugging or cancelling stops detection at once.
   const abort = abortOnUnplug(transport);
+  traffic.attach(transport);
   try {
     const { elm, baudRate: connectedBaud } = await openAdapter(transport, { baudRate, protocol, abort });
     ui.setConnection('busy', 'Talking to the car…');
@@ -218,6 +254,7 @@ async function connectTo(transport, { baudRate, protocol } = {}) {
     state.transport = transport;
     state.elm = elm;
   } catch (err) {
+    traffic.add('note', `Connection failed: ${err.code ?? 'error'}: ${err.message}`);
     transport.onDisconnect = () => {};
     await transport.close();
     ui.setConnection('idle', 'Not connected');
@@ -330,6 +367,7 @@ function showBaudRetry(transport, err) {
     text: err.message,
     details: [ui.baudRetryForm(err.rates, (rate) => {
       if (state.elm) return;
+      traffic.begin(`Retrying at ${rate} baud`);
       connectTo(transport, { baudRate: rate, protocol: ui.getProtocolOverride() });
     })],
   });

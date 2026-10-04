@@ -923,6 +923,34 @@ dialog.record-lock .btn { font-size: 1.15rem; padding: 0.7rem 1.4rem; }
   .record-choose { justify-content: center; }
 }
 
+/* ---------- Adapter traffic ---------- */
+
+.traffic { margin-top: 1rem; font-size: 0.9rem; }
+.traffic summary { cursor: pointer; color: var(--link); text-decoration: underline; width: fit-content; }
+.traffic summary:hover { color: var(--link-hover); }
+.traffic-note { margin: 0.5rem 0; color: var(--muted); }
+.traffic-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; margin-bottom: 0.5rem; }
+.traffic-actions input { accent-color: var(--primary); }
+.traffic-log, .sim-log {
+  margin: 0;
+  padding: 0.75rem;
+  max-height: 24rem;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  font-size: 0.85rem;
+}
+
+/* ---------- Simulator page ---------- */
+
+.simulator section { margin-top: 1.5rem; }
+.simulator .protocol-options { margin: 0.75rem 0; }
+.sim-profile { margin: 0.5rem 0 0; font-size: 0.9rem; color: var(--muted); }
+.simulator .adapter-message { margin-top: 0.75rem; }
+.simulator .adapter-message.is-error { color: var(--high); }
+.sim-log:empty::before { content: 'Nothing yet. Run a test connection.'; color: var(--muted); }
+
 /* ---------- Replay page ---------- */
 
 .guide.replay { max-width: 1180px; }

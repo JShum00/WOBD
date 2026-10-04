@@ -120,6 +120,7 @@
               <li><a href="?demo" data-demo="can">Newer car with trouble codes <small>CAN · a misfire, a lean code, and an EVAP leak</small></a></li>
               <li><a href="?demo=iso" data-demo="iso">Older car, like a 2001 PT Cruiser <small>J1850 VPW · includes a brand-specific code</small></a></li>
               <li><a href="?demo=clear" data-demo="clear">Healthy car <small>No trouble codes</small></a></li>
+              <li><a href="simulator.html">Any year, make, and model <small>Simulator · the car's protocol follows the make and year</small></a></li>
               <li><a href="?demo=drive" data-demo="drive">A short drive <small>Try Live data recording: idles, drives, then stops</small></a></li>
             </ul>
           </div>
@@ -141,6 +142,17 @@
             <dl id="conn-info-advanced" class="info-list"></dl>
           </div>
         </section>
+
+        <details id="traffic" class="traffic" hidden>
+          <summary>Adapter traffic</summary>
+          <p class="traffic-note">Every command WOBD sends (→) and everything the adapter says back (←), for finding where a connection stops answering. Copying adds the WOBD version, browser, and baud rate.</p>
+          <div class="traffic-actions">
+            <button id="traffic-copy" type="button" class="btn">Copy</button>
+            <button id="traffic-clear" type="button" class="btn">Clear</button>
+            <label><input id="traffic-mask" type="checkbox" checked> Hide the VIN when copying</label>
+          </div>
+          <pre id="traffic-log" class="traffic-log" tabindex="0" aria-label="Adapter traffic"></pre>
+        </details>
       </div>
 
       <div id="panel-live" class="tab-panel" role="tabpanel" aria-labelledby="tab-live" hidden>

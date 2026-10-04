@@ -44,6 +44,7 @@ export class ELM327 {
       this.buffer = '';
       const timer = setTimeout(() => {
         this.pending = null;
+        this.transport.tap?.('note', `No reply to "${command}" after ${timeout} ms`);
         reject(new ElmError('TIMEOUT', `The adapter didn't answer "${command}" in time.`));
       }, timeout);
       this.pending = {

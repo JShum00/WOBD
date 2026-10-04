@@ -58,6 +58,13 @@ Try the whole flow without a car or adapter:
 | `/?demo=clear` | No trouble codes |
 | `/?demo=slowbaud` | Runs baud rate detection: silent on the first three speeds, answers on the fourth. Shows the progress bar and Cancel |
 | `/?demo=nobaud` | Detection fails, so Bob shows the Retry form. Pick any speed and it connects |
+| `/?demo=sim` | The car follows the year, make, and model in the header, read when you click Connect. Preset them with `&year=2001&make=Ford&model=Ranger`, `&codes=none`, `&codes=few`, `&codes=brand`, or `&noauto` |
+
+The pretend adapter behaves like a real ELM327 about protocols: it only reaches the car when `ATSP` matches the car's protocol (or is `0` for automatic), and otherwise answers `UNABLE TO CONNECT`. That makes every demo a way to test the protocol override.
+
+### Simulator
+
+`simulator.html` lets you pick any year, make, and model and connect to a pretend car for it, then shows every command and reply. `js/vehicles.js` maps year, make, and model to a protocol (for example, a 2001 Ford Ranger is J1850 PWM and a 2015 Honda Civic is CAN). These are rules of thumb, so add a `MODEL_RULES` entry when a real car differs. "Automatic protocol search fails" makes the car connect only with the right override. Test: `node scripts/test-simulator.mjs`.
 
 ## Project layout
 
@@ -74,7 +81,8 @@ Try the whole flow without a car or adapter:
 | `js/codes.js` | The code search page |
 | `js/tested-adapters.js`, `data/tested-adapters.json` | Render and store the tested adapter results |
 | `js/ui.js`, `js/app.js` | Rendering (including the gauges) and app wiring |
-| `js/demo.js` | Pretend adapter for demo mode |
+| `js/demo.js` | Pretend adapter for demo mode and the simulator |
+| `simulator.html`, `js/simulator.js`, `js/vehicles.js` | Simulator page and the year/make/model to protocol rules |
 | `data/codes.json` | Bob's code book (detailed explanations) |
 | `data/models.json` | Models per make for the car form, generated from NHTSA vPIC |
 | `scripts/update-models.mjs` | Refreshes `data/models.json` and bumps `CACHE_VERSION` |

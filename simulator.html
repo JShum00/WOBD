@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Car Simulator · WOBD</title>
+  <meta name="description" content="Try WOBD against a pretend car for any year, make, and model, and watch the adapter traffic. No adapter needed.">
+  <link rel="icon" href="img/bob.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="img/icons/apple-touch-icon.png">
+  <meta name="theme-color" content="#1F3F8F">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/theme.js"></script>
+  <script type="module" src="js/simulator.js"></script>
+  <script src="js/pwa.js" defer></script>
+  <script src="js/version.js" defer></script>
+</head>
+<body class="simulator-page">
+  <header class="site-header">
+    <a class="logo" href="./"><span class="logo-mark" aria-hidden="true"></span>WOBD</a>
+    <div class="header-right">
+      <a class="header-link" href="guide.html">How to use</a>
+      <a class="header-link" href="tested-adapters.html">Tested adapters</a>
+      <a class="header-link" href="./">Back to WOBD</a>
+      <button id="theme-btn" type="button" class="theme-btn" aria-pressed="false" aria-label="Dark mode">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="currentColor"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></g></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="guide simulator">
+    <h1>Car Simulator</h1>
+    <p class="lede">Pick a year, make, and model and WOBD talks to a pretend car that answers the way that kind of car usually does. Handy for testing protocol selection without the car.</p>
+
+    <section aria-labelledby="sim-car-title">
+      <h2 id="sim-car-title">The car</h2>
+      <form id="car-form" class="car-form car-form-page" aria-label="Pretend car" onsubmit="return false">
+        <div id="car-fields" class="car-form">
+          <label class="sr-only" for="car-year">Year</label>
+          <select id="car-year"><option value="">Year</option></select>
+          <label class="sr-only" for="car-make">Make</label>
+          <select id="car-make"><option value="">Make</option></select>
+          <label class="sr-only" for="car-make-other">Make (other)</label>
+          <input id="car-make-other" type="text" placeholder="Make" autocomplete="off" hidden>
+          <label class="sr-only" for="car-model">Model</label>
+          <select id="car-model" disabled><option value="">Model</option></select>
+          <label class="sr-only" for="car-model-other">Model (other)</label>
+          <input id="car-model-other" type="text" placeholder="Model" autocomplete="off" hidden>
+        </div>
+      </form>
+      <p id="sim-profile" class="sim-profile" role="status" aria-live="polite"></p>
+
+      <fieldset class="protocol-options">
+        <legend>Pretend car quirks</legend>
+        <label for="sim-codes">Trouble codes</label>
+        <select id="sim-codes"></select>
+        <label><input id="sim-noauto" type="checkbox"> Automatic protocol search fails</label>
+      </fieldset>
+    </section>
+
+    <section aria-labelledby="sim-connect-title">
+      <h2 id="sim-connect-title">Connect</h2>
+      <fieldset id="protocol-options" class="protocol-options">
+        <legend>Connection options</legend>
+        <label><input id="protocol-override" type="checkbox"> Override automatic protocol selection</label>
+        <label for="protocol-select">Protocol</label>
+        <select id="protocol-select" disabled>
+          <option value="">Choose a protocol</option>
+        </select>
+      </fieldset>
+      <div class="replay-load-actions">
+        <button id="sim-connect" type="button" class="btn btn-primary">Run a test connection</button>
+        <a id="sim-open" class="btn" href="index.html?demo=sim">Open in WOBD</a>
+      </div>
+      <p class="replay-load-note">A test connection runs WOBD's connect steps and shows every command and reply below. <strong>Open in WOBD</strong> uses the same pretend car in the full app.</p>
+      <p id="sim-result" class="adapter-message" role="status" aria-live="polite" hidden></p>
+    </section>
+
+    <section aria-labelledby="sim-log-title">
+      <h2 id="sim-log-title">Adapter traffic</h2>
+      <pre id="sim-log" class="sim-log" tabindex="0" aria-label="Adapter traffic"></pre>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>WOBD gives general information, not a professional diagnosis. Always confirm a problem before replacing parts.</p>
+    <p>WOBD is free. If it helped you out, you can <a href="https://buymeacoffee.com/jShumway00" target="_blank" rel="noopener noreferrer">buy me a coffee ☕</a></p>
+  </footer>
+</body>
+</html>
