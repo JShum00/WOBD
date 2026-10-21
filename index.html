@@ -14,6 +14,7 @@
   <script src="js/theme.js"></script>
   <script type="module" src="js/app.js"></script>
   <script src="js/pwa.js" defer></script>
+  <script src="js/site-nav.js" defer></script>
   <script src="js/version.js" defer></script>
 </head>
 <body>
@@ -39,9 +40,14 @@
 
     <div class="header-right">
       <span id="demo-badge" class="demo-badge" hidden>Demo</span>
-      <a class="header-link" href="codes.html">Code search</a>
-      <a class="header-link" href="guide.html">How to use</a>
-      <a class="header-link" href="tested-adapters.html">Tested adapters</a>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a class="header-link" href="./" data-nav="scanner">Scanner</a>
+        <a class="header-link" href="codes.html" data-nav="codes">Code Search</a>
+        <a class="header-link" href="replay.html" data-nav="replay">Replay</a>
+        <a class="header-link" href="./#demos" data-nav="demos">Demos</a>
+        <a class="header-link" href="guide.html" data-nav="guide">How to Use</a>
+        <a class="header-link" href="tested-adapters.html" data-nav="adapters">Tested Adapters</a>
+      </nav>
       <button id="theme-btn" type="button" class="theme-btn" aria-pressed="false" aria-label="Dark mode">
         <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="currentColor"/></svg>
         <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></g></svg>
@@ -63,6 +69,7 @@
 
   <main id="app" class="layout">
     <section class="panel" aria-label="Diagnostics">
+      <h1 class="scanner-title">Scanner</h1>
       <div class="tabs" role="tablist">
         <button id="tab-scan" class="tab" role="tab" data-tab="scan" aria-selected="true" aria-controls="panel-scan">Scan results</button>
         <button id="tab-live" class="tab" role="tab" data-tab="live" aria-selected="false" aria-controls="panel-live" tabindex="-1">Live data</button>
@@ -120,16 +127,27 @@
               <h2>You're viewing a demo</h2>
               <p>A pretend car is hooked up. Click <strong>Connect</strong> to start, or switch demos. <a href="./">Exit demo</a></p>
             </div>
-            <ul class="demo-list">
-              <li><a href="?demo" data-demo="can">Newer car with trouble codes <small>CAN · a misfire, a lean code, and an EVAP leak</small></a></li>
-              <li><a href="?demo=pending" data-demo="pending">Pending and permanent codes <small>Try the expanded DTC status scan</small></a></li>
-              <li><a href="?demo=twomodules" data-demo="twomodules">Two modules <small>See results split into tabs per module</small></a></li>
-              <li><a href="?demo=iso" data-demo="iso">Older car, like a 2001 PT Cruiser <small>J1850 VPW · includes a brand-specific code</small></a></li>
-              <li><a href="?demo=clear" data-demo="clear">Healthy car <small>No trouble codes</small></a></li>
-              <li><a href="simulator.html">Any year, make, and model <small>Simulator · the car's protocol follows the make and year</small></a></li>
-              <li><a href="?demo=drive" data-demo="drive">A short drive <small>Try Live data recording: idles, drives, then stops</small></a></li>
-            </ul>
           </div>
+        </section>
+
+        <nav class="quick-links" aria-label="Explore WOBD">
+          <a class="quick-link" href="replay.html">Replay a recording</a>
+          <a class="quick-link" href="./#demos">Explore demos</a>
+          <a class="quick-link" href="codes.html">Look up a code</a>
+        </nav>
+
+        <section id="demos" class="demos" aria-labelledby="demos-title">
+          <h2 id="demos-title">Try a demo</h2>
+          <p class="demos-lede">Explore WOBD with a pretend car. No adapter needed.</p>
+          <ul class="demo-list">
+            <li><a href="?demo" data-demo="can"><span class="demo-title">Newer car with trouble codes</span><span class="demo-category">Trouble Codes · CAN</span><small>A misfire, a lean code, and an EVAP leak</small></a></li>
+            <li><a href="?demo=pending" data-demo="pending"><span class="demo-title">Pending and permanent codes</span><span class="demo-category">Trouble Codes</span><small>See how DTC status changes what a scan reports</small></a></li>
+            <li><a href="?demo=twomodules" data-demo="twomodules"><span class="demo-title">Two modules</span><span class="demo-category">Modules</span><small>See results split into tabs for each module</small></a></li>
+            <li><a href="?demo=iso" data-demo="iso"><span class="demo-title">Older car, like a 2001 PT Cruiser</span><span class="demo-category">Protocols · J1850 VPW</span><small>Includes a brand-specific code example</small></a></li>
+            <li><a href="?demo=clear" data-demo="clear"><span class="demo-title">Healthy car</span><span class="demo-category">Getting Started</span><small>See a scan with no reported trouble codes</small></a></li>
+            <li><a href="simulator.html"><span class="demo-title">Any year, make, and model</span><span class="demo-category">Simulator</span><small>Choose a vehicle and explore its simulated protocol</small></a></li>
+            <li><a href="?demo=drive" data-demo="drive"><span class="demo-title">A short drive</span><span class="demo-category">Live Data</span><small>Try a simulated idle, drive, stop, and recording</small></a></li>
+          </ul>
         </section>
 
         <div class="actions">

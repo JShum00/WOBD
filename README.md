@@ -10,6 +10,7 @@ A free, browser-based car diagnostic tool. Plug a USB OBD-II adapter into a Chro
 - **Protocol troubleshooting**: automatic protocol selection is the default; an optional per-connection override can force a specific OBD protocol for troubleshooting.
 - **Feedback during updates**: the home-page update banner links to a contact page with a Google Form for issue reports and feedback.
 - **Trouble code search** (`codes.html`): type a code like P0601 and Bob explains it offline, without an adapter. The offline catalog includes about 9,500 generic SAE codes; Bob's hand-written notes take precedence where available. Manufacturer-specific codes are identified rather than guessed. An optional year, make, and model personalize the external Google search link.
+- **Replay and demos** (`replay.html`): replay a local CSV recording in the browser, or use the scanner's Demos section to explore simulated scenarios without an adapter.
 - **Print reports**: print or save a scan report as PDF, including vehicle details, VIN when available, code urgency, explanations, causes, and mechanic notes.
 - **Optional read-aloud**: Bob can read his speech bubble using the browser's speech synthesis when available.
 - **Tested adapters** (`tested-adapters.html`): personal adapter test results loaded from `data/tested-adapters.json`.
@@ -84,6 +85,7 @@ The pretend adapter behaves like a real ELM327 about protocols: it only reaches 
 | `js/codes.js` | The code search page |
 | `js/tested-adapters.js`, `data/tested-adapters.json` | Render and store the tested adapter results |
 | `js/ui.js`, `js/app.js` | Rendering (including the gauges) and app wiring |
+| `js/site-nav.js` | Active state for the shared site navigation |
 | `js/demo.js` | Pretend adapter for demo mode and the simulator |
 | `simulator.html`, `js/simulator.js`, `js/vehicles.js` | Simulator page and the year/make/model to protocol rules |
 | `data/codes.json` | Bob's code book (detailed explanations) |

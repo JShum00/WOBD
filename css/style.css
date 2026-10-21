@@ -223,11 +223,29 @@ a:hover { color: var(--link-hover); }
 .header-right {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 1rem;
   margin-left: auto;
 }
-.header-link { color: #fff; font-size: 0.95rem; }
-.header-link:hover { color: #E9EDF7; }
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+.header-link {
+  color: #fff;
+  font-size: 0.95rem;
+  text-decoration: none;
+  text-underline-offset: 0.3em;
+}
+.header-link:hover { color: #E9EDF7; text-decoration: underline; }
+.header-link[aria-current="page"] {
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-decoration-color: #F2B705;
+}
 
 .demo-badge {
   font-size: 0.75rem;
@@ -302,6 +320,11 @@ a:hover { color: var(--link-hover); }
   min-height: 420px;
   display: flex;
   flex-direction: column;
+}
+.scanner-title {
+  margin: 0.4rem 0 0;
+  color: var(--heading);
+  font-size: 1.25rem;
 }
 
 /* ---------- Tabs ---------- */
@@ -452,27 +475,62 @@ a:hover { color: var(--link-hover); }
 .welcome-art { flex: 0 0 150px; color: var(--link); }
 .welcome-art svg { width: 100%; height: auto; display: block; }
 
+.quick-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+}
+.quick-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.5rem;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--link);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.quick-link:hover { background: var(--hover-bg); border-color: var(--link); }
+
+.demos { margin-top: 1.25rem; scroll-margin-top: 1rem; }
+.demos h2 { margin: 0; color: var(--heading); font-size: 1.2rem; }
+.demos-lede { margin: 0.2rem 0 0.75rem; color: var(--muted); }
 .demo-list {
   list-style: none;
-  margin: 0.25rem 0 0;
+  margin: 0;
   padding: 0;
   display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15.5rem), 1fr));
   gap: 0.5rem;
 }
 .demo-list a {
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.25rem 0.6rem;
-  padding: 0.55rem 0.8rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  height: 100%;
+  padding: 0.85rem;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius);
+  background: var(--surface);
   text-decoration: none;
-  font-weight: 600;
+  transition: background-color 120ms ease, border-color 120ms ease, transform 120ms ease;
 }
-.demo-list a:hover { background: var(--hover-bg); border-color: var(--link); }
+.demo-list a:hover { background: var(--hover-bg); border-color: var(--link); transform: translateY(-1px); }
 .demo-list a[aria-current="page"] { border-color: var(--primary); box-shadow: inset 4px 0 0 var(--primary); }
-.demo-list small { font-weight: 400; color: var(--muted); font-size: 0.85rem; }
+.demo-list a:active { transform: translateY(0); }
+.demo-title { color: var(--link); font-weight: 700; }
+.demo-category {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+.demo-list small { color: var(--muted); font-size: 0.85rem; }
 
 /* ---------- Live data ---------- */
 
@@ -1219,10 +1277,15 @@ dialog.record-lock .btn { font-size: 1.15rem; padding: 0.7rem 1.4rem; }
   .layout { grid-template-columns: minmax(0, 1fr); padding: 1rem; }
   .bob-panel { position: static; max-width: 420px; width: 100%; justify-self: center; }
   /* Wrap the links so Connect never ends up off the right edge on a phone. */
-  .header-right { margin-left: 0; flex-wrap: wrap; gap: 0.5rem 1rem; }
+  .header-right { flex: 1 1 100%; width: 100%; margin-left: 0; flex-wrap: wrap; gap: 0.5rem 1rem; }
+  .site-nav { flex: 1 1 100%; gap: 0.5rem 0.85rem; }
   .panel { padding: 0.5rem 1rem 1rem; }
   .welcome { flex-direction: column; }
   .welcome-art { flex-basis: auto; width: 130px; }
+  .demo-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 520px) {
+  .demo-list { grid-template-columns: 1fr; }
 }
 
 .module-tabs { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.75rem 0; }
