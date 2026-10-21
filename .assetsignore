@@ -5,7 +5,9 @@
 .wrangler
 wrangler.jsonc
 README.md
-Assets
+Assets/*
+!Assets/favicon.png
+!Assets/header-logo.png
 Docs
 node_modules
 scripts

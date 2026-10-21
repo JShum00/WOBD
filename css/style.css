@@ -188,12 +188,10 @@ a:hover { color: var(--link-hover); }
   letter-spacing: 0.04em;
 }
 .logo:hover { color: #fff; }
-.logo-mark {
-  width: 0.8rem;
-  height: 0.8rem;
-  border-radius: 3px;
-  background: var(--rag-red);
-  transform: rotate(45deg);
+.logo-image {
+  width: 2rem;
+  height: 2rem;
+  object-fit: contain;
 }
 
 .car-form {

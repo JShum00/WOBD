@@ -22,6 +22,10 @@ A free, browser-based car diagnostic tool. Plug a USB OBD-II adapter into a Chro
 - Replay imports CSV recordings incrementally with a 128 MiB file limit.
 - Replay charts downsample for display while retaining the original readings for playback and hover; isolated spikes are preserved and detected visual gaps are not connected.
 
+### WOBD v1.51 release notes
+
+- Replaced the header diamond with the new WOBD logo and updated the page favicon.
+
 > **Status:** in active testing and development. Results aren't guaranteed yet.
 
 ## What you need

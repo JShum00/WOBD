@@ -7,9 +7,9 @@ Update this checklist whenever an implementation stage is completed. Keep accept
 ## Current Status / Where to Resume
 
 - **Latest completed milestone:** Replay render-time downsampling, committed as `03846df` (2026-10-21). The streaming CSV importer is `e36ec00`; the UX/navigation redesign is `7040ebd`.
-- **Current application label:** `WOBD v1.5` in `js/version.js`; released to production from commit `2a77544` (Worker version `e8cf302f-6b25-45ee-88fe-a5eee4e4b064`).
-- **Latest completed milestone:** v1.5 production release, after user-confirmed Chromebook acceptance on the isolated Preview.
-- **Current focus:** Post-release observation and any follow-up user-reported issues. Do not start the remaining advanced-diagnostics features until separately approved.
+- **Current application label:** v1.51 release candidate in `js/version.js`; v1.5 was released from commit `2a77544` (Worker version `e8cf302f-6b25-45ee-88fe-a5eee4e4b064`).
+- **Latest completed milestone:** v1.5 production release, followed by user-confirmed Chromebook acceptance.
+- **Current focus:** Publish and verify the v1.51 branding release. Do not start the remaining advanced-diagnostics features until separately approved.
 - **Chromebook result:** User confirmed the native Chrome file picker, large CSV playback, offline Replay, navigation, simulator, and USB Web Serial tests passed on the named preview. No quantitative device performance or memory measurements were reported.
 - **Release note:** `README.md` contains a v1.5 changelog limited to implemented UX and Replay functionality.
 
@@ -188,11 +188,16 @@ Update this checklist whenever an implementation stage is completed. Keep accept
 - [x] User confirmed native Chrome file-picker testing and large CSV playback on the real Chromebook using the v1.5 Preview; detailed fixture/cap-edge-case coverage and numerical performance/memory measurements were not reported.
 - [x] User confirmed offline Replay and navigation worked on Chromebook; the preview origin had its own HTTPS service-worker scope and the cached Replay module.
 - [x] User confirmed the simulator worked and a USB Web Serial adapter connected on Chromebook.
+- [x] Update the shared header across all site pages with the new logo, retaining the WOBD wordmark; replace the page favicon while preserving Bob's in-page illustrations.
+- [x] Confirm header logo and favicon render in browser; increase the header logo to 2rem (slightly larger than the wordmark).
+- [x] Allow only `Assets/favicon.png` and `Assets/header-logo.png` through `.assetsignore`; keep unrelated `Assets/BOB-Mechanic.png` excluded.
 - [ ] Record ChromeOS memory, frame rate, responsiveness, and tab-stability measurements for a multi-hour recording.
 - [ ] Exercise BOM/CRLF edge cases, invalid CSV handling, and a near-limit file through the native file picker.
 - [x] Add `js/replay-downsample.js` to `APP_SHELL` and increment `CACHE_VERSION` from v31 to v32; verify activation removes prior `wobd-cache-*` caches and the new cache includes the module.
 - [x] Verify Replay can reload offline after the v32 service worker activates and serves the new module.
 - [x] Update `WOBD_VERSION` from 1.4 to 1.5 and prepare README v1.5 notes containing only implemented behavior.
+- [x] Bump `WOBD_VERSION` to 1.51, add v1.51 branding notes, add the two branding assets to the service-worker app shell, and bump the cache version to v33.
+- [x] All eight regression scripts passed after v1.51 branding changes: DTC (12), navigation, recorder (21), Replay downsampling (23), Replay (18), simulator (18), smart baud (21), and supported PIDs (24).
 - [ ] Verify existing v1.4 installations update from the deployed origin; preview and local lifecycle tests do not substitute for production propagation.
 - [ ] Test Firefox/Safari import behavior where supported; record browser/version and limits.
 - [x] Deploy approved commit `2a77544` to the existing production Worker; `wobd.app` and `wobd.shumwayjohnny.workers.dev` return HTTP 200 and serve version 1.5 plus `js/replay-downsample.js`.
@@ -202,7 +207,7 @@ Update this checklist whenever an implementation stage is completed. Keep accept
 ## Blockers and Unresolved Decisions
 
 - **Manual/device verification:** Chromebook user confirmed native file picker, large CSV, offline Replay, navigation, simulator, and USB Web Serial on the Preview. Quantitative ChromeOS multi-hour performance/memory and detailed CSV edge-case measurements were not reported.
-- **Version/release:** approved candidate commit `2a77544` is live as WOBD 1.5 with cache v32; production smoke and offline app-shell checks passed. Existing-install upgrade and PWA install/start URL checks remain open.
+- **Version/release:** v1.5 candidate commit `2a77544` is live with cache v32; v1.51 branding release is staged for publication. Existing-install upgrade and PWA install/start URL checks remain open.
 - **Recording format decisions:** media type/file extension, per-row latency/quality defaults, compaction duration and import caps, Chrome/Edge 89–102 fallback, and ratio-warning behavior (see Recording-Format-Study.md §9).
 - **Recorder decisions:** quota warning thresholds/minimum free space, batch interval, optional-data degradation order, retention/eviction defaults, wall-clock tolerance, and legacy annotation sidecar/fingerprint details.
 - **Feature decisions:** Mapbox go/no-go and cost/terms, annotation-editor placement, anomaly sensitivity and dismissed-event presentation, location consent persistence, VIN decoder privacy approach, report annotation defaults, and initial language set/review.
