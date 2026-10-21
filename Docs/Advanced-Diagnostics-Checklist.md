@@ -6,10 +6,9 @@ Update this checklist whenever an implementation stage is completed. Keep accept
 
 ## Current Status / Where to Resume
 
-- **Latest completed milestone:** Replay render-time downsampling, committed as `03846df` (2026-10-21). The streaming CSV importer is `e36ec00`; the UX/navigation redesign is `7040ebd`.
-- **Current application label:** v1.51 release candidate in `js/version.js`; v1.5 was released from commit `2a77544` (Worker version `e8cf302f-6b25-45ee-88fe-a5eee4e4b064`).
-- **Latest completed milestone:** v1.5 production release, followed by user-confirmed Chromebook acceptance.
-- **Current focus:** Publish and verify the v1.51 branding release. Do not start the remaining advanced-diagnostics features until separately approved.
+- **Latest completed milestone:** v1.51 branding release, committed as `a07930b` and deployed as Worker version `a7b1a9b4-fe9e-48c1-b44c-2f4f8a86e282`.
+- **Current application label:** WOBD v1.51 is live; v1.5 was previously released from `2a77544` (Worker version `e8cf302f-6b25-45ee-88fe-a5eee4e4b064`).
+- **Current focus:** Post-release observation and follow-up user reports. Do not start the remaining advanced-diagnostics features until separately approved.
 - **Chromebook result:** User confirmed the native Chrome file picker, large CSV playback, offline Replay, navigation, simulator, and USB Web Serial tests passed on the named preview. No quantitative device performance or memory measurements were reported.
 - **Release note:** `README.md` contains a v1.5 changelog limited to implemented UX and Replay functionality.
 
@@ -198,6 +197,8 @@ Update this checklist whenever an implementation stage is completed. Keep accept
 - [x] Update `WOBD_VERSION` from 1.4 to 1.5 and prepare README v1.5 notes containing only implemented behavior.
 - [x] Bump `WOBD_VERSION` to 1.51, add v1.51 branding notes, add the two branding assets to the service-worker app shell, and bump the cache version to v33.
 - [x] All eight regression scripts passed after v1.51 branding changes: DTC (12), navigation, recorder (21), Replay downsampling (23), Replay (18), simulator (18), smart baud (21), and supported PIDs (24).
+- [x] Deployed v1.51 branding commit `a07930b`; both production domains serve v1.51 and return the new favicon and header logo successfully.
+- [x] Verify cache v33 contains the new branding assets and Replay dependencies; unrelated `Assets/BOB-Mechanic.png` remains excluded (HTTP 404).
 - [ ] Verify existing v1.4 installations update from the deployed origin; preview and local lifecycle tests do not substitute for production propagation.
 - [ ] Test Firefox/Safari import behavior where supported; record browser/version and limits.
 - [x] Deploy approved commit `2a77544` to the existing production Worker; `wobd.app` and `wobd.shumwayjohnny.workers.dev` return HTTP 200 and serve version 1.5 plus `js/replay-downsample.js`.
@@ -207,7 +208,7 @@ Update this checklist whenever an implementation stage is completed. Keep accept
 ## Blockers and Unresolved Decisions
 
 - **Manual/device verification:** Chromebook user confirmed native file picker, large CSV, offline Replay, navigation, simulator, and USB Web Serial on the Preview. Quantitative ChromeOS multi-hour performance/memory and detailed CSV edge-case measurements were not reported.
-- **Version/release:** v1.5 candidate commit `2a77544` is live with cache v32; v1.51 branding release is staged for publication. Existing-install upgrade and PWA install/start URL checks remain open.
+- **Version/release:** v1.51 commit `a07930b` is pushed to `main` and live in production with cache v33. Existing-install upgrade and PWA install/start URL checks remain open.
 - **Recording format decisions:** media type/file extension, per-row latency/quality defaults, compaction duration and import caps, Chrome/Edge 89–102 fallback, and ratio-warning behavior (see Recording-Format-Study.md §9).
 - **Recorder decisions:** quota warning thresholds/minimum free space, batch interval, optional-data degradation order, retention/eviction defaults, wall-clock tolerance, and legacy annotation sidecar/fingerprint details.
 - **Feature decisions:** Mapbox go/no-go and cost/terms, annotation-editor placement, anomaly sensitivity and dismissed-event presentation, location consent persistence, VIN decoder privacy approach, report annotation defaults, and initial language set/review.
