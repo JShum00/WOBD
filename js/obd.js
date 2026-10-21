@@ -346,9 +346,13 @@ export const isChainPid = (pid) => pid % 0x20 === 0;
 
 // Mode 01 PID 01: check engine light and stored code count.
 export function decodeStatus(messages) {
-  const m = findReply(messages, 0x01, 0x01);
-  if (!m) return null;
-  return { milOn: Boolean(m[2] & 0x80), count: m[2] & 0x7F };
+  // Every responding ECU reports its own status; the lamp is on if any says so.
+  const replies = messages.filter((m) => m[0] === 0x41 && m[1] === 0x01 && m.length >= 3);
+  if (!replies.length) return null;
+  return {
+    milOn: replies.some((m) => m[2] & 0x80),
+    count: replies.reduce((total, m) => total + (m[2] & 0x7F), 0),
+  };
 }
 
 // Mode 09 PID 02. CAN sends one long message; older protocols send five

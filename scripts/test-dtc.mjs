@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict';
 import { ElmError, ELM327 } from '../js/elm327.js';
 import { DemoTransport } from '../js/demo.js';
-import { clearCodes, decodeDtcEntries, decodeDtcs, readDtcServices, toMessages } from '../js/obd.js';
+import { clearCodes, decodeDtcEntries, decodeDtcs, decodeStatus, readDtcServices, toMessages } from '../js/obd.js';
 
 function fakeElm(replies) {
   const sent = [];
@@ -60,6 +60,11 @@ const cases = [
   ['legacy DTC replies decode padded pairs without requiring a CAN count', () => {
     const messages = toMessages(['486B10 47 01 30 00 00 00 00 AB']);
     assert.deepEqual(decodeDtcs(messages, false, 0x07), ['P0130']);
+  }],
+  ['multi-frame J1850 replies and multi-ECU status come from a real vehicle capture', () => {
+    const stored = toMessages(['48 6B 10 43 03 40 06 01 03 51 14', '48 6B 10 43 05 51 13 91 00 00 20']);
+    assert.deepEqual(decodeDtcs(stored, false), ['P0340', 'P0601', 'P0351', 'P0551', 'P1391']);
+    assert.deepEqual(decodeStatus(toMessages(['410100040000', '41018507E5E5'])), { milOn: true, count: 5 });
   }],
   ['CAN DTC count and payload length are validated', () => {
     assert.throws(
