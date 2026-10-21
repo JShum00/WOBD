@@ -84,6 +84,9 @@
         </fieldset>
         <p id="scan-summary" class="scan-summary" hidden></p>
 
+        <div id="module-tabs" class="module-tabs" role="tablist" aria-label="Modules that responded" hidden></div>
+        <p id="module-detail" class="scan-summary" hidden></p>
+
         <table id="codes-table" class="codes-table" hidden>
           <thead>
             <tr><th scope="col">Code</th><th scope="col">Description</th><th scope="col" class="col-urgency">Urgency</th><th scope="col">Status / ECU</th></tr>
@@ -120,6 +123,7 @@
             <ul class="demo-list">
               <li><a href="?demo" data-demo="can">Newer car with trouble codes <small>CAN · a misfire, a lean code, and an EVAP leak</small></a></li>
               <li><a href="?demo=pending" data-demo="pending">Pending and permanent codes <small>Try the expanded DTC status scan</small></a></li>
+              <li><a href="?demo=twomodules" data-demo="twomodules">Two modules <small>See results split into tabs per module</small></a></li>
               <li><a href="?demo=iso" data-demo="iso">Older car, like a 2001 PT Cruiser <small>J1850 VPW · includes a brand-specific code</small></a></li>
               <li><a href="?demo=clear" data-demo="clear">Healthy car <small>No trouble codes</small></a></li>
               <li><a href="simulator.html">Any year, make, and model <small>Simulator · the car's protocol follows the make and year</small></a></li>

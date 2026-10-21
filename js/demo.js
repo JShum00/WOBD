@@ -31,6 +31,10 @@ const SCENARIOS = {
   // chain continues to 0120 and 0140 (0x21, 0x2F, 0x33, 0x42, 0x46, 0x51, 0x5C).
   multiecu: { protocol: '6', vin: '1HGCM82633A004352', codes: [],
     supported: { '0100': ['4100BE3FB811', '410080180000'], '0120': ['412080022001', '412000000000'], '0140': ['414044008010'] } },
+  // Two J1850 modules like the real PT Cruiser: with headers on, each reply names its module.
+  twomodules: { protocol: '2', vin: null, codes: ['P0340', 'P0601', 'P0351', 'P0551', 'P1391'], pendingCodes: ['P0551'],
+    permanentUnsupported: true, latency: 150, twoModules: true,
+    supported: { '0100': ['4100BE3CB811', '410080108000'], '0120': ['412080000002'] } },
   nopids: { protocol: '6', vin: '1HGCM82633A004352', codes: ['P0171'], supported: { '0100': ['NO DATA'] } },
 };
 
@@ -91,6 +95,7 @@ export class DemoTransport {
     this.onDisconnect = () => {};
     this.tap = null;  // (direction, text) => void, to watch the traffic ('tx' or 'rx')
     this.selected = '0';  // what ATSP asked for; 0 is automatic
+    this.headers = false;  // set by ATH1; only the twomodules scenario answers with headers
     this.linked = false;  // true once a request has reached the car
     this.startedAt = performance.now();
     this.engine = { rpm: 760, coolant: 150, load: 21, throttle: 14 };
@@ -175,7 +180,16 @@ export class DemoTransport {
       if (cmd === 'ATDPN') return [auto ? `A${active}` : active];
       return [active === '0' ? 'AUTO' : `${auto ? 'AUTO, ' : ''}${DESCRIBE_PROTOCOL[active] ?? 'USER1'}`];
     }
+    if (cmd === 'ATH1' || cmd === 'ATH0') {
+      this.headers = cmd === 'ATH1';
+      return ['OK'];
+    }
     if (cmd.startsWith('AT')) return ['OK'];
+
+    if (this.scenario.twoModules && this.headers) {
+      const lines = this.#twoModuleLines(cmd);
+      if (lines) return lines;
+    }
 
     const supported = this.scenario.supported?.[cmd];
     if (supported) return supported;
@@ -199,6 +213,23 @@ export class DemoTransport {
         return canLines([0x49, 0x02, 0x01, ...[...this.scenario.vin].map((c) => c.charCodeAt(0))]);
       default:
         return this.#livePid(cmd) ?? ['NO DATA'];
+    }
+  }
+
+  #twoModuleLines(cmd) {
+    const engine = '48 6B 10';
+    const spaced = (line) => line.replace(/\s+/g, '').match(/../g).join(' ');
+    const wrap = (lines) => lines.map((line) => `${engine} ${spaced(line)} AB`);
+    switch (cmd) {
+      case '0100': return [`${engine} 41 00 BE 3C B8 11 F9`, '48 6B 18 41 00 80 10 80 00 C0'];
+      case '0120': return [`${engine} 41 20 80 00 00 00 02 F9`];
+      case '0101': {
+        const a = (this.codes.length ? 0x80 : 0) | this.codes.length;
+        return [`${engine} 41 01 ${hex2(a)} 07 E5 E5 AA`, '48 6B 18 41 01 00 04 00 00 AA'];
+      }
+      case '03': return wrap(this.#storedCodes());
+      case '07': return wrap(this.#serviceCodes(0x47, this.pendingCodes));
+      default: return null;
     }
   }
 

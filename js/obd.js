@@ -352,7 +352,29 @@ export function decodeStatus(messages) {
   return {
     milOn: replies.some((m) => m[2] & 0x80),
     count: replies.reduce((total, m) => total + (m[2] & 0x7F), 0),
+    ecus: replies.map((m) => ({
+      source: m.ecuSource ?? null,
+      milOn: Boolean(m[2] & 0x80),
+      count: m[2] & 0x7F,
+    })),
   };
+}
+
+// Module name guessed from the reply address. Most cars use these addresses, but
+// the standard doesn't require them, so the result is only a hint (confidence
+// 'inferred'); anything else falls back to the raw address as 'unknown'.
+const MODULE_HINTS = {
+  '7E8': 'Engine (ECM)', '7E9': 'Transmission (TCM)',
+  '10': 'Engine (ECM)', '18': 'Transmission (TCM)',
+};
+
+export function ecuIdentity(source) {
+  if (!source) return { source: null, name: 'Vehicle', confidence: 'unknown' };
+  const key = source.startsWith('7E') ? source : source.slice(-2);
+  const name = MODULE_HINTS[key];
+  return name
+    ? { source, name, confidence: 'inferred' }
+    : { source, name: `Module ${key}`, confidence: 'unknown' };
 }
 
 // Mode 09 PID 02. CAN sends one long message; older protocols send five
@@ -459,7 +481,10 @@ export async function readStoredCodes(elm, isCan) {
   }
 }
 
-export async function readDtcServices(elm, isCan) {
+// Runs job with spaces and headers on so every reply names its ECU. Without
+// header support it runs anyway; replies then have no source and are never
+// attributed to a module.
+async function withHeaders(elm, job) {
   let spacingEnabled = false;
   let headersEnabled = false;
   try {
@@ -471,15 +496,27 @@ export async function readDtcServices(elm, isCan) {
     if (err.code !== 'COMMAND_ERROR') throw err;
     if (spacingEnabled) await elm.send('ATS0');
     console.warn('[WOBD] ECU headers unavailable during DTC scan:', err);
-    return queryDtcServices(elm, isCan);
+    return job();
   }
 
   try {
-    return await queryDtcServices(elm, isCan);
+    return await job();
   } finally {
     if (headersEnabled) await elm.send('ATH0');
     if (spacingEnabled) await elm.send('ATS0');
   }
+}
+
+export function readDtcServices(elm, isCan) {
+  return withHeaders(elm, () => queryDtcServices(elm, isCan));
+}
+
+// Status and all DTC services in one header-enabled pass.
+export function readScan(elm, isCan) {
+  return withHeaders(elm, async () => ({
+    status: await readStatus(elm),
+    services: await queryDtcServices(elm, isCan),
+  }));
 }
 
 async function queryDtcServices(elm, isCan) {

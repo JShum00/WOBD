@@ -256,11 +256,41 @@ export function renderCodes(entries, onSelect) {
       h('td', {}, h('button', { type: 'button', class: 'code-link', onClick: () => onSelect(entry) }, entry.code)),
       h('td', {}, entry.title),
       h('td', {}, urgencyBadge(entry.urgency)),
-      h('td', {}, `${entry.dtcStatus}${entry.ecuSource ? ` · ECU ${entry.ecuSource}` : ''}`),
+      h('td', {}, `${entry.dtcStatus}${entry.ecuSource ? ` · ${entry.ecuName ?? 'ECU'} (${entry.ecuSource})` : ''}`),
     )));
   $('codes-table').hidden = entries.length === 0;
   $('codes-hint').hidden = entries.length === 0;
   $('codes-empty').hidden = entries.length > 0;
+}
+
+// Tabs appear only when more than one module answered.
+export function renderModuleTabs(modules, active, onSelect) {
+  const bar = $('module-tabs');
+  bar.hidden = modules.length < 2;
+  if (bar.hidden) return;
+  const tab = (source, label) => h('button', {
+    type: 'button',
+    class: 'module-tab',
+    role: 'tab',
+    'aria-selected': String(source === active),
+    onClick: () => onSelect(source),
+  }, label);
+  bar.replaceChildren(tab('all', 'All modules'), ...modules.map((m) => tab(m.source, m.name)));
+}
+
+export function setModuleDetail(module) {
+  const el = $('module-detail');
+  el.hidden = !module;
+  if (!module) return;
+  const count = (list) => (list === null ? 'unavailable' : list.length);
+  el.replaceChildren(
+    h('strong', {}, module.name),
+    ` · address ${module.source}`,
+    module.confidence === 'inferred' ? ' · name inferred from address' : ' · name unknown',
+    h('br'),
+    module.milOn === null ? 'Check engine light status not reported' : `Check engine light ${module.milOn ? 'ON' : 'off'}`,
+    ` · Stored: ${count(module.dtcs.stored)} · Pending: ${count(module.dtcs.pending)} · Permanent: ${count(module.dtcs.permanent)}`,
+  );
 }
 
 export function setEmptyMessage(text) {
@@ -498,7 +528,7 @@ export function renderReport({ scannedAt, car, vin, status, services, entries, c
         h('td', { class: 'mono' }, e.code),
         h('td', {}, e.title),
         h('td', { class: 'urgency' }, (URGENCY[e.urgency] ?? URGENCY.unknown).label),
-        h('td', {}, `${e.dtcStatus}${e.ecuSource ? ` · ECU ${e.ecuSource}` : ''}`),
+        h('td', {}, `${e.dtcStatus}${e.ecuSource ? ` · ${e.ecuName ?? 'ECU'} (${e.ecuSource})` : ''}`),
         h('td', {}, e.plain))))),
     entries.map((e) => h('section', { class: 'report-code' },
       h('h3', {}, `${e.code} · ${e.title} (${e.dtcStatus})`),

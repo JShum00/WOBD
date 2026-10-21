@@ -1224,3 +1224,10 @@ dialog.record-lock .btn { font-size: 1.15rem; padding: 0.7rem 1.4rem; }
   .welcome { flex-direction: column; }
   .welcome-art { flex-basis: auto; width: 130px; }
 }
+
+.module-tabs { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.75rem 0; }
+.module-tab {
+  font: inherit; padding: 0.4rem 0.8rem; border: 1px solid currentColor; border-radius: 999px;
+  background: transparent; color: inherit; cursor: pointer;
+}
+.module-tab[aria-selected="true"] { font-weight: 700; text-decoration: underline; }

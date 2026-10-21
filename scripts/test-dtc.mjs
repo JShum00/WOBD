@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict';
 import { ElmError, ELM327 } from '../js/elm327.js';
 import { DemoTransport } from '../js/demo.js';
-import { clearCodes, decodeDtcEntries, decodeDtcs, decodeStatus, readDtcServices, toMessages } from '../js/obd.js';
+import { clearCodes, decodeDtcEntries, decodeDtcs, decodeStatus, ecuIdentity, readDtcServices, readScan, toMessages } from '../js/obd.js';
 
 function fakeElm(replies) {
   const sent = [];
@@ -64,7 +64,31 @@ const cases = [
   ['multi-frame J1850 replies and multi-ECU status come from a real vehicle capture', () => {
     const stored = toMessages(['48 6B 10 43 03 40 06 01 03 51 14', '48 6B 10 43 05 51 13 91 00 00 20']);
     assert.deepEqual(decodeDtcs(stored, false), ['P0340', 'P0601', 'P0351', 'P0551', 'P1391']);
-    assert.deepEqual(decodeStatus(toMessages(['410100040000', '41018507E5E5'])), { milOn: true, count: 5 });
+    const status = decodeStatus(toMessages(['410100040000', '41018507E5E5']));
+    assert.equal(status.milOn, true);
+    assert.equal(status.count, 5);
+    assert.ok(status.ecus.every((ecu) => ecu.source === null), 'headerless replies are never assigned to a module');
+  }],
+  ['module identity is inferred from known addresses and falls back to the raw address', () => {
+    assert.deepEqual(ecuIdentity('486B10'), { source: '486B10', name: 'Engine (ECM)', confidence: 'inferred' });
+    assert.equal(ecuIdentity('486B18').name, 'Transmission (TCM)');
+    assert.equal(ecuIdentity('7E8').name, 'Engine (ECM)');
+    assert.equal(ecuIdentity('7EA').confidence, 'unknown');
+    assert.equal(ecuIdentity('18DAF140').name, 'Module 40');
+  }],
+  ['one header-enabled scan attributes status to each module by its header', async () => {
+    const elm = fakeElm({
+      '0101': ['48 6B 10 41 01 85 07 E5 E5 AA', '48 6B 18 41 01 00 04 00 00 AA'],
+      '03': ['48 6B 10 43 03 40 00 00 00 00 AB'],
+      '07': ['48 6B 10 47 00 00 00 00 00 00 AB'],
+    });
+    const { status, services } = await readScan(elm, false);
+    assert.deepEqual(elm.sent, ['ATS1', 'ATH1', '0101', '03', '07', '0A', 'ATH0', 'ATS0']);
+    assert.deepEqual(status.ecus, [
+      { source: '486B10', milOn: true, count: 5 },
+      { source: '486B18', milOn: false, count: 0 },
+    ]);
+    assert.equal(services[2].available, false);
   }],
   ['CAN DTC count and payload length are validated', () => {
     assert.throws(

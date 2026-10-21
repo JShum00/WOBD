@@ -442,10 +442,31 @@ async function busy(label, job) {
 
 // ---------- Scan ----------
 
+function buildModules(status, services, knownSources) {
+  const sources = new Set([
+    ...(status?.ecus ?? []).map((ecu) => ecu.source),
+    ...services.flatMap((service) => service.codes.map((entry) => entry.ecuSource)),
+    ...knownSources,
+  ]);
+  sources.delete(null);
+  return [...sources].sort().map((source) => {
+    const reported = status?.ecus.find((ecu) => ecu.source === source) ?? null;
+    return {
+      ...obd.ecuIdentity(source),
+      milOn: reported ? reported.milOn : null,
+      reportedCount: reported ? reported.count : null,
+      // null means the service couldn't be read; an empty list means it was read and had no codes.
+      dtcs: Object.fromEntries(services.map((service) => [
+        service.label.toLowerCase(),
+        service.available ? service.codes.filter((entry) => entry.ecuSource === source).map((entry) => entry.code) : null,
+      ])),
+    };
+  });
+}
+
 async function scan() {
   bob.say({ text: 'Scanning… hang tight.' });
-  const status = await obd.readStatus(state.elm);
-  const services = await obd.readDtcServices(state.elm, state.protocol.isCan);
+  const { status, services } = await obd.readScan(state.elm, state.protocol.isCan);
   const codes = services.flatMap((service) => service.codes.map((entry) => ({
     ...entry,
     dtcStatus: service.label,
@@ -456,21 +477,45 @@ async function scan() {
     ...lookup(entry.code),
     dtcStatus: entry.dtcStatus,
     ecuSource: entry.ecuSource,
+    ecuName: entry.ecuSource ? obd.ecuIdentity(entry.ecuSource).name : null,
   }));
+  const modules = buildModules(status, services, (state.ecuPids ?? []).map((ecu) => ecu.source));
 
   // The connection is copied in, so the printout matches the scan even after a reconnect.
-  state.scan = { scannedAt: new Date(), status, services, entries, connection: connectionLabel() };
+  state.scan = { scannedAt: new Date(), status, services, entries, modules, connection: connectionLabel() };
   state.selected = null;
-  ui.renderCodes(entries, onSelectCode);
+  state.moduleView = 'all';
+  showScanResults();
+  announceScan(state.scan);
+}
+
+// Shows the whole vehicle or one module, depending on the selected tab.
+function showScanResults() {
+  const { status, services, entries, modules } = state.scan;
+  const module = modules.find((m) => m.source === state.moduleView) ?? null;
+  if (!module) state.moduleView = 'all';
+  ui.renderModuleTabs(modules, state.moduleView, (source) => {
+    state.moduleView = source;
+    showScanResults();
+  });
+  const shown = module ? entries.filter((entry) => entry.ecuSource === module.source) : entries;
+  ui.renderCodes(shown, onSelectCode);
+  if (module) {
+    ui.setEmptyMessage(`${module.name} reported no trouble codes in the services it answered.`);
+    ui.setModuleDetail(module);
+    ui.setSummary('');
+    return;
+  }
+  ui.setModuleDetail(null);
   ui.setEmptyMessage(services.some((service) => !service.available)
     ? 'No codes found in the available services. One or more DTC services could not be read.'
     : 'No trouble codes found.');
   ui.setSummary([
     status ? `Check engine light ${status.milOn ? 'ON' : 'off'}` : null,
     ...services.map((service) => `${service.label}: ${service.available ? service.codes.length : 'unavailable'}`),
+    modules.length > 1 ? `${modules.length} modules responded` : null,
     ui.carLabel(ui.getCar()) || null,
   ].filter(Boolean).join(' · '));
-  announceScan(state.scan);
 }
 
 function announceScan({ status, services, entries }) {

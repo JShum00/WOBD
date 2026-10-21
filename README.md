@@ -56,6 +56,7 @@ Try the whole flow without a car or adapter:
 | --- | --- |
 | `/?demo` | CAN car with codes P0301, P0171, P0442 |
 | `/?demo=pending` | CAN car with pending P0301 and permanent P0442 |
+| `/?demo=twomodules` | J1850 car where two modules answer; scan results get a tab per module |
 | `/?demo=iso` | Older ISO 9141 car (like a 2001 PT Cruiser) with P0420 and P1491, no VIN |
 | `/?demo=clear` | No trouble codes |
 | `/?demo=slowbaud` | Runs baud rate detection: silent on the first three speeds, answers on the fourth. Shows the progress bar and Cancel |
