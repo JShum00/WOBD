@@ -7,10 +7,11 @@ Update this checklist whenever an implementation stage is completed. Keep accept
 ## Current Status / Where to Resume
 
 - **Latest completed milestone:** Replay render-time downsampling, committed as `03846df` (2026-10-21). The streaming CSV importer is `e36ec00`; the UX/navigation redesign is `7040ebd`.
-- **Current application label:** `WOBD v1.4` in `js/version.js`; no v1.5 version change or deployment has been made.
-- **Current focus:** v1.5 release readiness. Do not start the remaining advanced-diagnostics features until separately approved.
-- **Recommended next task:** fix and verify the PWA app-shell omission for `js/replay-downsample.js`, then perform the native Chrome file-picker and real ChromeOS pre-release checks. The service-worker cache version and product version must only be changed as part of an approved release.
-- **Release blocker:** current `sw.js` precaches `js/replay.js` but not its new `js/replay-downsample.js` dependency. An offline Replay reload fails to load that module; see “Release and manual checks” below.
+- **Current application label:** `WOBD v1.5` in `js/version.js`; release preparation is complete but production deployment is not approved or performed.
+- **Latest completed milestone:** Replay release hardening, including service-worker cache v32 and the offline module dependency. Next, obtain final release approval and publish through the normal deployment process.
+- **Current focus:** v1.5 release verification. Do not start the remaining advanced-diagnostics features until separately approved.
+- **Remaining release tests:** exercise the native Chrome file chooser and repeat large-file/offline checks on a real ChromeOS device before production release.
+- **Release note:** `README.md` contains a v1.5 changelog limited to implemented UX and Replay functionality.
 
 ## Established Baseline and Prior Audit Stages
 
@@ -176,7 +177,7 @@ Update this checklist whenever an implementation stage is completed. Keep accept
 - [ ] P2 IndexedDB persistence/recovery and `.wobd` reader/writer with lossless CSV migration.
 - [ ] P3 GPS capture, offline route view, optional Mapbox layer, and localization.
 - [ ] P3 Mode 02 freeze frames, multi-session comparisons, and expanded CAN validation.
-- [x] Existing regression scripts passed after the Replay implementation stages: `test-dtc` 12, `test-navigation`, `test-recorder` 21, `test-replay` 18, `test-replay-downsample` 23, `test-simulator` 18, `test-smartbauder` 21, and `test-supported-pids` 24.
+- [x] Re-ran all regression scripts after v1.5 release hardening: `test-dtc` 12, `test-navigation`, `test-recorder` 21, `test-replay-downsample` 23, `test-replay` 18, `test-simulator` 18, `test-smartbauder` 21, and `test-supported-pids` 24; all passed.
 - [ ] Re-run the full regression set after every relevant future code change; retain non-regression of serial queue, connection, gauges, scans, export, and driving lock.
 
 ## Release and Manual Checks
@@ -186,16 +187,17 @@ Update this checklist whenever an implementation stage is completed. Keep accept
 - [x] Integrated Chromium 150 playback measurement on that 7-hour CSV: 300 animation frames, 59.7 fps mean, 16.8 ms p95, 33.3 ms maximum frame interval, 23.3 MB V8 heap used; one 53 ms long task. This is Linux Electron/Chromium evidence, not ChromeOS or total browser-process memory.
 - [ ] Exercise native Chrome file chooser on the real release build with the real recording, BOM/CRLF, invalid CSV, and a near-limit file.
 - [ ] Test a multi-hour recording on real ChromeOS Chrome; observe memory, frame rate, UI responsiveness, and tab stability.
-- [ ] Fix the service-worker app-shell omission: add `js/replay-downsample.js`, increment `CACHE_VERSION` for the release, and verify old v1.4 users update after the service-worker lifecycle/reload.
-- [ ] Verify Replay works after the new service worker installs and the browser is offline. Current audit reproduced offline reload failure because the module is absent from cache `wobd-cache-v31`.
+- [x] Add `js/replay-downsample.js` to `APP_SHELL` and increment `CACHE_VERSION` from v31 to v32; verify activation removes prior `wobd-cache-*` caches and the new cache includes the module.
+- [x] Verify Replay can reload offline after the v32 service worker activates and serves the new module.
+- [x] Update `WOBD_VERSION` from 1.4 to 1.5 and prepare README v1.5 notes containing only implemented behavior.
+- [ ] Verify existing v1.4 installations update from a deployed origin; local lifecycle tests do not substitute for production propagation.
 - [ ] Test Firefox/Safari import behavior where supported; record browser/version and limits.
 - [ ] Test production deployment, cache update, PWA install/start URL, and offline behavior before release.
 
 ## Blockers and Unresolved Decisions
 
-- **PWA blocker:** `js/replay-downsample.js` is not listed in `sw.js` `APP_SHELL`; offline Replay reload fails. No application code was changed during the release audit to address it.
 - **Manual/device verification:** native Chrome chooser and real ChromeOS multi-hour performance/memory remain outstanding; Linux Electron Chromium measurements are not substitutes.
-- **Version/release:** keep `WOBD_VERSION` at 1.4 and `CACHE_VERSION` at v31 until v1.5 is approved; no deployment was made.
+- **Version/release:** source is prepared as WOBD 1.5 with cache v32; no production deployment has been made.
 - **Recording format decisions:** media type/file extension, per-row latency/quality defaults, compaction duration and import caps, Chrome/Edge 89–102 fallback, and ratio-warning behavior (see Recording-Format-Study.md §9).
 - **Recorder decisions:** quota warning thresholds/minimum free space, batch interval, optional-data degradation order, retention/eviction defaults, wall-clock tolerance, and legacy annotation sidecar/fingerprint details.
 - **Feature decisions:** Mapbox go/no-go and cost/terms, annotation-editor placement, anomaly sensitivity and dismissed-event presentation, location consent persistence, VIN decoder privacy approach, report annotation defaults, and initial language set/review.

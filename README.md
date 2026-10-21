@@ -16,6 +16,12 @@ A free, browser-based car diagnostic tool. Plug a USB OBD-II adapter into a Chro
 - **Tested adapters** (`tested-adapters.html`): personal adapter test results loaded from `data/tested-adapters.json`.
 - **Installable and offline**: WOBD is a PWA. After the first load, the scanner and bundled code search work offline. Scan data stays in the browser; only a search you choose to open leaves the site.
 
+### WOBD v1.5 release notes
+
+- Updated navigation and demo layout.
+- Replay imports CSV recordings incrementally with a 128 MiB file limit.
+- Replay charts downsample for display while retaining the original readings for playback and hover; isolated spikes are preserved and detected visual gaps are not connected.
+
 > **Status:** in active testing and development. Results aren't guaranteed yet.
 
 ## What you need
@@ -37,7 +43,7 @@ Then open http://localhost:8000 in Chrome or Edge.
 
 ### Offline and installing
 
-The service worker (`sw.js`) only registers on HTTPS or localhost. It caches static files only (pages, CSS, JS, and the code databases). Web Serial talks to the adapter directly and never goes through it, so caching can't affect the connection. The scanner and code search can use bundled data offline after the first load; the year/make/model Google search link needs an internet connection.
+The service worker (`sw.js`) only registers on HTTPS or localhost. It caches static files only (pages, CSS, JS, and the code databases). Web Serial talks to the adapter directly and never goes through it, so caching can't affect the connection. The scanner, code search, and Replay page are available offline after the app shell has been cached; opening Replay still requires a local CSV file or a bundled sample. The year/make/model Google search link needs an internet connection.
 
 Cached files are served first, so to ship an update, bump `CACHE_VERSION` in `sw.js` and add any new files to `APP_SHELL`. Returning users get the new version, and old caches are deleted. The version shown in every page's footer is `WOBD_VERSION` in `js/version.js`; bump it with each release. Feedback submitted on the contact page is sent through Google Forms, not stored by WOBD.
 
