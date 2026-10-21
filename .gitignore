@@ -7,6 +7,7 @@ Thumbs.db
 Docs/*
 !Docs/Advanced-Diagnostics-Plan.md
 !Docs/Recording-Format-Study.md
+!Docs/Advanced-Diagnostics-Checklist.md
 
 # Logs and scratch files
 *.log
