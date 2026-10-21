@@ -542,7 +542,7 @@ function announceScan({ status, services, entries }) {
     bob.say({
       tone: 'low',
       mood: 'check',
-      text: "Thumbs up! No stored, pending, or permanent trouble codes were found in the services your car supports.",
+      text: "👍 No stored, pending, or permanent trouble codes were found in the services your car supports.",
     });
   }
 }
