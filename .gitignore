@@ -6,6 +6,7 @@ Thumbs.db
 .idea/
 Docs/*
 !Docs/Advanced-Diagnostics-Plan.md
+!Docs/Recording-Format-Study.md
 
 # Logs and scratch files
 *.log
