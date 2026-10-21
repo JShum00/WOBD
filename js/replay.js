@@ -3,7 +3,7 @@
 // Files are read in the browser; nothing is uploaded.
 import { renderGauges, updateGauge } from './ui.js';
 import { baudLabel } from './conninfo.js';
-import { MAX_FILE_BYTES, ReplayError, indexAt, parseRecording, valueAt } from './replay-data.js';
+import { MAX_FILE_BYTES, ReplayError, indexAt, parseRecording, parseRecordingStream, valueAt } from './replay-data.js';
 
 const SAMPLE = 'reports/vlinker-fs-usb-pt-cruiser-2026-10-02/wobd-recording-2026-10-02-192055.csv';
 const STRIP_HEIGHT = 84;   // css px per graph
@@ -55,24 +55,28 @@ function showMessage(text, isError = false) {
   message.hidden = !text;
 }
 
-function load(text, sourceName) {
-  try {
-    show(parseRecording(text), sourceName);
-    showMessage('');
-  } catch (err) {
-    if (!(err instanceof ReplayError)) console.error('[WOBD] Replay failed:', err);
-    showMessage(err instanceof ReplayError ? err.message : "That file couldn't be read. Is it a CSV saved from WOBD?", true);
-  }
+function load(rec, sourceName) {
+  show(rec, sourceName);
+  showMessage('');
+}
+
+function fail(err) {
+  if (!(err instanceof ReplayError)) console.error('[WOBD] Replay failed:', err);
+  showMessage(err instanceof ReplayError ? err.message : "That file couldn't be read. Is it a CSV saved from WOBD?", true);
 }
 
 async function loadFile(file) {
   if (!file) return;
   if (file.size > MAX_FILE_BYTES) {
-    showMessage('That file is over 20 MB, which is bigger than any WOBD recording should be.', true);
+    showMessage(`That file is over ${MAX_FILE_BYTES / 1024 / 1024} MB, which is bigger than WOBD can open.`, true);
     return;
   }
   showMessage(`Reading ${file.name}…`);
-  load(await file.text(), file.name);
+  try {
+    load(await parseRecordingStream(file.stream()), file.name);
+  } catch (err) {
+    fail(err);
+  }
 }
 
 // Only recordings published in this site's reports folder can be opened by link.
@@ -82,13 +86,19 @@ async function loadUrl(path) {
     return;
   }
   showMessage('Loading the recording…');
+  let res;
   try {
-    const res = await fetch(path);
+    res = await fetch(path);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    load(await res.text(), path.split('/').pop());
   } catch (err) {
     console.error('[WOBD] Replay download failed:', err);
     showMessage("The recording couldn't be downloaded. Check your connection and try again.", true);
+    return;
+  }
+  try {
+    load(res.body ? await parseRecordingStream(res.body) : parseRecording(await res.text()), path.split('/').pop());
+  } catch (err) {
+    fail(err);
   }
 }
 

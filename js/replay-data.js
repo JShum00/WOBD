@@ -3,39 +3,78 @@
 // scripts/test-replay.mjs can check it in Node.
 import { LIVE_PIDS, BATTERY } from './obd.js';
 
-export const MAX_FILE_BYTES = 20 * 1024 * 1024;
+export const MAX_FILE_BYTES = 128 * 1024 * 1024;
 const REQUIRED = ['timestamp', 'elapsed_ms', 'pid', 'name', 'value', 'unit'];
 
 export class ReplayError extends Error {}
 
-// RFC 4180: commas and newlines inside quotes, "" for a quote. Handles \r\n or \n.
-export function parseCsv(text) {
-  const rows = [];
-  let row = [];
-  let field = '';
-  let quoted = false;
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i];
-    if (quoted) {
-      if (c === '"' && text[i + 1] === '"') { field += '"'; i++; }
-      else if (c === '"') quoted = false;
-      else field += c;
-    } else if (c === '"') {
-      quoted = true;
-    } else if (c === ',') {
-      row.push(field);
-      field = '';
-    } else if (c === '\n' || c === '\r') {
-      if (c === '\r' && text[i + 1] === '\n') i++;
-      row.push(field);
-      rows.push(row);
-      row = [];
-      field = '';
-    } else {
-      field += c;
+// Incremental RFC 4180 reader: commas and newlines inside quotes, "" for a quote,
+// \r\n or \n or \r line ends. push() takes text in any chunking, and a quote pair or
+// \r\n split across two chunks reads the same as in one piece. onRow gets each finished row.
+export class CsvStreamParser {
+  constructor(onRow) {
+    this.onRow = onRow;
+    this.row = [];
+    this.field = '';
+    this.quoted = false;
+    this.pendingQuote = false;   // saw a " inside quotes; the next char decides if it closes
+    this.skipLf = false;         // the last row ended on \r, so swallow a following \n
+  }
+
+  push(text) {
+    let { field, quoted, pendingQuote, skipLf } = this;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (skipLf) {
+        skipLf = false;
+        if (c === '\n') continue;
+      }
+      if (quoted) {
+        if (pendingQuote) {
+          pendingQuote = false;
+          if (c === '"') { field += '"'; continue; }
+          quoted = false;
+        } else {
+          if (c === '"') pendingQuote = true; else field += c;
+          continue;
+        }
+      }
+      if (c === '"') {
+        quoted = true;
+      } else if (c === ',') {
+        this.row.push(field);
+        field = '';
+      } else if (c === '\n' || c === '\r') {
+        skipLf = c === '\r';
+        this.row.push(field);
+        const row = this.row;
+        this.row = [];
+        field = '';
+        this.onRow(row);
+      } else {
+        field += c;
+      }
+    }
+    Object.assign(this, { field, quoted, pendingQuote, skipLf });
+  }
+
+  end() {
+    this.quoted = false;
+    this.pendingQuote = false;
+    if (this.field !== '' || this.row.length) {
+      const row = [...this.row, this.field];
+      this.row = [];
+      this.field = '';
+      this.onRow(row);
     }
   }
-  if (field !== '' || row.length) rows.push([...row, field]);
+}
+
+export function parseCsv(text) {
+  const rows = [];
+  const parser = new CsvStreamParser((row) => rows.push(row));
+  parser.push(text);
+  parser.end();
   return rows;
 }
 
@@ -47,60 +86,119 @@ export function defFor(pid) {
   return LIVE_PIDS.find((def) => def.pid === number);
 }
 
-// Returns { startedAt, durationMs, readingCount, protocol, baudRate, series, unknownPids }.
-// series is in Live data gauge order; each entry is { def, times, values } sorted by time.
-export function parseRecording(text) {
-  const [header, ...rows] = parseCsv(text.replace(/^﻿/, '')).filter((row) => row.some((cell) => cell.trim()));
-  const col = Object.fromEntries((header ?? []).map((name, i) => [name.trim(), i]));
-  if (!REQUIRED.every((name) => name in col)) {
-    throw new ReplayError("This doesn't look like a WOBD recording. Pick a CSV saved from WOBD's Live data recording.");
+// Turns CSV rows into the recording as they arrive, so a file never has to be held
+// whole. Rows with only blank cells are skipped; the first other row is the header.
+class RecordingBuilder {
+  constructor() {
+    this.col = null;
+    this.byPid = new Map();
+    this.unknownPids = new Set();
+    this.protocol = null;
+    this.baudRate = null;
+    this.startedAt = null;
+    this.readingCount = 0;
   }
 
-  const byPid = new Map();
-  const unknownPids = new Set();
-  let protocol = null;
-  let baudRate = null;
-  let startedAt = null;
-  let readingCount = 0;
-
-  for (const row of rows) {
+  addRow(row) {
+    if (!row.some((cell) => cell.trim())) return;
+    if (!this.col) {
+      this.col = Object.fromEntries(row.map((name, i) => [name.trim(), i]));
+      if (!REQUIRED.every((name) => name in this.col)) {
+        throw new ReplayError("This doesn't look like a WOBD recording. Pick a CSV saved from WOBD's Live data recording.");
+      }
+      return;
+    }
+    const { col } = this;
     const elapsed = Number(row[col.elapsed_ms]);
     const def = defFor(row[col.pid]);
     if (!def) {
-      if (row[col.pid]) unknownPids.add(row[col.pid]);
-      continue;
+      if (row[col.pid]) this.unknownPids.add(row[col.pid]);
+      return;
     }
     const raw = row[col.value];
     const value = def.style === 'status' ? raw : Number(raw);
-    if (!Number.isFinite(elapsed) || raw === undefined || raw === '' || (typeof value === 'number' && !Number.isFinite(value))) continue;
+    if (!Number.isFinite(elapsed) || raw === undefined || raw === '' || (typeof value === 'number' && !Number.isFinite(value))) return;
 
-    if (!byPid.has(def)) byPid.set(def, { def, times: [], values: [] });
-    const series = byPid.get(def);
+    if (!this.byPid.has(def)) this.byPid.set(def, { def, times: [], values: [] });
+    const series = this.byPid.get(def);
     series.times.push(elapsed);
     series.values.push(value);
-    readingCount++;
+    this.readingCount++;
 
     const at = Date.parse(row[col.timestamp]);
-    if (startedAt === null && Number.isFinite(at)) startedAt = at - elapsed;
-    if (protocol === null && 'protocol' in col && row[col.protocol] && row[col.protocol] !== 'unknown') protocol = row[col.protocol];
+    if (this.startedAt === null && Number.isFinite(at)) this.startedAt = at - elapsed;
+    if (this.protocol === null && 'protocol' in col && row[col.protocol] && row[col.protocol] !== 'unknown') this.protocol = row[col.protocol];
     const baud = 'baud' in col ? Number(row[col.baud]) : NaN;
-    if (baudRate === null && Number.isInteger(baud) && baud > 0) baudRate = baud;
+    if (this.baudRate === null && Number.isInteger(baud) && baud > 0) this.baudRate = baud;
   }
 
-  if (!readingCount) throw new ReplayError("This recording doesn't have any readings to replay.");
+  finish() {
+    if (!this.col) {
+      throw new ReplayError("This doesn't look like a WOBD recording. Pick a CSV saved from WOBD's Live data recording.");
+    }
+    if (!this.readingCount) throw new ReplayError("This recording doesn't have any readings to replay.");
 
-  let durationMs = 0;
-  for (const series of byPid.values()) {
-    // Rows are written in time order, but sort anyway in case a file was edited.
-    const order = series.times.map((_, i) => i).sort((a, b) => series.times[a] - series.times[b]);
-    series.times = order.map((i) => series.times[i]);
-    series.values = order.map((i) => series.values[i]);
-    durationMs = Math.max(durationMs, series.times.at(-1));
+    let durationMs = 0;
+    for (const series of this.byPid.values()) {
+      // Rows are written in time order, but sort anyway in case a file was edited.
+      const { times, values } = series;
+      let sorted = true;
+      for (let i = 1; i < times.length; i++) if (times[i] < times[i - 1]) { sorted = false; break; }
+      if (!sorted) {
+        const order = times.map((_, i) => i).sort((a, b) => times[a] - times[b]);
+        series.times = order.map((i) => times[i]);
+        series.values = order.map((i) => values[i]);
+      }
+      durationMs = Math.max(durationMs, series.times.at(-1));
+    }
+
+    const gaugeOrder = [...LIVE_PIDS, BATTERY];
+    const series = [...this.byPid.values()].sort((a, b) => gaugeOrder.indexOf(a.def) - gaugeOrder.indexOf(b.def));
+    return {
+      startedAt: this.startedAt, durationMs, readingCount: this.readingCount,
+      protocol: this.protocol, baudRate: this.baudRate, series, unknownPids: [...this.unknownPids],
+    };
   }
+}
 
-  const gaugeOrder = [...LIVE_PIDS, BATTERY];
-  const series = [...byPid.values()].sort((a, b) => gaugeOrder.indexOf(a.def) - gaugeOrder.indexOf(b.def));
-  return { startedAt, durationMs, readingCount, protocol, baudRate, series, unknownPids: [...unknownPids] };
+// Returns { startedAt, durationMs, readingCount, protocol, baudRate, series, unknownPids }.
+// series is in Live data gauge order; each entry is { def, times, values } sorted by time.
+export function parseRecording(text) {
+  const builder = new RecordingBuilder();
+  const parser = new CsvStreamParser((row) => builder.addRow(row));
+  parser.push(text.replace(/^\uFEFF/, ''));
+  parser.end();
+  return builder.finish();
+}
+
+// Same result as parseRecording, read from a ReadableStream of bytes (file.stream(),
+// response.body) or of strings. Only one chunk of text is held at a time.
+export async function parseRecordingStream(stream) {
+  const builder = new RecordingBuilder();
+  const parser = new CsvStreamParser((row) => builder.addRow(row));
+  const decoder = new TextDecoder('utf-8');   // drops a leading BOM
+  const reader = stream.getReader();
+  let first = true;
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      let text = typeof value === 'string' ? value : decoder.decode(value, { stream: true });
+      if (first && text) {
+        first = false;
+        if (typeof value === 'string') text = text.replace(/^\uFEFF/, '');
+      }
+      parser.push(text);
+    }
+    parser.push(decoder.decode());
+    parser.end();
+    return builder.finish();
+  } catch (err) {
+    await reader.cancel().catch(() => {});
+    throw err;
+  } finally {
+    reader.releaseLock();
+  }
 }
 
 // Index of the latest reading at or before t, or -1 if there is none yet.
