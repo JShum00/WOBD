@@ -32,6 +32,20 @@ export function initWelcome(demo) {
   }
 }
 
+export function initProtocolOverride(protocols) {
+  const select = $('protocol-select');
+  for (const [number, name] of Object.entries(protocols)) {
+    select.append(h('option', { value: number }, `${number} · ${name}`));
+  }
+  $('protocol-override').addEventListener('change', () => {
+    select.disabled = !$('protocol-override').checked || $('protocol-options').disabled;
+  });
+}
+
+export function getProtocolOverride() {
+  return $('protocol-override').checked ? $('protocol-select').value : null;
+}
+
 // Shown until the first connection. Afterwards the codes area takes over.
 export function setWelcomeVisible(visible) {
   $('welcome').hidden = !visible;
@@ -132,6 +146,31 @@ function setCarSkipped(skipped) {
   (skipped ? $('car-add') : $('car-year')).focus();
 }
 
+// Fills the form from a link that already names the car. Names the lists don't have go in the text boxes.
+export function setCar({ year, make, model } = {}) {
+  const pick = (select, value) => {
+    const option = [...select.options].find((o) => o.value && o.value.toLowerCase() === String(value).toLowerCase());
+    if (option) select.value = option.value;
+    return Boolean(option);
+  };
+  if (year) pick($('car-year'), year);
+  if (!make) return;
+  if (!pick($('car-make'), make)) {
+    $('car-make').value = 'Other';
+    $('car-make-other').value = make;
+  }
+  $('car-make').dispatchEvent(new Event('change'));
+  if ($('car-make').value === 'Other') $('car-make-other').value = make;
+  if (!model) return;
+  if ($('car-model').hidden || !pick($('car-model'), model)) {
+    if (!$('car-model').hidden) {
+      $('car-model').value = MODEL_OTHER;
+      $('car-model').dispatchEvent(new Event('change'));
+    }
+    $('car-model-other').value = model;
+  }
+}
+
 export function getCar() {
   if (carSkipped) return {};
   const make = $('car-make').value === 'Other' ? $('car-make-other').value.trim() : $('car-make').value;
@@ -152,6 +191,8 @@ export function setConnection(state, text) {
   $('conn-status').textContent = text;
   $('connect-btn').textContent = state === 'connected' ? 'Disconnect' : 'Connect';
   $('connect-btn').disabled = connectBlocked || state === 'busy';
+  $('protocol-options').disabled = state !== 'idle';
+  $('protocol-select').disabled = !$('protocol-override').checked || state !== 'idle';
 }
 
 export function setControls({ scan = false, print = false, clear = false }) {

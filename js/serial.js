@@ -62,6 +62,7 @@ export class SerialTransport {
     this.port = port;
     this.onData = () => {};
     this.onDisconnect = () => {};
+    this.tap = null;  // (direction, text) => void, see traffic.js
     this.closing = false;
     this.lost = false;
     port.addEventListener('disconnect', () => this.#adapterLost());
@@ -71,6 +72,7 @@ export class SerialTransport {
   #adapterLost() {
     if (this.closing || this.lost) return;
     this.lost = true;
+    this.tap?.('note', 'The adapter was unplugged');
     this.onDisconnect(new Error('The adapter was unplugged.'));
   }
 
@@ -86,6 +88,7 @@ export class SerialTransport {
   }
 
   async open(baudRate) {
+    this.tap?.('note', `Opening the port at ${baudRate} baud`);
     await this.port.open({ baudRate });
     this.lost = false;
     this.writer = this.port.writable.getWriter();
@@ -102,7 +105,9 @@ export class SerialTransport {
         for (;;) {
           const { value, done } = await this.reader.read();
           if (done) break;
-          this.onData(decoder.decode(value, { stream: true }));
+          const text = decoder.decode(value, { stream: true });
+          this.tap?.('rx', text);
+          this.onData(text);
         }
       } catch (err) {
         // NetworkError means the device is gone. Other read errors are recoverable: get a new reader.
@@ -114,11 +119,13 @@ export class SerialTransport {
   }
 
   async write(text) {
+    this.tap?.('tx', text);
     await this.writer.write(new TextEncoder().encode(text));
   }
 
   async close() {
     this.closing = true;
+    this.tap?.('note', 'Closing the port');
     // Each step is guarded on its own so one failure can't leave the port open and locked.
     await this.reader?.cancel().catch(() => {});
     await this.readLoop?.catch(() => {});

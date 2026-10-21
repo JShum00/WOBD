@@ -1,12 +1,14 @@
 // Wires the adapter, OBD requests, Bob, and the UI together and holds app state.
 import { SerialTransport, checkBrowser } from './serial.js';
 import { DemoTransport, DemoBaudTransport, BAUD_DEMOS } from './demo.js';
+import { vehicleProfile } from './vehicles.js';
 import { ELM327, ElmError } from './elm327.js';
 import { abortOnUnplug, detectBaud, rateOptions } from './smartbauder.js';
 import * as obd from './obd.js';
 import { Bob, loadCodeBook, loadGenericCodes, lookup } from './bob.js';
 import * as ui from './ui.js';
 import { Voice } from './voice.js';
+import { createTrafficView } from './traffic.js';
 import { DriveLock, Recording } from './recorder.js';
 import { RecordLock } from './record-lock.js';
 import { GaugePicker, defaultKeys, pickerChoices } from './gauge-picker.js';
@@ -46,6 +48,29 @@ const state = {
   wakeLock: null,
 };
 
+const traffic = createTrafficView({
+  pre: $('traffic-log'),
+  details: $('traffic'),
+  copy: $('traffic-copy'),
+  clear: $('traffic-clear'),
+  mask: $('traffic-mask'),
+  header: trafficHeader,
+  onFirstEntry: () => { $('traffic').hidden = false; },
+});
+// The version line is added by version.js, so this reads it when copying, not at load.
+function trafficHeader() {
+  const version = document.querySelector('.site-version')?.textContent ?? 'WOBD';
+  const protocol = ui.getProtocolOverride();
+  return [
+    version,
+    `Browser: ${navigator.userAgent}`,
+    `Date: ${new Date().toISOString()}`,
+    `Baud rate: ${state.baudRate ?? 'not detected'}`,
+    `Protocol: ${protocol === null ? 'automatic' : `${protocol} chosen`}${state.protocol ? `, connected on ${state.protocol.number} (${state.protocol.name})` : ''}`,
+    `Adapter: ${state.connInfo?.version ?? 'unknown'}`,
+  ].join('\n');
+}
+
 const voice = new Voice();
 const bob = new Bob({ slot: $('bob-slot'), live: $('bob-live'), getCar: ui.getCar, voice });
 const recordLock = new RecordLock({ onSave: saveRecording, onKeep: keepRecording });
@@ -64,6 +89,7 @@ async function start() {
   if (!browser.supported) ui.showBrowserAlert(browser, { demo });
   if (demo) ui.showDemoBadge();
   ui.initWelcome(demo);
+  ui.initProtocolOverride(obd.PROTOCOLS);
 
   initConnInfo();
   ui.initTabs(onTabChange);
@@ -83,6 +109,7 @@ async function start() {
       loadCodeBook(),
     ]);
     ui.initCarForm(makes, models);
+    if (demo === 'sim') ui.setCar({ year: params.get('year'), make: params.get('make'), model: params.get('model') });
   } catch (err) {
     showError(new Error(`I couldn't load my notes. ${err.message}`));
     return;
@@ -144,7 +171,15 @@ function showError(err) {
 
 // ---------- Connect ----------
 
+// ?demo=sim builds the car from the year, make, and model in the header when you connect.
 function demoTransport(name) {
+  if (name === 'sim') {
+    return new DemoTransport(vehicleProfile({
+      ...ui.getCar(),
+      codeSet: params.get('codes') ?? undefined,
+      autoFails: params.has('noauto'),
+    }));
+  }
   return BAUD_DEMOS.includes(name) ? new DemoBaudTransport(name) : new DemoTransport(name);
 }
 
@@ -152,6 +187,12 @@ async function onConnectClick() {
   if (state.elm) {
     await disconnect();
     bob.say({ text: "Disconnected. Click Connect when you're ready for another scan." });
+    return;
+  }
+
+  const protocol = ui.getProtocolOverride();
+  if (protocol === '') {
+    bob.say({ tone: 'medium', mood: 'question', text: 'Choose a protocol or uncheck the override to use automatic selection.' });
     return;
   }
 
@@ -173,22 +214,30 @@ async function onConnectClick() {
     return;
   }
 
-  await connectTo(transport);
+  traffic.begin(`New connection, ${protocol === null ? 'automatic protocol' : `protocol ${protocol} chosen`}`);
+  await connectTo(transport, { protocol });
 }
 
 // Opens the adapter and says hello to the car. baudRate skips detection (the manual Retry).
-async function connectTo(transport, { baudRate } = {}) {
+async function connectTo(transport, { baudRate, protocol } = {}) {
   ui.setConnection('busy', 'Connecting…');
   bob.say({ text: 'Looking for your adapter…' });
 
   // Unplugging or cancelling stops detection at once.
   const abort = abortOnUnplug(transport);
+  traffic.attach(transport);
   try {
-    const { elm, baudRate: connectedBaud } = await openAdapter(transport, { baudRate, abort });
+    const { elm, baudRate: connectedBaud } = await openAdapter(transport, { baudRate, protocol, abort });
     ui.setConnection('busy', 'Talking to the car…');
     bob.say({ text: "Found the adapter. Now I'm saying hello to the car. Older cars can take a few seconds." });
 
-    const supported = await obd.readSupportedPids(elm, { headers: true });
+    let supported;
+    try {
+      supported = await obd.readSupportedPids(elm, { headers: true });
+    } catch (err) {
+      if (err.code === 'UNABLE_TO_CONNECT') await logAdapterProtocol(elm);
+      throw err;
+    }
     state.supportedPids = supported?.pids ?? null;
     state.ecuPids = supported?.ecus ?? [];
     if (supported) {
@@ -202,6 +251,12 @@ async function connectTo(transport, { baudRate } = {}) {
     state.protocol = await obd.readProtocol(elm);
     state.vin = await obd.readVin(elm);
     state.connInfo = await collectConnInfo(elm);
+    if (!supported) {
+      console.info('[WOBD] Adapter protocol after unanswered 0100:', {
+        ATDP: state.connInfo.protocolName,
+        ATDPN: state.connInfo.protocolNumber,
+      });
+    }
     state.baudRate = connectedBaud;
     state.requestMs = state.connInfo.requestMs;
     ({
@@ -215,6 +270,7 @@ async function connectTo(transport, { baudRate } = {}) {
     state.transport = transport;
     state.elm = elm;
   } catch (err) {
+    traffic.add('note', `Connection failed: ${err.code ?? 'error'}: ${err.message}`);
     transport.onDisconnect = () => {};
     await transport.close();
     ui.setConnection('idle', 'Not connected');
@@ -256,7 +312,7 @@ const FALLBACK_LINE = {
 
 // Detects the baud rate with a quick ID probe, then resets and configures the adapter once.
 // Resolves with the adapter and the rate it answered at (null when detection was skipped).
-async function openAdapter(transport, { baudRate, abort }) {
+async function openAdapter(transport, { baudRate, protocol, abort }) {
   let detected = null;
   if (transport instanceof DemoTransport && !(transport instanceof DemoBaudTransport)) {
     await transport.open();
@@ -267,12 +323,26 @@ async function openAdapter(transport, { baudRate, abort }) {
   const elm = new ELM327(transport);
   try {
     await elm.reset();
-    await elm.configure();
+    await elm.configure(protocol ?? '0');
     return { elm, baudRate: detected };
   } catch (err) {
     await transport.close();
     throw err;
   }
+}
+
+async function logAdapterProtocol(elm) {
+  const readings = {};
+  for (const command of ['ATDP', 'ATDPN']) {
+    try {
+      const [reply = ''] = await elm.send(command);
+      readings[command] = reply || '(empty reply)';
+    } catch (err) {
+      readings[command] = `failed: ${err.message}`;
+      console.warn(`[WOBD] ${command} failed while checking protocol after no vehicle response:`, err);
+    }
+  }
+  console.info('[WOBD] Adapter protocol after failed vehicle request:', readings);
 }
 
 async function detect(transport, { baudRate, abort }) {
@@ -313,7 +383,8 @@ function showBaudRetry(transport, err) {
     text: err.message,
     details: [ui.baudRetryForm(err.rates, (rate) => {
       if (state.elm) return;
-      connectTo(transport, { baudRate: rate });
+      traffic.begin(`Retrying at ${rate} baud`);
+      connectTo(transport, { baudRate: rate, protocol: ui.getProtocolOverride() });
     })],
   });
 }
