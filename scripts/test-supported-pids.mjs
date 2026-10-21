@@ -69,7 +69,7 @@ const cases = [
   ['header-aware parser preserves 29-bit and legacy ECU source', () => {
     const [can, legacy] = toMessages([
       '18DAF110 06 41 00 BE 3C 98 10',
-      '48 6B 10 41 00 BE 3C 98 10',
+      '48 6B 10 41 00 BE 3C 98 10 F9',
     ]);
     assert.equal(can.ecuSource, '18DAF110');
     assert.equal(legacy.ecuSource, '486B10');

@@ -58,7 +58,7 @@ const cases = [
     ]);
   }],
   ['legacy DTC replies decode padded pairs without requiring a CAN count', () => {
-    const messages = toMessages(['486B10 47 01 30 00 00 00 00']);
+    const messages = toMessages(['486B10 47 01 30 00 00 00 00 AB']);
     assert.deepEqual(decodeDtcs(messages, false, 0x07), ['P0130']);
   }],
   ['CAN DTC count and payload length are validated', () => {

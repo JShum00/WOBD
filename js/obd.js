@@ -235,7 +235,7 @@ export function toMessages(lines) {
     const line = raw.replace(/\s+/g, '').toUpperCase();
     const frame = /^[0-9A-F]:([0-9A-F]+)$/.exec(line);
     const canHeader = /^(7E[0-9A-F]|18DAF1[0-9A-F]{2})([0-9A-F]{2})([0-9A-F]*)$/.exec(line);
-    const legacy = /^([0-9A-F]{6})((?:41[0-9A-F]{2}|43|44|47|4A|49[0-9A-F]{2})[0-9A-F]*)$/.exec(line);
+    const legacy = /^((?:[0-9A-F]{2}6B|[89A-F][0-9A-F]F1)[0-9A-F]{2})((?:41[0-9A-F]{2}|43|44|47|4A|49[0-9A-F]{2})[0-9A-F]*)$/.exec(line);
     if (/^[0-9A-F]{3}$/.test(line)) {
       flush();
       multi = { length: parseInt(line, 16), bytes: [] };
@@ -266,7 +266,8 @@ export function toMessages(lines) {
       multi.bytes.push(...toBytes(frame[1]));
     } else if (legacy) {
       flush();
-      addMessage(toBytes(legacy[2]), legacy[1]);
+      // J1850/ISO replies end with a checksum byte that is not payload
+      addMessage(toBytes(legacy[2]).slice(0, -1), legacy[1]);
     } else if (/^([0-9A-F]{2})+$/.test(line)) {
       flush();
       addMessage(toBytes(line));
