@@ -4,6 +4,7 @@
 import { renderGauges, updateGauge } from './ui.js';
 import { baudLabel } from './conninfo.js';
 import { MAX_FILE_BYTES, ReplayError, indexAt, parseRecording, parseRecordingStream, valueAt } from './replay-data.js';
+import { createDownsampleCache, extent, playedParts, prepareSeries } from './replay-downsample.js';
 
 const SAMPLE = 'reports/vlinker-fs-usb-pt-cruiser-2026-10-02/wobd-recording-2026-10-02-192055.csv';
 const STRIP_HEIGHT = 84;   // css px per graph
@@ -11,6 +12,9 @@ const AXIS_HEIGHT = 20;    // extra room under the last graph for the time label
 const PAD = { left: 44, right: 12, top: 8, bottom: 8 };
 
 const $ = (id) => document.getElementById(id);
+
+// Holds each graph's downsampled drawing view until the recording or the graph width changes.
+const downsampled = createDownsampleCache();
 
 const state = {
   rec: null,
@@ -151,13 +155,12 @@ function niceScale(min, max, count = 3) {
 function buildStrips(rec) {
   const numeric = rec.series.filter((s) => s.def.style !== 'status');
   state.strips = numeric.map((series, i) => {
-    let min = Math.min(...series.values);
-    let max = Math.max(...series.values);
+    let { min, max } = extent(series.values);
     if (series.def.bipolar) { min = Math.min(min, 0); max = Math.max(max, 0); }
     const canvas = document.createElement('canvas');
     canvas.className = 'replay-canvas';
     canvas.setAttribute('aria-hidden', 'true');
-    const strip = { series, canvas, scale: niceScale(min, max), isLast: i === numeric.length - 1 };
+    const strip = { series, prep: prepareSeries(series), canvas, scale: niceScale(min, max), isLast: i === numeric.length - 1 };
     canvas.addEventListener('pointermove', (e) => hover(strip, e));
     canvas.addEventListener('pointerleave', () => hover(null));
     canvas.addEventListener('click', (e) => seek(timeAtX(strip, e)));
@@ -172,8 +175,10 @@ function buildStrips(rec) {
     return strip;
   });
   $('replay-strips').replaceChildren(...state.strips.map((s) => s.wrap));
-  $('replay-chart-summary').textContent = numeric.map(({ def, values }) =>
-    `${def.label}: ${formatValue(def, Math.min(...values))} to ${formatValue(def, Math.max(...values))}.`).join(' ');
+  $('replay-chart-summary').textContent = numeric.map(({ def, values }) => {
+    const { min, max } = extent(values);
+    return `${def.label}: ${formatValue(def, min)} to ${formatValue(def, max)}.`;
+  }).join(' ');
 }
 
 function resizeStrips() {
@@ -241,20 +246,48 @@ function drawStrip(strip, c) {
     if (strip.isLast) ctx.fillText(clock(t), x, plotBottom + 6);
   }
 
-  // The reading so far: a 2px line up to the playhead, ending in a ringed dot.
+  // The reading so far, up to the playhead: a 2px line through the downsampled view (every
+  // pixel keeps its first, lowest, highest and last reading), ending in a ringed dot at the
+  // exact reading. No line crosses a visual gap; that is only a pause in the readings.
   const last = indexAt(series, state.t);
   if (last >= 0) {
+    const opts = { t0: 0, t1: state.rec.durationMs, buckets: Math.max(1, Math.floor(plotWidth(strip))) };
+    const parts = playedParts(strip.prep, downsampled.get(strip.prep, opts), state.t, opts);
+    const bands = [];
+    const dots = [];
     ctx.strokeStyle = c.line;
     ctx.lineWidth = 2;
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
     ctx.beginPath();
-    for (let i = 0; i <= last; i++) {
-      const x = xAt(strip, series.times[i]);
-      const y = yAt(series.values[i]);
-      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    let px = 0;
+    let py = 0;
+    let open = false;
+    let length = 0;
+    for (const { view, count } of parts) {
+      for (let k = 0; k < count; k++) {
+        const x = xAt(strip, view.times[k]);
+        const y = yAt(view.values[k]);
+        if (open && view.gapBefore[k]) bands.push([px, x]);
+        if (!open || view.gapBefore[k]) {
+          if (open && length === 1) dots.push([px, py]);
+          ctx.moveTo(x, y);
+          length = 1;
+          open = true;
+        } else {
+          ctx.lineTo(x, y);
+          length++;
+        }
+        px = x;
+        py = y;
+      }
     }
+    if (open && length === 1) dots.push([px, py]);
+    ctx.fillStyle = c.grid;
+    for (const [from, to] of bands) ctx.fillRect(from, PAD.top, Math.max(1, to - from), plotBottom - PAD.top);
     ctx.stroke();
+    ctx.fillStyle = c.line;
+    for (const [x, y] of dots) { ctx.beginPath(); ctx.arc(x, y, 2, 0, Math.PI * 2); ctx.fill(); }
     const x = xAt(strip, series.times[last]);
     const y = yAt(series.values[last]);
     ctx.fillStyle = c.surface;

@@ -355,6 +355,16 @@ Required example fixtures or traces (with any real VIN/location redacted):
 - **Localization:** missing keys, placeholder substitutions, report printing, English fallback.
 - **Reports:** few-minute and several-hour data, many events, no events, unsupported PIDs, and missing timestamps.
 
+### Pre-release checklist (manual, real hardware and browsers)
+
+Automated Node and headless-browser results are evidence, not release sign-off. Before any release containing the streaming importer or later recording work, record date, device, browser version, and outcome for each:
+
+- [ ] **Chrome file-picker path:** choose a CSV with the Replay page's file input (this exercises `file.stream()`; the headless check only covered link loading via `fetch`). Cover the real PT Cruiser file, a CSV with a BOM and CRLF line ends, a non-WOBD CSV (friendly error), and a file near the 128 MiB cap.
+- [ ] **Real ChromeOS device:** repeat the above on ChromeOS Chrome, including a multi-hour synthetic file; observe memory, UI responsiveness, and tab stability. Node `maxRSS` figures are not browser heap measurements.
+- [ ] **Replay with a large recording:** play, seek, resize, and hover on a multi-hour recording on the ChromeOS device (see the render-time downsampling proposal).
+- [ ] Safari and Firefox are best-effort for review/import; note results if tested.
+- [ ] Later stages add: live recording with IndexedDB persistence and crash recovery, `.wobd` export/import on ChromeOS, and CSV compatibility checks.
+
 Each stage is done only when: deterministic tests pass; no regression in serial queue/connection/gauge/scan/export/record-lock behavior; docs accurately describe support and limitations; user-facing messaging is cautious; no unapproved paid service or data upload was introduced; and any physical vehicle validation is logged separately with date, car, adapter, protocol, and outcome.
 
 ## 7. Risks, explicit non-goals, and cautions
