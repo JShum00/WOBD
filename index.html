@@ -51,8 +51,9 @@
   </header>
 
   <div class="dev-banner" role="note">
-    <strong>WOBD is in active testing and development.</strong>
-    Results aren't guaranteed yet, so double-check anything important with a mechanic.
+    <strong>Hey there, we're rolling out an update!</strong>
+    If you find an issue, please <a href="contact.html">let us know through our contact form</a>.
+    WOBD is in active testing and development, so results aren't guaranteed yet.
   </div>
 
   <div id="browser-alert" class="browser-alert" role="alert" hidden>
@@ -76,7 +77,7 @@
 
         <table id="codes-table" class="codes-table" hidden>
           <thead>
-            <tr><th scope="col">Code</th><th scope="col">Description</th><th scope="col" class="col-urgency">Urgency</th></tr>
+            <tr><th scope="col">Code</th><th scope="col">Description</th><th scope="col" class="col-urgency">Urgency</th><th scope="col">Status / ECU</th></tr>
           </thead>
           <tbody id="codes-body"></tbody>
         </table>
@@ -109,6 +110,7 @@
             </div>
             <ul class="demo-list">
               <li><a href="?demo" data-demo="can">Newer car with trouble codes <small>CAN · a misfire, a lean code, and an EVAP leak</small></a></li>
+              <li><a href="?demo=pending" data-demo="pending">Pending and permanent codes <small>Try the expanded DTC status scan</small></a></li>
               <li><a href="?demo=iso" data-demo="iso">Older car, like a 2001 PT Cruiser <small>J1850 VPW · includes a brand-specific code</small></a></li>
               <li><a href="?demo=clear" data-demo="clear">Healthy car <small>No trouble codes</small></a></li>
               <li><a href="?demo=drive" data-demo="drive">A short drive <small>Try Live data recording: idles, drives, then stops</small></a></li>
@@ -144,6 +146,10 @@
             <p class="record-hint">Logs these readings to a CSV you can graph later. The screen locks until you stop. Saved a drive? <a href="replay.html">Replay it</a>.</p>
           </div>
           <div id="gauges" class="gauges"></div>
+          <details class="live-catalog">
+            <summary>Parameter values and status</summary>
+            <div id="live-catalog-table"></div>
+          </details>
         </div>
       </div>
     </section>

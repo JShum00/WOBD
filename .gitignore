@@ -4,7 +4,8 @@ Thumbs.db
 *.swp
 .vscode/
 .idea/
-Docs/
+Docs/*
+!Docs/Advanced-Diagnostics-Plan.md
 
 # Logs and scratch files
 *.log

@@ -215,6 +215,7 @@ export function renderCodes(entries, onSelect) {
       h('td', {}, h('button', { type: 'button', class: 'code-link', onClick: () => onSelect(entry) }, entry.code)),
       h('td', {}, entry.title),
       h('td', {}, urgencyBadge(entry.urgency)),
+      h('td', {}, `${entry.dtcStatus}${entry.ecuSource ? ` · ECU ${entry.ecuSource}` : ''}`),
     )));
   $('codes-table').hidden = entries.length === 0;
   $('codes-hint').hidden = entries.length === 0;
@@ -355,6 +356,65 @@ export function updateGauge(def, value) {
   }
 }
 
+let liveCatalogRows = new Map();
+
+function catalogKey(pid) {
+  return pid == null ? 'ATRV' : pid.toString(16).toUpperCase().padStart(2, '0');
+}
+
+function catalogValue(entry) {
+  const value = entry.lastSuccessfulReading;
+  if (value == null) return '—';
+  return typeof value === 'number'
+    ? `${value.toFixed(entry.digits ?? entry.decoder?.digits ?? 2)}${entry.unit ? ` ${entry.unit}` : ''}`
+    : String(value);
+}
+
+export function renderParameterCatalog(entries) {
+  const table = h('table', { class: 'live-catalog-table' },
+    h('thead', {}, h('tr', {},
+      h('th', { scope: 'col' }, 'Parameter'),
+      h('th', { scope: 'col' }, 'PID'),
+      h('th', { scope: 'col' }, 'Latest value'),
+      h('th', { scope: 'col' }, 'Status'),
+      h('th', { scope: 'col' }, 'Last successful reading'))),
+    h('tbody'));
+  const body = table.querySelector('tbody');
+  liveCatalogRows = new Map();
+  const rows = [...entries, {
+    pid: null,
+    name: 'Adapter voltage',
+    unit: 'V',
+    digits: 1,
+    ecuSources: [],
+    availability: 'not-selected',
+    lastSuccessfulReading: null,
+    lastUpdatedAt: null,
+  }];
+  for (const entry of rows) {
+    const key = catalogKey(entry.pid);
+    const row = h('tr', {},
+      h('th', { scope: 'row' }, entry.name),
+      h('td', { class: 'mono' }, entry.pid == null ? 'ATRV' : `0x${key}`),
+      h('td', { class: 'catalog-value' }, catalogValue(entry)),
+      h('td', { class: 'catalog-status' }, entry.availability),
+      h('td', { class: 'catalog-time' }, 'Not read yet'));
+    body.append(row);
+    liveCatalogRows.set(key, { row, entry });
+  }
+  $('live-catalog-table').replaceChildren(table);
+}
+
+export function updateParameterCatalog(entry) {
+  const row = liveCatalogRows.get(catalogKey(entry.pid));
+  if (!row) return;
+  row.entry = entry;
+  row.row.querySelector('.catalog-value').textContent = catalogValue(entry);
+  row.row.querySelector('.catalog-status').textContent = entry.availability;
+  row.row.querySelector('.catalog-time').textContent = entry.lastUpdatedAt
+    ? new Date(entry.lastUpdatedAt).toLocaleTimeString() : 'Not read yet';
+}
+
 // ---------- Clear codes dialog ----------
 
 export function confirmClear() {
@@ -373,9 +433,11 @@ export function confirmClear() {
 
 // ---------- Printable report ----------
 
-export function renderReport({ scannedAt, car, vin, status, entries, connection }) {
+export function renderReport({ scannedAt, car, vin, status, services, entries, connection }) {
   const vehicle = carLabel(car);
   const codeCount = `${entries.length} code${entries.length === 1 ? '' : 's'} found`;
+  const serviceSummary = services.map((service) =>
+    `${service.label}: ${service.available ? `${service.codes.length} reported` : 'unavailable'}`).join(' · ');
 
   const parts = [
     h('header', { class: 'report-header' },
@@ -387,22 +449,26 @@ export function renderReport({ scannedAt, car, vin, status, entries, connection 
         connection && [h('br'), connection])),
     h('p', { class: 'report-status' },
       h('strong', {}, 'Check engine light: '), status ? (status.milOn ? 'ON' : 'OFF') : 'Unknown',
-      ` · ${codeCount}`),
+      ` · ${codeCount}`,
+      serviceSummary && [h('br'), `DTC services: ${serviceSummary}`]),
     entries.length > 0 && h('table', {},
-      h('thead', {}, h('tr', {}, h('th', {}, 'Code'), h('th', {}, 'Title'), h('th', {}, 'Urgency'), h('th', {}, 'What it means'))),
+      h('thead', {}, h('tr', {}, h('th', {}, 'Code'), h('th', {}, 'Title'), h('th', {}, 'Urgency'), h('th', {}, 'Status / ECU'), h('th', {}, 'What it means'))),
       h('tbody', {}, entries.map((e) => h('tr', {},
         h('td', { class: 'mono' }, e.code),
         h('td', {}, e.title),
         h('td', { class: 'urgency' }, (URGENCY[e.urgency] ?? URGENCY.unknown).label),
+        h('td', {}, `${e.dtcStatus}${e.ecuSource ? ` · ECU ${e.ecuSource}` : ''}`),
         h('td', {}, e.plain))))),
     entries.map((e) => h('section', { class: 'report-code' },
-      h('h3', {}, `${e.code} · ${e.title}`),
+      h('h3', {}, `${e.code} · ${e.title} (${e.dtcStatus})`),
       h('p', {}, h('strong', {}, 'Urgency: '), `${(URGENCY[e.urgency] ?? URGENCY.unknown).label}. `,
         (URGENCY[e.urgency] ?? URGENCY.unknown).says),
       e.causes.length > 0 && [h('p', {}, h('strong', {}, 'Common causes:')), h('ul', {}, e.causes.map((c) => h('li', {}, c)))],
       e.difficulty && h('p', {}, h('strong', {}, 'DIY or shop: '), DIFFICULTY[e.difficulty]),
       h('p', {}, h('strong', {}, 'Tell your mechanic: '), `“${e.tellMechanic}”`))),
-    entries.length === 0 && h('p', {}, 'No stored trouble codes were found.'),
+    entries.length === 0 && h('p', {}, services.some((service) => !service.available)
+      ? 'No codes were found in the available DTC services. This scan may be incomplete.'
+      : 'No stored, pending, or permanent trouble codes were found.'),
     h('footer', { class: 'report-footer' },
       h('p', {}, DISCLAIMER),
       h('p', {}, "WOBD is in active testing and development, and its results aren't guaranteed yet."),

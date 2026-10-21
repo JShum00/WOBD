@@ -4,8 +4,11 @@
 // Prints a table and exits non-zero if any case fails.
 import assert from 'node:assert/strict';
 import { ElmError } from '../js/elm327.js';
-import { BATTERY, PRESETS, ROUND_PAUSE_MS, SLOW_EVERY, readSupportedPids, decodeSupportedPids, toMessages } from '../js/obd.js';
-import { defaultKeys, estimateRefresh, pickerChoices, presetKeys } from '../js/gauge-picker.js';
+import {
+  BATTERY, LIVE_PIDS, MODE01_DECODERS, PRESETS, ROUND_PAUSE_MS, SLOW_EVERY,
+  buildPidCatalog, pollingInterval, readPid, readSupportedPids, decodeSupportedPids, toMessages,
+} from '../js/obd.js';
+import { automaticKeys, defaultKeys, estimateRefresh, pickerChoices, presetKeys } from '../js/gauge-picker.js';
 
 // ---------- Fakes ----------
 
@@ -18,6 +21,7 @@ function fakeElm(replies) {
     async send(command) {
       sent.push(command);
       const reply = replies[command];
+      if (reply === undefined && ['ATS1', 'ATH1', 'ATH0', 'ATS0'].includes(command)) return ['OK'];
       if (reply === undefined) throw new ElmError('NO_DATA', 'NO DATA');
       if (typeof reply === 'string') throw new ElmError(reply, reply);
       return reply;
@@ -36,6 +40,71 @@ const PT_CRUISER_GAUGES = ['03', '04', '05', '06', '07', '0B', '0C', '0D', '0E',
 // ---------- Cases ----------
 
 const cases = [
+  ['header-aware parser preserves 11-bit CAN ECU source and strips PCI length', () => {
+    const [message] = toMessages(['7E8 06 41 00 BE 3C 98 10']);
+    assert.deepEqual([...message], [0x41, 0x00, 0xBE, 0x3C, 0x98, 0x10]);
+    assert.equal(message.ecuSource, '7E8');
+  }],
+  ['automatic mode selects every supported monitorable decoder and keeps legacy defaults', async () => {
+    const { pids } = await readSupportedPids(fakeElm({
+      '0100': ['4100BE3FB811'],
+      '0120': ['412080022001'],
+      '0140': ['414044008010'],
+    }));
+    const { offered } = pickerChoices(pids);
+    const selected = automaticKeys(offered);
+    assert.equal(selected.size, offered.length);
+    assert.equal(selected.has('battery'), true);
+    assert.equal(defaultKeys(offered).has('modulevoltage'), false);
+    assert.equal(defaultKeys(offered).has('speed'), true);
+  }],
+  ['automatic polling staggers priority while manual keeps the existing cadence', () => {
+    const def = (key) => LIVE_PIDS.find((item) => item.key === key);
+    assert.equal(pollingInterval(def('rpm'), 'automatic'), 1);
+    assert.equal(pollingInterval(def('stft'), 'automatic'), 3);
+    assert.equal(pollingInterval(def('coolant'), 'automatic'), 8);
+    assert.equal(pollingInterval(def('rpm'), 'manual'), 1);
+    assert.equal(pollingInterval(def('coolant'), 'manual'), SLOW_EVERY);
+  }],
+  ['header-aware parser preserves 29-bit and legacy ECU source', () => {
+    const [can, legacy] = toMessages([
+      '18DAF110 06 41 00 BE 3C 98 10',
+      '48 6B 10 41 00 BE 3C 98 10',
+    ]);
+    assert.equal(can.ecuSource, '18DAF110');
+    assert.equal(legacy.ecuSource, '486B10');
+    assert.equal(decodeSupportedPids([can]).valid, true);
+    assert.equal(decodeSupportedPids([legacy]).valid, true);
+  }],
+  ['supported PID page rejects extra payload bytes', () => {
+    const page = decodeSupportedPids(toMessages(['4100BE3C981000']));
+    assert.equal(page.valid, false);
+    assert.equal(page.pids.size, 0);
+  }],
+  ['header-enabled discovery keeps per-ECU maps and restores adapter formatting', async () => {
+    const elm = fakeElm({
+      '0100': [
+        '7E8 06 41 00 BE 3F B8 11',
+        '7E9 06 41 00 80 18 00 00',
+      ],
+      '0120': [
+        '7E8 06 41 20 80 02 20 01',
+        '7E9 06 41 20 00 00 00 00',
+      ],
+      '0140': ['7E8 06 41 40 44 00 80 10'],
+    });
+    const result = await readSupportedPids(elm, { headers: true });
+    assert.equal(result.ecus.length, 2);
+    assert.equal(result.ecus.find((ecu) => ecu.source === '7E8').pids.has(0x21), true);
+    assert.equal(result.ecus.find((ecu) => ecu.source === '7E9').pids.has(0x21), false);
+    assert.equal(result.ecus.find((ecu) => ecu.source === '7E8').pids.has(0x5C), true);
+    assert.deepEqual(elm.sent, ['ATS1', 'ATH1', '0100', '0120', '0140', 'ATH0', 'ATS0']);
+  }],
+  ['header-mode discovery restores adapter formatting when a range errors', async () => {
+    const elm = fakeElm({ '0100': ['NO DATA'] });
+    assert.equal(await readSupportedPids(elm, { headers: true }), null);
+    assert.deepEqual(elm.sent, ['ATS1', 'ATH1', '0100', 'ATH0', 'ATS0']);
+  }],
   ['decoder: byte A bit 7 is base+1, byte D bit 0 is base+0x20', async () => {
     const { pids, valid } = decodeSupportedPids(toMessages(['412080000001']), 0x20);
     assert.equal(valid, true);
@@ -49,8 +118,8 @@ const cases = [
     const { offered, undecoded } = pickerChoices(pids);
     assert.deepEqual(offered.filter((d) => d !== BATTERY).map((d) => d.pid.toString(16).toUpperCase().padStart(2, '0')).sort(), PT_CRUISER_GAUGES);
     assert.equal(offered.at(-1), BATTERY, 'battery is always offered');
-    assert.deepEqual(undecoded.map((u) => u.pid), [0x1C], '0x01 is used by the scan, so not listed');
-    assert.equal(undecoded[0].name, 'OBD standard');
+    assert.deepEqual(undecoded, [], 'the supported OBD standard PID has a decoder but is not a gauge');
+    assert.equal(MODE01_DECODERS.has(0x1C), true);
   }],
   ['multi-ECU: masks are OR-ed and either ECU can continue the chain', async () => {
     const elm = fakeElm({
@@ -62,7 +131,7 @@ const cases = [
     assert.deepEqual(elm.sent, ['0100', '0120', '0140']);
     for (const pid of [0x0C, 0x0D, 0x21, 0x2F, 0x33, 0x42, 0x46, 0x51, 0x5C]) assert.ok(pids.has(pid), `0x${pid.toString(16)}`);
     const { undecoded } = pickerChoices(pids);
-    assert.deepEqual(undecoded.map((u) => u.pid), [0x13, 0x1C, 0x21, 0x2F, 0x33, 0x42, 0x46, 0x51, 0x5C]);
+    assert.deepEqual(undecoded.map((u) => u.pid), [0x13, 0x2F, 0x33, 0x51]);
   }],
   ['the second ECU alone can carry the chain bit', async () => {
     const elm = fakeElm({ '0100': ['4100BE3FB810', '410000000001'], '0120': ['412000000000', '412080000000'] });
@@ -90,7 +159,7 @@ const cases = [
   ['NO DATA on 0100: null, so the default gauges are offered', async () => {
     assert.equal(await readSupportedPids(fakeElm({})), null);
     const { offered, undecoded } = pickerChoices(null);
-    assert.equal(offered.length, 15, 'every decoder plus battery');
+    assert.equal(offered.length, LIVE_PIDS.length + 1, 'every live decoder plus battery');
     assert.deepEqual(undecoded, []);
   }],
   ['"?", timeout, and bus errors on 0100 also fall back', async () => {
@@ -132,6 +201,40 @@ const cases = [
     assert.deepEqual(estimateRefresh(pick('rpm', 'speed', 'coolant'), 150), { fastMs: round, slowMs: round * SLOW_EVERY });
     // Fewer gauges really is faster.
     assert.ok(estimateRefresh(pick('rpm'), 150).fastMs < estimateRefresh(offered, 150).fastMs / 5);
+  }],
+  ['new PID formulas decode exact verified payload shapes', async () => {
+    const data = [
+      [0x21, '41210102', 258],
+      [0x31, '41310102', 258],
+      [0x23, '41230064', 1000],
+      [0x3C, '413C01F4', 50],
+      [0x42, '414236B0', 14],
+      [0x44, '41448000', 1],
+      [0x46, '414650', 104],
+      [0x5C, '415C50', 104],
+    ];
+    for (const [pid, reply, expected] of data) {
+      const def = MODE01_DECODERS.get(pid);
+      assert.equal(await readPid(fakeElm({ [`01${pid.toString(16).toUpperCase().padStart(2, '0')}`]: [reply] }), def), expected);
+    }
+  }],
+  ['PID reads reject malformed lengths instead of decoding partial bytes', async () => {
+    const def = MODE01_DECODERS.get(0x42);
+    await assert.rejects(readPid(fakeElm({ '0142': ['414236'] }), def), { code: 'MALFORMED_RESPONSE' });
+    await assert.rejects(readPid(fakeElm({ '0142': ['414236B000'] }), def), { code: 'MALFORMED_RESPONSE' });
+  }],
+  ['dynamic catalog reports decoder, status, units, and ECU sources', () => {
+    const catalog = buildPidCatalog(new Set([0x1C, 0x21, 0x55]), [
+      { source: '7E8', pids: new Set([0x1C, 0x21]) },
+      { source: '7E9', pids: new Set([0x21]) },
+    ]);
+    assert.deepEqual(catalog.map(({ pid }) => pid), [0x1C, 0x21, 0x55]);
+    assert.deepEqual(catalog[0].ecuSources, ['7E8']);
+    assert.equal(catalog[0].decoderAvailable, true);
+    assert.equal(catalog[0].monitorable, false);
+    assert.equal(catalog[1].unit, 'km');
+    assert.deepEqual(catalog[1].ecuSources, ['7E8', '7E9']);
+    assert.equal(catalog[2].decoderAvailable, false);
   }],
 ];
 

@@ -268,6 +268,7 @@ a:hover { color: var(--link-hover); }
   text-align: center;
   font-size: 0.93rem;
 }
+.dev-banner a { font-weight: 600; }
 
 /* Shown when this browser can't use Web Serial. Caution colors, like the live data note. */
 .browser-alert {
@@ -480,6 +481,17 @@ a:hover { color: var(--link-hover); }
 .cluster-radial { grid-template-columns: repeat(auto-fit, minmax(190px, 250px)); justify-content: center; }
 .cluster-vbar { grid-template-columns: repeat(auto-fit, minmax(105px, 1fr)); }
 .cluster-hbar { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
+
+.live-catalog { margin-top: 1.25rem; }
+.live-catalog summary { cursor: pointer; color: var(--link); font-weight: 600; }
+#live-catalog-table { margin-top: 0.6rem; overflow-x: auto; }
+.live-catalog-table { width: 100%; min-width: 760px; border-collapse: collapse; font-size: 0.84rem; }
+.live-catalog-table th,
+.live-catalog-table td { padding: 0.4rem 0.55rem; border-bottom: 1px solid var(--line); text-align: left; }
+.live-catalog-table thead th { color: var(--muted); font-weight: 600; }
+.live-catalog-table .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; white-space: nowrap; }
+.catalog-value { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.catalog-status, .catalog-time { color: var(--muted); }
 
 .gauge {
   --g-color: var(--g-ok);
@@ -795,8 +807,14 @@ dialog h2 { margin: 0 0 0.5rem; font-size: 1.2rem; color: var(--heading); }
 .picker-title { margin: 0; font-size: 1.15rem; color: var(--heading); }
 .picker-lede, .picker-skipped, .picker-estimate { margin: 0; font-size: 0.9rem; color: var(--muted); }
 .picker-estimate { color: var(--text); }
+.picker-mode { display: flex; flex-wrap: wrap; gap: 0.35rem 1rem; margin: 0; padding: 0.65rem 0.8rem; border: 1px solid var(--line); border-radius: 8px; }
+.picker-mode legend { padding: 0 0.25rem; font-size: 0.85rem; color: var(--muted); }
+.picker-mode label { display: inline-flex; align-items: center; gap: 0.4rem; }
+.picker-mode input { margin: 0; }
 .picker-presets { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .picker-preset { font-size: 0.9rem; padding: 0.35rem 0.9rem; }
+.picker-search-label { display: grid; gap: 0.25rem; font-size: 0.85rem; color: var(--muted); }
+.picker-search { width: 100%; max-width: 28rem; font: inherit; padding: 0.4rem 0.6rem; border: 1px solid var(--line); border-radius: 6px; background: var(--field-bg); color: var(--text); }
 .picker-list {
   margin: 0;
   padding: 0;
@@ -829,6 +847,15 @@ dialog h2 { margin: 0 0 0.5rem; font-size: 1.2rem; color: var(--heading); }
   gap: 0 1rem;
 }
 .picker-undecoded li { margin: 0; }
+.picker-catalog summary { cursor: pointer; font-size: 0.9rem; color: var(--muted); }
+.picker-catalog-note { margin: 0.35rem 0; font-size: 0.85rem; color: var(--muted); }
+.picker-catalog-group { margin-top: 0.75rem; }
+.picker-catalog-group h3 { margin: 0 0 0.3rem; font-size: 0.95rem; color: var(--heading); }
+.picker-catalog-group ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.35rem; }
+.picker-catalog-row { padding: 0.5rem 0.65rem; border-radius: 6px; background: var(--row-stripe); }
+.picker-catalog-heading { display: flex; justify-content: space-between; gap: 0.5rem; }
+.picker-catalog-row p { margin: 0.15rem 0 0; font-size: 0.85rem; }
+.picker-catalog-row .picker-catalog-meta { color: var(--muted); font-size: 0.78rem; }
 .picker-actions { display: flex; justify-content: flex-end; }
 
 /* ---------- Live data recording ---------- */
@@ -1017,6 +1044,17 @@ dialog.record-lock .btn { font-size: 1.15rem; padding: 0.7rem 1.4rem; }
 .guide figure { margin: 0.75rem 0 0; }
 .guide figcaption { font-size: 0.85rem; color: var(--muted); }
 .guide svg { width: 100%; height: auto; max-width: 480px; display: block; }
+.contact-page { max-width: 760px; }
+.contact-page section { padding: 0.75rem; }
+.contact-form {
+  display: block;
+  width: 100%;
+  max-width: 640px;
+  height: 1052px;
+  margin: 0 auto;
+  border: 0;
+}
+.contact-privacy { margin: 0.5rem 0 0; color: var(--muted); font-size: 0.85rem; }
 
 /* ---------- Tested adapters page ---------- */
 

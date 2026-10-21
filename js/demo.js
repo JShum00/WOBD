@@ -1,5 +1,6 @@
 // A pretend ELM327 for trying WOBD without a car. Open the site with ?demo
-// (a CAN car with codes), ?demo=iso (an older ISO 9141 car, like a 2001
+// (a CAN car with codes), ?demo=pending (pending and permanent codes),
+// ?demo=iso (an older ISO 9141 car, like a 2001
 // PT Cruiser, with no VIN support), or ?demo=clear (no codes).
 // ?demo=slowbaud and ?demo=nobaud go through baud rate detection (see DemoBaudTransport).
 // For testing Live data recording without driving: ?demo=drive loops a short
@@ -12,6 +13,7 @@ import { BASE_RATES } from './smartbauder.js';
 
 const SCENARIOS = {
   can: { protocol: '6', vin: '1HGCM82633A004352', codes: ['P0301', 'P0171', 'P0442'] },
+  pending: { protocol: '6', vin: '1HGCM82633A004352', codes: [], pendingCodes: ['P0301'], permanentCodes: ['P0442'] },
   iso: { protocol: '3', vin: null, codes: ['P0420', 'P1491'] },
   clear: { protocol: '6', vin: '1HGCM82633A004352', codes: [] },
   drive: { protocol: '6', vin: '1HGCM82633A004352', codes: [], trip: true },
@@ -67,6 +69,8 @@ export class DemoTransport {
   constructor(name) {
     this.scenario = SCENARIOS[name] ?? SCENARIOS.can;
     this.codes = [...this.scenario.codes];
+    this.pendingCodes = [...(this.scenario.pendingCodes ?? [])];
+    this.permanentCodes = [...(this.scenario.permanentCodes ?? [])];
     this.onData = () => {};
     this.onDisconnect = () => {};
     this.searched = false;
@@ -117,8 +121,13 @@ export class DemoTransport {
         return [`4101${hex2(a)}076500`];
       }
       case '03': return this.#storedCodes();
+      case '07': return this.#serviceCodes(0x47, this.pendingCodes);
+      case '0A':
+        if (this.scenario.permanentUnsupported) return ['NO DATA'];
+        return this.#serviceCodes(0x4A, this.permanentCodes);
       case '04':
         this.codes = [];
+        this.pendingCodes = [];
         return ['44'];
       case '0902':
         if (!this.scenario.vin) return ['NO DATA'];
@@ -129,14 +138,18 @@ export class DemoTransport {
   }
 
   #storedCodes() {
-    const bytes = this.codes.flatMap(dtcBytes);
-    if (this.isCan) return canLines([0x43, this.codes.length, ...bytes]);
+    return this.#serviceCodes(0x43, this.codes);
+  }
+
+  #serviceCodes(positiveService, codes) {
+    const bytes = codes.flatMap(dtcBytes);
+    if (this.isCan) return canLines([positiveService, codes.length, ...bytes]);
     // Older protocols: three codes per line, padded with 0000.
     const lines = [];
     for (let i = 0; i === 0 || i < bytes.length; i += 6) {
       const chunk = bytes.slice(i, i + 6);
       while (chunk.length < 6) chunk.push(0);
-      lines.push(['43', ...chunk.map(hex2)].join(''));
+      lines.push([hex2(positiveService), ...chunk.map(hex2)].join(''));
     }
     return lines;
   }
@@ -171,6 +184,8 @@ export class DemoTransport {
         const lean = this.scenario.codes.includes('P0171') ? 12 : 2;
         return [`4107${hex2(128 + lean * 128 / 100)}`];
       }
+      case '010A':
+        return ['410A0F'];
       case '010B':
         return [`410B${hex2(wobble(32, 4, 28, 36))}`];
       case '010E':
@@ -188,6 +203,14 @@ export class DemoTransport {
       }
       case '0115':
         return [`4115${hex2(wobble(0.7, 0.04, 0.68, 0.72) * 200)}FF`];
+      case '0121':
+        return ['41210123'];
+      case '0142':
+        return ['414236B0'];
+      case '0146':
+        return ['41463D'];
+      case '015C':
+        return ['415C78'];
       default:
         return null;
     }

@@ -53,9 +53,9 @@ const cases = [
     assert.equal(rec.baudRate, null);
   }],
   ['unknown PIDs are skipped and reported', () => {
-    const rec = parseRecording('timestamp,elapsed_ms,pid,name,value,unit\nx,1,0x0D,Speed,3,mph\nx,2,0x5C,Oil temp,90,C\n');
+    const rec = parseRecording('timestamp,elapsed_ms,pid,name,value,unit\nx,1,0x0D,Speed,3,mph\nx,2,0x55,Unknown,90,\n');
     assert.equal(rec.readingCount, 1);
-    assert.deepEqual(rec.unknownPids, ['0x5C']);
+    assert.deepEqual(rec.unknownPids, ['0x55']);
   }],
   ['valueAt: latest reading at or before t', () => {
     const series = { times: [100, 200, 300], values: [1, 2, 3] };

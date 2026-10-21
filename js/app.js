@@ -27,9 +27,12 @@ const state = {
   protocol: null,
   baudRate: null,    // the rate SmartBauder connected at; null when detection didn't run
   supportedPids: null,  // Set of PIDs the car reported, or null if it wouldn't say
+  ecuPids: [],       // per-ECU support maps when the adapter exposes response headers
   offered: [],       // gauge defs the picker offers for this car
+  catalog: [],
   undecoded: [],     // supported PIDs with no gauge yet, for the picker's list
   gauges: null,      // gauge defs the user picked; null until picked on this connection
+  monitorMode: 'manual',
   requestMs: null,   // measured time per car request (connect, then the live loop)
   pickerIntroDone: false,
   lastHint: null,    // preset Bob last explained in the picker
@@ -185,17 +188,30 @@ async function connectTo(transport, { baudRate } = {}) {
     ui.setConnection('busy', 'Talking to the car…');
     bob.say({ text: "Found the adapter. Now I'm saying hello to the car. Older cars can take a few seconds." });
 
-    const supported = await obd.readSupportedPids(elm);
+    const supported = await obd.readSupportedPids(elm, { headers: true });
     state.supportedPids = supported?.pids ?? null;
-    if (supported) console.info('[WOBD] Supported PID replies:', supported.replies.join(' · '));
+    state.ecuPids = supported?.ecus ?? [];
+    if (supported) {
+      console.info('[WOBD] Supported PID replies:', supported.replies.join(' · '));
+      console.info('[WOBD] Supported PID sources:', supported.ecus.map(({ source, pids }) => ({
+        source: source ?? 'unknown ECU',
+        pids: [...pids].map((pid) => `0x${pid.toString(16).toUpperCase().padStart(2, '0')}`),
+      })));
+    }
     else console.info("[WOBD] The car didn't report its supported PIDs; offering the default gauges.");
     state.protocol = await obd.readProtocol(elm);
     state.vin = await obd.readVin(elm);
     state.connInfo = await collectConnInfo(elm);
     state.baudRate = connectedBaud;
     state.requestMs = state.connInfo.requestMs;
-    ({ offered: state.offered, undecoded: state.undecoded } = pickerChoices(state.supportedPids));
+    ({
+      offered: state.offered,
+      undecoded: state.undecoded,
+      catalog: state.catalog,
+    } = pickerChoices(state.supportedPids, state.ecuPids));
+    ui.renderParameterCatalog(state.catalog);
     state.gauges = null;
+    state.monitorMode = 'manual';
     state.transport = transport;
     state.elm = elm;
   } catch (err) {
@@ -310,6 +326,10 @@ async function disconnect() {
   const { transport } = state;
   state.transport = null;
   state.elm = null;
+  state.supportedPids = null;
+  state.ecuPids = [];
+  state.catalog = [];
+  ui.renderParameterCatalog([]);
   hideConnInfo();
   await transport?.close();
   ui.setConnection('idle', 'Not connected');
@@ -354,24 +374,36 @@ async function busy(label, job) {
 async function scan() {
   bob.say({ text: 'Scanning… hang tight.' });
   const status = await obd.readStatus(state.elm);
-  const codes = await obd.readStoredCodes(state.elm, state.protocol.isCan);
-  await loadGenericCodes(codes);
-  const entries = codes.map(lookup);
+  const services = await obd.readDtcServices(state.elm, state.protocol.isCan);
+  const codes = services.flatMap((service) => service.codes.map((entry) => ({
+    ...entry,
+    dtcStatus: service.label,
+  })));
+  const codeTypes = [...new Set(codes.map((entry) => entry.code))];
+  await loadGenericCodes(codeTypes);
+  const entries = codes.map((entry) => ({
+    ...lookup(entry.code),
+    dtcStatus: entry.dtcStatus,
+    ecuSource: entry.ecuSource,
+  }));
 
   // The connection is copied in, so the printout matches the scan even after a reconnect.
-  state.scan = { scannedAt: new Date(), status, entries, connection: connectionLabel() };
+  state.scan = { scannedAt: new Date(), status, services, entries, connection: connectionLabel() };
   state.selected = null;
   ui.renderCodes(entries, onSelectCode);
-  ui.setEmptyMessage('No stored trouble codes.');
+  ui.setEmptyMessage(services.some((service) => !service.available)
+    ? 'No codes found in the available services. One or more DTC services could not be read.'
+    : 'No trouble codes found.');
   ui.setSummary([
     status ? `Check engine light ${status.milOn ? 'ON' : 'off'}` : null,
-    `${entries.length} stored code${entries.length === 1 ? '' : 's'}`,
+    ...services.map((service) => `${service.label}: ${service.available ? service.codes.length : 'unavailable'}`),
     ui.carLabel(ui.getCar()) || null,
   ].filter(Boolean).join(' · '));
   announceScan(state.scan);
 }
 
-function announceScan({ status, entries }) {
+function announceScan({ status, services, entries }) {
+  const unavailable = services.filter((service) => !service.available).map((service) => service.label.toLowerCase());
   if (entries.length) {
     bob.say({
       text: `I found ${entries.length} code${entries.length === 1 ? '' : 's'}. Click a code and I'll explain it.`,
@@ -380,13 +412,21 @@ function announceScan({ status, entries }) {
     bob.say({
       tone: 'unknown',
       mood: 'question',
-      text: "Your check engine light is on, but no codes are stored yet. The problem may still be pending. Pending codes are coming in a later version of WOBD.",
+      text: unavailable.length
+        ? `Your check engine light is on, but I couldn't find codes. I couldn't read the ${unavailable.join(', ')} DTC service${unavailable.length === 1 ? '' : 's'}, so this scan may be incomplete.`
+        : "Your check engine light is on, but no trouble codes were returned. Check again after the car has been driven; the cause may not have stored a code yet.",
+    });
+  } else if (unavailable.length) {
+    bob.say({
+      tone: 'unknown',
+      mood: 'question',
+      text: `No codes were found in the services I could read. I couldn't read the ${unavailable.join(', ')} DTC service${unavailable.length === 1 ? '' : 's'}, so this scan may be incomplete.`,
     });
   } else {
     bob.say({
       tone: 'low',
       mood: 'check',
-      text: "👍 Thumbs up! No trouble codes stored. Your car's computer is happy.",
+      text: "👍 Thumbs up! No stored, pending, or permanent trouble codes were found in the services your car supports.",
     });
   }
 }
@@ -413,10 +453,27 @@ async function onClearClick() {
   await busy('Clearing codes…', async () => {
     await obd.clearCodes(state.elm);
     await scan();
+    const remaining = state.scan?.entries ?? [];
+    const permanentCount = remaining.filter((entry) => entry.dtcStatus === 'Permanent').length;
+    const unavailable = state.scan?.services.some((service) => !service.available);
+    let message;
+    if (unavailable && remaining.length) {
+      message = `The clear command was accepted, but ${remaining.length} code${remaining.length === 1 ? ' remains' : 's remain'} and one or more DTC services couldn't be checked. The scan may be incomplete.`;
+    } else if (unavailable) {
+      message = "The clear command was accepted, but one or more DTC services couldn't be checked afterward. The scan may be incomplete.";
+    } else if (permanentCount === remaining.length && permanentCount > 0) {
+      message = `The clear command was accepted, but ${permanentCount} permanent code${permanentCount === 1 ? ' remains' : 's remain'}. Permanent codes clear only after the vehicle confirms the problem is fixed and completes its checks.`;
+    } else if (remaining.length) {
+      message = `The clear command was accepted, but ${remaining.length} code${remaining.length === 1 ? ' remains or has returned' : 's remain or have returned'}. The underlying issue may still be present.`;
+    } else if (state.scan?.status?.milOn) {
+      message = 'No trouble codes were returned after the clear, but the check engine light is still on. The cause may not have stored a code yet.';
+    } else {
+      message = "Codes cleared, so the check engine light should be off. If the problem isn't really fixed, the light will come back.";
+    }
     bob.say({
-      tone: 'low',
-      mood: 'check',
-      text: "Codes cleared, so the check engine light should be off. If the problem isn't really fixed, the light will come back.",
+      tone: remaining.length || unavailable || state.scan?.status?.milOn ? 'unknown' : 'low',
+      mood: remaining.length || unavailable || state.scan?.status?.milOn ? 'question' : 'check',
+      text: message,
     });
   });
 }
@@ -447,14 +504,16 @@ function showLive() {
   showPicker(defaultKeys(state.offered));
 }
 
-function showPicker(checked) {
+function showPicker(checked, mode = state.monitorMode) {
   stopLive();
   state.lastHint = null;
   $('live-dashboard').hidden = true;
   picker.show({
     offered: state.offered,
     undecoded: state.undecoded,
+    catalog: state.catalog,
     checked,
+    mode,
     timing: state.requestMs
       ? { requestMs: state.requestMs, measured: true }
       : { requestMs: state.protocol?.isCan ? 50 : 150, measured: false },  // a guess until measured
@@ -472,8 +531,14 @@ function showPicker(checked) {
   }
 }
 
-function applyGauges(defs) {
+function applyGauges(defs, mode) {
   state.gauges = defs;
+  state.monitorMode = mode;
+  const selectedPids = new Set(defs.map((def) => def.pid).filter((pid) => pid !== undefined));
+  for (const entry of state.catalog) {
+    if (entry.monitorable) entry.availability = selectedPids.has(entry.pid) ? 'Waiting for reading' : 'Not selected';
+    ui.updateParameterCatalog(entry);
+  }
   picker.hide();
   ui.renderGauges(defs);
   $('live-dashboard').hidden = false;
@@ -485,7 +550,7 @@ function applyGauges(defs) {
 // recording logs whatever the dashboard polls.
 function changeGauges() {
   if (!state.elm || state.busy || state.recording) return;
-  showPicker(new Set(state.gauges.map((def) => def.key)));
+  showPicker(new Set(state.gauges.map((def) => def.key)), state.monitorMode);
 }
 
 // Pointing at a preset makes Bob explain it; the same preset twice in a row
@@ -509,7 +574,7 @@ async function startLive() {
   for (let round = 0; active(); round++) {
     const slowRound = round % obd.SLOW_EVERY === 0;
     for (const def of defs) {
-      if (def.slow && !slowRound) continue;
+      if (round % obd.pollingInterval(def, state.monitorMode) !== 0) continue;
       if (!active()) return;
       const started = performance.now();
       const value = await obd.readPid(elm, def).catch(() => null);
@@ -530,8 +595,30 @@ function stopLive() {
 // Every live reading lands here: the gauge always, the recording when one is running.
 function reading(def, value) {
   ui.updateGauge(def, value);
-  if (!state.recording) return;
   const now = Date.now();
+  if (def.pid === undefined) {
+    ui.updateParameterCatalog({
+      pid: null,
+      availability: value == null ? 'Temporarily not responding' : 'Available',
+      lastSuccessfulReading: value,
+      lastUpdatedAt: value == null ? null : now,
+      digits: def.digits,
+      unit: def.unit,
+    });
+  } else {
+    const entry = state.catalog.find((item) => item.pid === def.pid);
+    if (entry) {
+      entry.availability = value == null
+        ? entry.supportKnown ? 'Temporarily not responding' : 'No response · support unknown'
+        : 'Available';
+      if (value != null) {
+        entry.lastSuccessfulReading = value;
+        entry.lastUpdatedAt = now;
+      }
+      ui.updateParameterCatalog(entry);
+    }
+  }
+  if (!state.recording) return;
   state.recording.data.add(def, value, now);
   state.recording.lock.update(def, value, now);
 }
