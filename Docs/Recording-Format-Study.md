@@ -25,7 +25,7 @@ Rationale: WOBD is a no-build, dependency-free static site. In the prototype the
 
 ## 2. Baseline: what WOBD records today
 
-Read from [recorder.js](../js/recorder.js), [replay-data.js](../js/replay-data.js), and the real recording `reports/vlinker-fs-usb-pt-cruiser-2026-10-02/wobd-recording-2026-10-02-192055.csv`.
+Read from [recorder.js](../js/recorder.js), [replay-data.js](../js/replay-data.js), and the real recording `reports/vlinker-fs-usb/chrysler/2001/pt-cruiser/wobd-recording-2026-10-02-192055.csv`.
 
 - **Model:** one CSV row per valid reading: `timestamp, elapsed_ms, pid, name, value, unit, protocol, baud`. `protocol` and `baud` are repeated on every row. Dropouts are skipped, never written as blanks.
 - **Whole recording in RAM:** `Recording.rows` holds everything until `toCsv()` builds a single string. A crash or reload loses the recording.

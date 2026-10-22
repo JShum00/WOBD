@@ -6,7 +6,7 @@ import { baudLabel } from './conninfo.js';
 import { MAX_FILE_BYTES, ReplayError, indexAt, parseRecording, parseRecordingStream, valueAt } from './replay-data.js';
 import { createDownsampleCache, extent, playedParts, prepareSeries } from './replay-downsample.js';
 
-const SAMPLE = 'reports/vlinker-fs-usb-pt-cruiser-2026-10-02/wobd-recording-2026-10-02-192055.csv';
+const SAMPLE = 'reports/vlinker-fs-usb/chrysler/2001/pt-cruiser/wobd-recording-2026-10-02-192055.csv';
 const STRIP_HEIGHT = 84;   // css px per graph
 const AXIS_HEIGHT = 20;    // extra room under the last graph for the time labels
 const PAD = { left: 44, right: 12, top: 8, bottom: 8 };
@@ -124,7 +124,7 @@ function show(rec, sourceName) {
   ].filter(Boolean).join(' · ');
   const unknown = $('replay-unknown');
   unknown.textContent = rec.unknownPids.length
-    ? `Skipped readings WOBD doesn't have a gauge for: ${rec.unknownPids.join(', ')}.` : '';
+    ? `Skipped readings WOBD doesn't have a gauge for: ${rec.unknownPids.join(', ')}. Any raw bytes saved in the file are kept, so a future WOBD can decode them.` : '';
   unknown.hidden = !rec.unknownPids.length;
 
   renderGauges(rec.series.map((s) => s.def));

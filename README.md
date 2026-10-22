@@ -20,6 +20,7 @@ A free, browser-based car diagnostic tool. Plug a USB OBD-II adapter into a Chro
 
 - Updated navigation and demo layout.
 - Replay imports CSV recordings incrementally with a 128 MiB file limit.
+- Recordings add a `raw` column with each reply's data bytes (hex). A reply WOBD couldn't decode keeps an empty `value` and its raw bytes, and Replay decodes it from those bytes when a decoder exists. Ticking "Also record parameters WOBD can't decode yet" samples undecoded PIDs as raw-only rows. Second values in one reply (wideband voltage/current) are rows like `0x24.2`.
 - Replay charts downsample for display while retaining the original readings for playback and hover; isolated spikes are preserved and detected visual gaps are not connected.
 
 ### WOBD v1.51 release notes
@@ -94,6 +95,7 @@ The pretend adapter behaves like a real ELM327 about protocols: it only reaches 
 | `js/bob.js`, `js/voice.js` | Bob's explanations and optional browser read-aloud |
 | `js/codes.js` | The code search page |
 | `js/tested-adapters.js`, `data/tested-adapters.json` | Render and store the tested adapter results |
+| `reports/` | Test files, organized as `reports/<adapter>/<make>/<year>/<model>/` (for example `reports/vlinker-fs-usb/toyota/2010/highlander/`) and linked from `data/tested-adapters.json` |
 | `js/ui.js`, `js/app.js` | Rendering (including the gauges) and app wiring |
 | `js/site-nav.js` | Active state for the shared site navigation |
 | `js/demo.js` | Pretend adapter for demo mode and the simulator |

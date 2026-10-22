@@ -1,6 +1,7 @@
 // Rendering: tabs, the car form, the codes table, live gauges, dialogs, and
 // the printable report. No OBD logic lives here.
 import { h, svg } from './dom.js';
+import { infoTip } from './info-tip.js';
 import { URGENCY, DIFFICULTY, urgencyBadge } from './bob.js';
 
 const $ = (id) => document.getElementById(id);
@@ -481,7 +482,9 @@ export function updateParameterCatalog(entry) {
   if (!row) return;
   row.entry = entry;
   row.row.querySelector('.catalog-value').textContent = catalogValue(entry);
-  row.row.querySelector('.catalog-status').textContent = entry.availability;
+  const status = row.row.querySelector('.catalog-status');
+  status.textContent = entry.availability;
+  if (entry.statusNote) status.append(' ', infoTip(entry.statusNote, `Why: ${entry.name ?? 'this parameter'}`));
   row.row.querySelector('.catalog-time').textContent = entry.lastUpdatedAt
     ? new Date(entry.lastUpdatedAt).toLocaleTimeString() : 'Not read yet';
 }

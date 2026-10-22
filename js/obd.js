@@ -57,6 +57,12 @@ export const LIVE_PIDS = [
     expectedBytes: 2, slow: true, priority: 'low', decode: ([a, b]) => a * 256 + b },
   { pid: 0x23, key: 'railpressure', label: 'Fuel rail pressure', unit: 'kPa', style: 'hbar', min: 0, max: 655350, digits: 0,
     expectedBytes: 2, slow: true, decode: ([a, b]) => (a * 256 + b) * 10 },
+  // Wideband sensors reply with four bytes: lambda in the first two, then a voltage (0x24)
+  // or current (0x34) in the last two. Only lambda is shown; the gauges have one value.
+  { pid: 0x24, key: 'wideband1v', label: 'Wideband O2 sensor 1, equivalence ratio (voltage type)', unit: 'ratio', style: 'hbar',
+    min: 0, max: 2, digits: 3, expectedBytes: 4, slow: true, decode: ([a, b]) => (a * 256 + b) * 2 / 65536 },
+  { pid: 0x34, key: 'wideband1c', label: 'Wideband O2 sensor 1, equivalence ratio (current type)', unit: 'ratio', style: 'hbar',
+    min: 0, max: 2, digits: 3, expectedBytes: 4, slow: true, decode: ([a, b]) => (a * 256 + b) * 2 / 65536 },
   { pid: 0x31, key: 'cleareddistance', label: 'Distance since codes cleared', unit: 'km', style: 'hbar', min: 0, max: 1000, digits: 0,
     expectedBytes: 2, slow: true, priority: 'low', decode: ([a, b]) => a * 256 + b },
   { pid: 0x3C, key: 'catalystb1s1', label: 'Catalyst temperature, bank 1 sensor 1', unit: '°F', style: 'hbar', min: 0, max: 1800, digits: 0,
@@ -73,6 +79,8 @@ export const LIVE_PIDS = [
     expectedBytes: 2, slow: true, decode: ([a, b]) => (a * 256 + b) * 2 / 65536 },
   { pid: 0x46, key: 'ambienttemp', label: 'Ambient air temp', unit: '°F', style: 'hbar', min: -40, max: 160, digits: 0,
     expectedBytes: 1, slow: true, decode: ([a]) => (a - 40) * 9 / 5 + 32 },
+  { pid: 0x53, key: 'evapabsolute', label: 'Absolute evap system vapor pressure', unit: 'kPa', style: 'hbar', min: 0, max: 330, digits: 2,
+    expectedBytes: 2, slow: true, decode: ([a, b]) => (a * 256 + b) / 200 },
   { pid: 0x5C, key: 'oiltemp', label: 'Engine oil temp', unit: '°F', style: 'hbar', min: 0, max: 300, digits: 0,
     expectedBytes: 1, slow: true, decode: ([a]) => (a - 40) * 9 / 5 + 32 },
 ];
@@ -123,7 +131,16 @@ export const PID_NAMES = {
   0x18: 'O2 sensor, bank 2 sensor 1', 0x19: 'O2 sensor, bank 2 sensor 2', 0x1A: 'O2 sensor, bank 2 sensor 3',
   0x1B: 'O2 sensor, bank 2 sensor 4', 0x1C: 'OBD standard', 0x1D: 'O2 sensors present (4 banks)',
   0x1E: 'Auxiliary input status', 0x1F: 'Run time since engine start', 0x21: 'Distance with check engine light on',
-  0x22: 'Fuel rail pressure (vacuum)', 0x23: 'Fuel rail pressure', 0x2C: 'Commanded EGR', 0x2D: 'EGR error',
+  0x22: 'Fuel rail pressure (vacuum)', 0x23: 'Fuel rail pressure', 0x24: 'Wideband O2 sensor 1, equivalence ratio (voltage type)', 0x25: 'Wideband O2 sensor 2, equivalence ratio (voltage type)',
+  0x26: 'Wideband O2 sensor 3, equivalence ratio (voltage type)', 0x27: 'Wideband O2 sensor 4, equivalence ratio (voltage type)',
+  0x28: 'Wideband O2 sensor 5, equivalence ratio (voltage type)', 0x29: 'Wideband O2 sensor 6, equivalence ratio (voltage type)',
+  0x2A: 'Wideband O2 sensor 7, equivalence ratio (voltage type)', 0x2B: 'Wideband O2 sensor 8, equivalence ratio (voltage type)',
+  0x34: 'Wideband O2 sensor 1, equivalence ratio (current type)', 0x35: 'Wideband O2 sensor 2, equivalence ratio (current type)',
+  0x36: 'Wideband O2 sensor 3, equivalence ratio (current type)', 0x37: 'Wideband O2 sensor 4, equivalence ratio (current type)',
+  0x38: 'Wideband O2 sensor 5, equivalence ratio (current type)', 0x39: 'Wideband O2 sensor 6, equivalence ratio (current type)',
+  0x3A: 'Wideband O2 sensor 7, equivalence ratio (current type)', 0x3B: 'Wideband O2 sensor 8, equivalence ratio (current type)',
+  0x53: 'Absolute evap system vapor pressure',
+  0x2C: 'Commanded EGR', 0x2D: 'EGR error',
   0x2E: 'Commanded evaporative purge', 0x2F: 'Fuel tank level', 0x30: 'Warm-ups since codes cleared',
   0x31: 'Distance since codes cleared', 0x32: 'Evap system vapor pressure', 0x33: 'Barometric pressure',
   0x3C: 'Catalyst temperature, bank 1 sensor 1', 0x3D: 'Catalyst temperature, bank 2 sensor 1',
@@ -135,6 +152,9 @@ export const PID_NAMES = {
   0x51: 'Fuel type', 0x52: 'Ethanol fuel %', 0x5A: 'Relative accelerator pedal position',
   0x5B: 'Hybrid battery remaining life', 0x5C: 'Engine oil temperature', 0x5E: 'Engine fuel rate',
 };
+
+// Used for a supported PID WOBD has no name for. It may be standard, manufacturer-specific, or reserved.
+export const UNNAMED_PID = 'Unnamed parameter (not in WOBD yet)';
 
 const NON_LIVE_DECODERS = [
   { pid: 0x1C, key: 'obdstandard', label: 'OBD standards compliance', expectedBytes: 1,
@@ -153,7 +173,7 @@ const PID_CATEGORIES = new Map([
   [0x0E, 'Ignition and timing'], [0x0F, 'Temperature'], [0x10, 'Fuel and air management'],
   [0x11, 'Engine performance'], [0x14, 'Oxygen sensors'], [0x15, 'Oxygen sensors'],
   [0x1C, 'Diagnostic information'], [0x21, 'Vehicle speed and distance'],
-  [0x23, 'Fuel and air management'], [0x31, 'Vehicle speed and distance'],
+  [0x23, 'Fuel and air management'], [0x24, 'Oxygen sensors'], [0x34, 'Oxygen sensors'], [0x53, 'Emissions'], [0x31, 'Vehicle speed and distance'],
   [0x3C, 'Emissions'], [0x3D, 'Emissions'], [0x3E, 'Emissions'], [0x3F, 'Emissions'],
   [0x42, 'Electrical system'], [0x44, 'Fuel and air management'], [0x46, 'Temperature'], [0x5C, 'Temperature'],
 ]);
@@ -176,7 +196,7 @@ export function buildPidCatalog(supported, ecus = []) {
   }
   return [...supported].sort((a, b) => a - b).map((pid) => {
     const def = MODE01_DECODERS.get(pid);
-    const name = def?.label ?? PID_NAMES[pid] ?? 'Unknown standard OBD-II parameter';
+    const name = def?.label ?? PID_NAMES[pid] ?? UNNAMED_PID;
     return {
       pid,
       name,
@@ -557,10 +577,7 @@ export async function readVin(elm) {
   }
 }
 
-export async function readPid(elm, def) {
-  const messages = toMessages(await elm.send(`01${hex2(def.pid)}`));
-  const m = findReply(messages, 0x01, def.pid);
-  if (!m) return null;
+function decodeReply(def, m) {
   if (m.length !== def.expectedBytes + 2) {
     throw new ElmError('MALFORMED_RESPONSE',
       `PID 0x${hex2(def.pid)} returned ${Math.max(0, m.length - 2)} data bytes; expected ${def.expectedBytes}.`);
@@ -572,6 +589,65 @@ export async function readPid(elm, def) {
   return value;
 }
 
+export async function readPid(elm, def) {
+  const m = findReply(toMessages(await elm.send(`01${hex2(def.pid)}`)), 0x01, def.pid);
+  return m ? decodeReply(def, m) : null;
+}
+
+// Some readings carry a second value in the same reply (wideband sensors: lambda plus
+// sensor voltage or current). They are not polled; they are decoded from the same bytes.
+export const DERIVED_PIDS = [
+  { pid: 0x24, part: 2, key: 'wideband1v_volts', label: 'Wideband O2 sensor 1, sensor voltage', unit: 'V', style: 'hbar',
+    min: 0, max: 8, digits: 3, expectedBytes: 4, decode: ([, , c, d]) => (c * 256 + d) * 8 / 65536 },
+  { pid: 0x34, part: 2, key: 'wideband1c_ma', label: 'Wideband O2 sensor 1, sensor current', unit: 'mA', style: 'hbar',
+    min: -128, max: 128, digits: 2, expectedBytes: 4, decode: ([, , c, d]) => (c * 256 + d) / 256 - 128 },
+];
+
+export const bytesToHex = (bytes) => bytes.map(hex2).join('');
+
+// Why a reading produced no usable value. One plain-English text per failure kind,
+// the same for every make and model.
+export const FAILURE_REASONS = {
+  'no-response': {
+    short: 'No response',
+    text: "The car didn't answer this request. It may not support it right now (some readings only answer with the engine running), or the adapter timed out.",
+  },
+  malformed: {
+    short: 'Unexpected reply',
+    text: 'The car answered, but the bytes were not the length or shape WOBD expects for this parameter. '
+      + 'The raw bytes are kept in recordings so they can be decoded later.',
+  },
+  invalid: {
+    short: 'Invalid value',
+    text: 'The car answered, but the bytes did not decode to a usable number. '
+      + 'The raw bytes are kept in recordings so they can be decoded later.',
+  },
+};
+
+// Reads one PID and keeps everything: the raw data bytes (hex) always, the decoded value
+// and any second values when the bytes fit, and a failure kind when they don't.
+// def may be a bare { pid } for a parameter WOBD has no decoder for (raw only).
+export async function readPidDetailed(elm, def) {
+  const m = findReply(toMessages(await elm.send(`01${hex2(def.pid)}`)), 0x01, def.pid);
+  if (!m) return { value: null, raw: null, extras: [], failure: 'no-response' };
+  const raw = bytesToHex(m.slice(2));
+  if (!def.decode) return { value: null, raw, extras: [], failure: null };
+  let value;
+  try {
+    value = decodeReply(def, m);
+  } catch (err) {
+    return { value: null, raw, extras: [], failure: /invalid numeric/.test(err.message) ? 'invalid' : 'malformed' };
+  }
+  const extras = DERIVED_PIDS.filter((extra) => extra.pid === def.pid).flatMap((extra) => {
+    try {
+      return [{ def: extra, value: decodeReply(extra, m) }];
+    } catch {
+      return [];
+    }
+  });
+  return { value, raw, extras, failure: null };
+}
+
 // The gauges this car can show, in display order. Battery comes from the adapter,
 // not the car, so it is always offered.
 export function gaugeDefs(supported) {
@@ -580,7 +656,7 @@ export function gaugeDefs(supported) {
 
 // "0x0F", or "ATRV" for the battery (an adapter command, not a PID).
 export function pidLabel(def) {
-  return def.pid === undefined ? 'ATRV' : `0x${hex2(def.pid)}`;
+  return def.pid === undefined ? 'ATRV' : `0x${hex2(def.pid)}${def.part ? `.${def.part}` : ''}`;
 }
 
 export async function readBatteryVoltage(elm) {

@@ -15,11 +15,41 @@
     "dateTested": "2026-10-02",
     "wobdVersion": "1.0",
     "notes": "Read codes matched an O'Reilly shop scan code-for-code (6 codes). Clear confirmed via before/after PDF exports. Live data streamed all PIDs; occasional brief dropouts recovered instantly.",
+    "graphNote": "Graph generated with Claude.",
     "reports": {
-      "before": "reports/vlinker-fs-usb-pt-cruiser-2026-10-02/before-cleared.pdf",
-      "after": "reports/vlinker-fs-usb-pt-cruiser-2026-10-02/after-cleared.pdf",
-      "graph": "reports/vlinker-fs-usb-pt-cruiser-2026-10-02/pt-cruiser-wobd-graphs.png",
-      "csv": "reports/vlinker-fs-usb-pt-cruiser-2026-10-02/wobd-recording-2026-10-02-192055.csv"
+      "before": "reports/vlinker-fs-usb/chrysler/2001/pt-cruiser/before-cleared.pdf",
+      "after": "reports/vlinker-fs-usb/chrysler/2001/pt-cruiser/after-cleared.pdf",
+      "graph": "reports/vlinker-fs-usb/chrysler/2001/pt-cruiser/pt-cruiser-wobd-graphs.png",
+      "csv": "reports/vlinker-fs-usb/chrysler/2001/pt-cruiser/wobd-recording-2026-10-02-192055.csv"
+    }
+  },
+  {
+    "id": "vlinker-fs-usb-toyota-highlander-2026-10-22",
+    "product": "Vgate vLinker FS USB",
+    "vehicle": {
+      "year": 2010,
+      "make": "Toyota",
+      "model": "Highlander"
+    },
+    "protocol": "CAN 11-bit 500k",
+    "baud": "115200",
+    "readCodes": true,
+    "clearCodes": null,
+    "liveData": true,
+    "dateTested": "2026-10-22",
+    "wobdVersion": "1.0",
+    "notes": "Live data streamed and was recorded. The vehicle returned no DTCs, so there are no before/after scan reports.",
+    "explanations": {
+      "readCodes": "The code request worked and the vehicle reported no stored trouble codes, so there was nothing to list and no scan report was generated.",
+      "clearCodes": "Not tested. The vehicle had no stored codes, so there was nothing to clear."
+    },
+    "graphNote": "Graph generated with GPT. The gap in the middle is not missing data: the driver deliberately turned the vehicle off, and the lines resume when it was restarted.",
+    "reports": {
+      "before": null,
+      "after": null,
+      "graph": "reports/vlinker-fs-usb/toyota/2010/highlander/highlander-wobd-graphs.png",
+      "csv": "reports/vlinker-fs-usb/toyota/2010/highlander/wobd-2010-toyota-highlander-recording-2026-10-22-091314.csv",
+      "traffic": "reports/vlinker-fs-usb/toyota/2010/highlander/wobd-2010-toyota-highlander-traffic-2026-10-22.txt"
     }
   }
 ]

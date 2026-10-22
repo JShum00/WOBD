@@ -4,7 +4,7 @@
 // check them in Node; the DOM is only touched by GaugePicker.
 import { h } from './dom.js';
 import {
-  BATTERY, DEFAULT_GAUGES, LIVE_PIDS, MODE01_DECODERS, PID_NAMES, PRESETS, ROUND_PAUSE_MS, SLOW_EVERY,
+  BATTERY, DEFAULT_GAUGES, LIVE_PIDS, MODE01_DECODERS, PID_NAMES, PRESETS, ROUND_PAUSE_MS, SLOW_EVERY, UNNAMED_PID,
   buildPidCatalog, gaugeDefs, isChainPid, pidLabel, pollingInterval,
 } from './obd.js';
 
@@ -20,7 +20,7 @@ export function pickerChoices(supported, ecus = []) {
   const undecoded = [...(supported ?? [])]
     .filter((pid) => !decodable.has(pid) && pid !== 0x01 && !isChainPid(pid))
     .sort((a, b) => a - b)
-    .map((pid) => ({ pid, name: PID_NAMES[pid] ?? 'Not a standard PID' }));
+    .map((pid) => ({ pid, name: PID_NAMES[pid] ?? UNNAMED_PID }));
   const catalog = buildPidCatalog(supported ?? new Set(LIVE_PIDS.map((def) => def.pid)), ecus)
     .map((entry) => ({
       ...entry,

@@ -1,5 +1,6 @@
 // Report page: report.html?id=<test id> shows that test's before/after scan PDFs
 // and, when there is one, a live data recording: its CSV (download or replay) and a graph image.
+import { infoTip } from './info-tip.js';
 import { hasReports, loadResults, vehicleName } from './adapter-data.js';
 
 const title = document.querySelector('#report-title');
@@ -10,9 +11,11 @@ const sections = [
   { key: 'before', label: 'Before clearing codes', type: 'pdf' },
   { key: 'after', label: 'After clearing codes', type: 'pdf' },
   { key: 'graph', label: 'Live data recording', type: 'recording' },
+  { key: 'traffic', label: 'Adapter traffic log', type: 'text' },
 ];
 
 const has = (reports, { key, type }) => Boolean(reports[key] || (type === 'recording' && reports.csv));
+const linkText = { pdf: 'Open PDF in a new tab', recording: 'Open graph full size', text: 'Open the log in a new tab' };
 
 function link(href, text, props = {}) {
   return Object.assign(document.createElement('a'), { href, textContent: text }, props);
@@ -32,7 +35,7 @@ function yesNo(value) {
 
 // The PDF or image is only built the first time its section opens, so closed
 // sections never download anything.
-function reportSection({ label, type }, src, csv) {
+function reportSection({ label, type }, src, csv, vehicleLabel, caption) {
   const details = document.createElement('details');
   details.className = 'report-pdf';
 
@@ -51,23 +54,34 @@ function reportSection({ label, type }, src, csv) {
   }
   if (src) {
     if (csv) links.append(' · ');
-    links.append(link(src, type === 'pdf' ? 'Open PDF in a new tab' : 'Open graph full size', { target: '_blank', rel: 'noopener' }));
+    links.append(link(src, linkText[type], type === 'text' ? { target: '_blank', rel: 'noopener', download: src.split('/').pop() } : { target: '_blank', rel: 'noopener' }));
   }
   panel.append(links);
 
   details.addEventListener('toggle', () => {
-    if (!details.open || !src || panel.querySelector('iframe, img')) return;
+    if (!details.open || !src || panel.querySelector('iframe, img, pre')) return;
     if (type === 'pdf') {
       const frame = document.createElement('iframe');
       frame.src = src;
       frame.title = `${label} scan report (PDF)`;
       panel.append(frame);
+    } else if (type === 'text') {
+      const pre = document.createElement('pre');
+      pre.className = 'report-log';
+      pre.textContent = 'Loading…';
+      panel.append(pre);
+      fetch(src).then((response) => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.text();
+      }).then((text) => { pre.textContent = text; })
+        .catch(() => { pre.textContent = 'The log could not be loaded. Use the link above to open it.'; });
     } else {
       const image = document.createElement('img');
       image.src = src;
-      image.alt = 'Graphs from a live data recording on a short drive: speed and RPM, fuel trims, O2 sensors, '
-        + 'manifold pressure with throttle and load, and coolant temperature with battery voltage.';
+      image.alt = `Graphs of the ${vehicleLabel} live data recording over time: speed and RPM, fuel trims, `
+        + 'oxygen sensors, airflow and load, and temperatures and voltage.';
       panel.append(image);
+      if (caption) panel.append(Object.assign(document.createElement('p'), { className: 'report-caption', textContent: caption }));
     }
   });
 
@@ -86,13 +100,17 @@ try {
   title.textContent = result.product;
   document.title = `${result.product} · ${vehicle} · WOBD`;
   document.querySelector('#report-vehicle').textContent = vehicle;
-  document.querySelector('#report-stats').textContent = [
-    `Protocol: ${result.protocol ?? 'Not tested'}`,
-    `Tested: ${result.dateTested ?? 'Not tested'}`,
-    `Read codes: ${yesNo(result.readCodes)}`,
-    `Clear codes: ${yesNo(result.clearCodes)}`,
-    `Live data: ${yesNo(result.liveData)}`,
-  ].join(' · ');
+  const stats = [
+    ['Protocol', result.protocol ?? 'Not tested'],
+    ['Tested', result.dateTested ?? 'Not tested'],
+    ['Read codes', yesNo(result.readCodes), 'readCodes'],
+    ['Clear codes', yesNo(result.clearCodes), 'clearCodes'],
+    ['Live data', yesNo(result.liveData), 'liveData'],
+  ];
+  document.querySelector('#report-stats').replaceChildren(...stats.flatMap(([name, value, key], index) => {
+    const tip = key && result.explanations?.[key];
+    return [index ? ' · ' : '', `${name}: ${value}`, ...(tip ? [' ', infoTip(tip, `Why: ${name}`)] : [])];
+  }));
   const notes = document.querySelector('#report-notes');
   notes.textContent = result.notes ?? '';
   notes.hidden = !result.notes;
@@ -101,7 +119,7 @@ try {
   document.querySelector('#report-pdfs').replaceChildren(...sections
     .filter((section) => has(result.reports, section))
     .map((section) => reportSection(section, result.reports[section.key],
-      section.type === 'recording' ? result.reports.csv : null)));
+      section.type === 'recording' ? result.reports.csv : null, vehicle, result.graphNote)));
   content.hidden = false;
 } catch (error) {
   if (error instanceof RangeError) {

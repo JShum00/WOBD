@@ -186,6 +186,7 @@
           <div class="record-bar">
             <button id="record-btn" type="button" class="btn btn-danger" disabled><span aria-hidden="true">●</span> Start Recording</button>
             <button id="gauges-btn" type="button" class="btn" disabled>Change gauges</button>
+            <label id="record-raw-label" class="record-raw" hidden><input id="record-raw" type="checkbox"> Also record parameters WOBD can't decode yet (raw bytes, polled one at a time every few rounds)</label>
             <p class="record-hint">Logs these readings to a CSV you can graph later. The screen locks until you stop. Saved a drive? <a href="replay.html">Replay it</a>.</p>
           </div>
           <div id="gauges" class="gauges"></div>

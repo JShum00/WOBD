@@ -1,7 +1,7 @@
 // Reads a WOBD live data recording (the CSV js/recorder.js writes) back into
 // per-PID time series for the replay page. No DOM here, so
 // scripts/test-replay.mjs can check it in Node.
-import { LIVE_PIDS, BATTERY } from './obd.js';
+import { LIVE_PIDS, BATTERY, DERIVED_PIDS } from './obd.js';
 
 export const MAX_FILE_BYTES = 128 * 1024 * 1024;
 const REQUIRED = ['timestamp', 'elapsed_ms', 'pid', 'name', 'value', 'unit'];
@@ -81,9 +81,21 @@ export function parseCsv(text) {
 // "0x0D" -> the Speed definition, "ATRV" -> Battery. Unknown PIDs return undefined.
 export function defFor(pid) {
   if (pid === 'ATRV') return BATTERY;
-  if (!/^0x[0-9A-F]{2}$/i.test(pid)) return undefined;
-  const number = parseInt(pid.slice(2), 16);
-  return LIVE_PIDS.find((def) => def.pid === number);
+  const match = /^0x([0-9A-F]{2})(?:\.(\d))?$/i.exec(pid);
+  if (!match) return undefined;
+  const number = parseInt(match[1], 16);
+  const part = match[2] ? Number(match[2]) : undefined;
+  return part === undefined
+    ? LIVE_PIDS.find((def) => def.pid === number)
+    : DERIVED_PIDS.find((def) => def.pid === number && def.part === part);
+}
+
+// Hex data bytes -> a value, or undefined when this decoder doesn't fit them.
+function decodeRaw(def, hex) {
+  if (!def.decode || !/^([0-9A-F]{2})+$/i.test(hex) || hex.length !== def.expectedBytes * 2) return undefined;
+  const bytes = hex.match(/../g).map((pair) => parseInt(pair, 16));
+  const value = def.decode(bytes);
+  return typeof value === 'number' && !Number.isFinite(value) ? undefined : value;
 }
 
 // Turns CSV rows into the recording as they arrive, so a file never has to be held
@@ -115,21 +127,36 @@ class RecordingBuilder {
       if (row[col.pid]) this.unknownPids.add(row[col.pid]);
       return;
     }
-    const raw = row[col.value];
-    const value = def.style === 'status' ? raw : Number(raw);
-    if (!Number.isFinite(elapsed) || raw === undefined || raw === '' || (typeof value === 'number' && !Number.isFinite(value))) return;
-
-    if (!this.byPid.has(def)) this.byPid.set(def, { def, times: [], values: [] });
-    const series = this.byPid.get(def);
-    series.times.push(elapsed);
-    series.values.push(value);
-    this.readingCount++;
+    const text = row[col.value];
+    if (!Number.isFinite(elapsed)) return;
+    if (text !== undefined && text !== '') {
+      const value = def.style === 'status' ? text : Number(text);
+      if (typeof value === 'number' && !Number.isFinite(value)) return;
+      this.#reading(def, elapsed, value);
+    } else if ('raw' in col && row[col.raw]) {
+      // Nothing was decoded when this was recorded (no decoder then, or an odd reply):
+      // decode from the saved bytes with today's decoders, including any second values.
+      for (const target of [def, ...DERIVED_PIDS.filter((extra) => extra.pid === def.pid && !def.part)]) {
+        const value = decodeRaw(target, row[col.raw]);
+        if (value !== undefined) this.#reading(target, elapsed, value);
+      }
+    } else {
+      return;
+    }
 
     const at = Date.parse(row[col.timestamp]);
     if (this.startedAt === null && Number.isFinite(at)) this.startedAt = at - elapsed;
     if (this.protocol === null && 'protocol' in col && row[col.protocol] && row[col.protocol] !== 'unknown') this.protocol = row[col.protocol];
     const baud = 'baud' in col ? Number(row[col.baud]) : NaN;
     if (this.baudRate === null && Number.isInteger(baud) && baud > 0) this.baudRate = baud;
+  }
+
+  #reading(def, elapsed, value) {
+    if (!this.byPid.has(def)) this.byPid.set(def, { def, times: [], values: [] });
+    const series = this.byPid.get(def);
+    series.times.push(elapsed);
+    series.values.push(value);
+    this.readingCount++;
   }
 
   finish() {
@@ -152,7 +179,7 @@ class RecordingBuilder {
       durationMs = Math.max(durationMs, series.times.at(-1));
     }
 
-    const gaugeOrder = [...LIVE_PIDS, BATTERY];
+    const gaugeOrder = [...LIVE_PIDS, ...DERIVED_PIDS, BATTERY];
     const series = [...this.byPid.values()].sort((a, b) => gaugeOrder.indexOf(a.def) - gaugeOrder.indexOf(b.def));
     return {
       startedAt: this.startedAt, durationMs, readingCount: this.readingCount,

@@ -1,4 +1,5 @@
 // Test records and their validation live in js/adapter-data.js.
+import { infoTip } from './info-tip.js';
 import { hasReports, loadResults, notTested, vehicleName } from './adapter-data.js';
 
 const body = document.querySelector('#adapter-results');
@@ -18,7 +19,7 @@ function field(value) {
   return cell;
 }
 
-function capability(value) {
+function capability(value, tip, label) {
   const cell = document.createElement('td');
   if (value === true) {
     cell.textContent = '✓ Yes';
@@ -30,6 +31,7 @@ function capability(value) {
     cell.textContent = 'Not tested';
     cell.setAttribute('aria-label', 'Not tested');
   }
+  if (tip) cell.append(' ', infoTip(tip, `Why: ${label}`));
   return cell;
 }
 
@@ -69,9 +71,9 @@ function rowFor(result) {
     vehicle,
     field(result.protocol),
     field(result.baud),
-    capability(result.readCodes),
-    capability(result.clearCodes),
-    capability(result.liveData),
+    capability(result.readCodes, result.explanations?.readCodes, 'Read codes'),
+    capability(result.clearCodes, result.explanations?.clearCodes, 'Clear codes'),
+    capability(result.liveData, result.explanations?.liveData, 'Live data'),
     field(result.dateTested),
     field(result.wobdVersion),
     field(result.notes),

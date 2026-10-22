@@ -210,6 +210,9 @@ const cases = [
       [0x3C, '413C01F4', 50],
       [0x42, '414236B0', 14],
       [0x44, '41448000', 1],
+      [0x24, '412480004000', 1],
+      [0x34, '413480004000', 1],
+      [0x53, '415303E8', 5],
       [0x46, '414650', 104],
       [0x5C, '415C50', 104],
     ];
@@ -217,6 +220,20 @@ const cases = [
       const def = MODE01_DECODERS.get(pid);
       assert.equal(await readPid(fakeElm({ [`01${pid.toString(16).toUpperCase().padStart(2, '0')}`]: [reply] }), def), expected);
     }
+  }],
+  ['readPidDetailed keeps raw bytes, second values, and says why a read failed', async () => {
+    const { readPidDetailed, FAILURE_REASONS } = await import('../js/obd.js');
+    const wide = await readPidDetailed(fakeElm({ '0124': ['412480004000'] }), MODE01_DECODERS.get(0x24));
+    assert.equal(wide.value, 1);
+    assert.equal(wide.raw, '80004000');
+    assert.deepEqual(wide.extras.map((e) => [e.def.key, e.value]), [['wideband1v_volts', 2]]);
+    const short = await readPidDetailed(fakeElm({ '0124': ['41248000'] }), MODE01_DECODERS.get(0x24));
+    assert.deepEqual([short.value, short.raw, short.failure], [null, '8000', 'malformed']);
+    const none = await readPidDetailed(fakeElm({ '0124': ['NO DATA'] }), MODE01_DECODERS.get(0x24)).catch((err) => ({ failure: 'no-response', err }));
+    assert.equal(none.failure, 'no-response');
+    const bare = await readPidDetailed(fakeElm({ '0155': ['41551A2B'] }), { pid: 0x55 });
+    assert.deepEqual([bare.value, bare.raw, bare.failure], [null, '1A2B', null]);
+    assert.ok(Object.values(FAILURE_REASONS).every((reason) => reason.short && reason.text));
   }],
   ['PID reads reject malformed lengths instead of decoding partial bytes', async () => {
     const def = MODE01_DECODERS.get(0x42);

@@ -30,23 +30,25 @@ export class Recording {
     this.rows = [];
   }
 
-  // Dropouts (null) are skipped, never written as empty values.
-  add(def, value, now) {
-    if (isValid(value)) this.rows.push({ at: now, def, value });
+  // Dropouts (null, with no bytes) are skipped. A reply that couldn't be decoded is still
+  // kept with its raw bytes (hex) and an empty value, so it can be decoded later.
+  add(def, value, now, raw = null) {
+    if (isValid(value) || raw) this.rows.push({ at: now, def, value: isValid(value) ? value : null, raw });
   }
 
   toCsv() {
-    const lines = [['timestamp', 'elapsed_ms', 'pid', 'name', 'value', 'unit', 'protocol', 'baud']];
-    for (const { at, def, value } of this.rows) {
+    const lines = [['timestamp', 'elapsed_ms', 'pid', 'name', 'value', 'unit', 'protocol', 'baud', 'raw']];
+    for (const { at, def, value, raw } of this.rows) {
       lines.push([
         new Date(at).toISOString(),
         at - this.startedAt,
         pidLabel(def),
-        def.label,
-        typeof value === 'number' ? value.toFixed(def.digits ?? 2) : value,
+        def.label ?? 'Unnamed parameter',
+        value === null ? '' : typeof value === 'number' ? value.toFixed(def.digits ?? 2) : value,
         def.unit ?? '',
         this.protocol,
         this.baud,
+        raw ?? '',
       ]);
     }
     return `${lines.map((line) => line.map(csvField).join(',')).join('\r\n')}\r\n`;

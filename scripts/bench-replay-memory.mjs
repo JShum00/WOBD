@@ -12,7 +12,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Readable } from 'node:stream';
 
-const SAMPLE = new URL('../reports/vlinker-fs-usb-pt-cruiser-2026-10-02/wobd-recording-2026-10-02-192055.csv', import.meta.url);
+const SAMPLE = new URL('../reports/vlinker-fs-usb/chrysler/2001/pt-cruiser/wobd-recording-2026-10-02-192055.csv', import.meta.url);
 const BUDGET_MB = 150;
 
 if (process.argv[2] === '--child') {

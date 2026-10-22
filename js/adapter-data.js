@@ -1,7 +1,10 @@
 // Shared loader for data/tested-adapters.json, used by the table and report pages.
 // Add a test by appending one object (with a unique "id") to that file. Put its
-// before/after PDFs (and optionally a live data recording "csv" and its "graph" image) in reports/<id>/
-// and point "reports" at them, or use null.
+// before/after PDFs (and optionally a live data recording "csv" and its "graph" image, and an adapter traffic log "traffic" as .txt) in
+// reports/<adapter>/<make>/<year>/<model>/ (lowercase, hyphenated) and point "reports" at them.
+// Optional "graphNote" is a caption under the graph (who made it, what a gap means).
+// Optional "explanations": { "readCodes" | "clearCodes" | "liveData": "text" } adds an (i) popover.
+// Any of before, after, graph, and csv can be null when that file doesn't exist.
 export const notTested = 'Not tested yet';
 
 function isNullableString(value) {
@@ -18,7 +21,17 @@ function isReports(reports) {
     || (typeof reports === 'object'
       && isNullableString(reports.before)
       && isNullableString(reports.after)
-      && [reports.graph, reports.csv].every((path) => path === undefined || isNullableString(path)));
+      && [reports.graph, reports.csv, reports.traffic].every((path) => path === undefined || isNullableString(path)));
+}
+
+// Optional per-capability explanations, e.g. why something was not tested.
+const explanationKeys = ['readCodes', 'clearCodes', 'liveData'];
+
+function isExplanations(value) {
+  return value === undefined
+    || value === null
+    || (typeof value === 'object'
+      && Object.entries(value).every(([key, text]) => explanationKeys.includes(key) && typeof text === 'string'));
 }
 
 function isResult(result) {
@@ -39,12 +52,14 @@ function isResult(result) {
     && isNullableString(result.dateTested)
     && isNullableString(result.wobdVersion)
     && isNullableString(result.notes)
+    && (result.graphNote === undefined || isNullableString(result.graphNote))
+    && isExplanations(result.explanations)
     && isReports(result.reports);
 }
 
 export function hasReports(result) {
   const { reports } = result;
-  return Boolean(reports && (reports.before || reports.after || reports.graph || reports.csv));
+  return Boolean(reports && (reports.before || reports.after || reports.graph || reports.csv || reports.traffic));
 }
 
 export function vehicleName(vehicle) {

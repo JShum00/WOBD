@@ -419,6 +419,7 @@ function showConnected() {
   const hasProblems = Boolean(state.scan && (state.scan.entries.length || state.scan.status?.milOn));
   ui.setControls({ scan: true, print: Boolean(state.scan), clear: hasProblems });
   $('record-btn').disabled = false;
+  $('record-raw-label').hidden = !state.undecoded.length;
   $('gauges-btn').disabled = false;
 }
 
@@ -685,6 +686,8 @@ async function startLive() {
   const defs = state.gauges.filter((def) => def.pid !== undefined);
   const battery = state.gauges.includes(obd.BATTERY);
 
+  let rawIndex = 0;
+
   // One command at a time: each read waits for the last one. Slow-changing
   // values are only polled every few rounds so the fast gauges stay lively.
   for (let round = 0; active(); round++) {
@@ -693,10 +696,20 @@ async function startLive() {
       if (round % obd.pollingInterval(def, state.monitorMode) !== 0) continue;
       if (!active()) return;
       const started = performance.now();
-      const value = await obd.readPid(elm, def).catch(() => null);
+      const result = await obd.readPidDetailed(elm, def)
+        .catch(() => ({ value: null, raw: null, extras: [], failure: 'no-response' }));
       // Answered reads keep the picker's refresh estimate honest for this car.
-      if (value !== null) state.requestMs = 0.8 * (state.requestMs ?? 0) + 0.2 * (performance.now() - started);
-      reading(def, value);
+      if (result.raw !== null) state.requestMs = 0.8 * (state.requestMs ?? 0) + 0.2 * (performance.now() - started);
+      reading(def, result.value, result);
+    }
+    // Opt-in while recording: one undecoded parameter every few rounds, saved as raw bytes only.
+    const rawPids = state.recording?.rawPids;
+    if (rawPids?.length && round % RAW_EVERY === 0 && active()) {
+      const pid = rawPids[rawIndex++ % rawPids.length];
+      const result = await obd.readPidDetailed(elm, { pid }).catch(() => null);
+      if (result?.raw && state.recording) {
+        state.recording.data.add({ pid, label: undecodedName(pid) }, null, Date.now(), result.raw);
+      }
     }
     if (!active()) return;
     if (battery && slowRound) reading(obd.BATTERY, await obd.readBatteryVoltage(elm).catch(() => null));
@@ -704,12 +717,18 @@ async function startLive() {
   }
 }
 
+const RAW_EVERY = 3;
+
+function undecodedName(pid) {
+  return state.undecoded.find((item) => item.pid === pid)?.name ?? obd.UNNAMED_PID;
+}
+
 function stopLive() {
   state.liveRun++;
 }
 
 // Every live reading lands here: the gauge always, the recording when one is running.
-function reading(def, value) {
+function reading(def, value, { raw = null, failure = null, extras = [] } = {}) {
   ui.updateGauge(def, value);
   const now = Date.now();
   if (def.pid === undefined) {
@@ -724,8 +743,11 @@ function reading(def, value) {
   } else {
     const entry = state.catalog.find((item) => item.pid === def.pid);
     if (entry) {
+      const reason = failure ? obd.FAILURE_REASONS[failure] : null;
+      entry.statusNote = value == null ? reason?.text ?? null : null;
       entry.availability = value == null
-        ? entry.supportKnown ? 'Temporarily not responding' : 'No response · support unknown'
+        ? reason && failure !== 'no-response' ? `No usable reading · ${reason.short}`
+          : entry.supportKnown ? 'Temporarily not responding' : 'No response · support unknown'
         : 'Available';
       if (value != null) {
         entry.lastSuccessfulReading = value;
@@ -735,13 +757,14 @@ function reading(def, value) {
     }
   }
   if (!state.recording) return;
-  state.recording.data.add(def, value, now);
+  state.recording.data.add(def, value, now, raw);
+  for (const extra of extras) state.recording.data.add(extra.def, extra.value, now);
   state.recording.lock.update(def, value, now);
 }
 
 // ---------- Recording ----------
 
-// Records whatever the live loop already polls; it never sends commands of its own.
+// Records whatever the live loop already polls, plus undecoded parameters (raw bytes only) when opted in.
 function startRecording() {
   if (!state.elm || state.busy || state.recording || state.tab !== 'live' || !state.gauges) return;
   // The driving lock only unlocks once Speed shows the car has stopped, so a
@@ -758,6 +781,7 @@ function startRecording() {
   const now = Date.now();
   state.recording = {
     data: new Recording(now, { protocol: state.protocol?.name, baudRate: state.baudRate }),
+    rawPids: $('record-raw').checked ? state.undecoded.map((item) => item.pid) : [],
     lock: new DriveLock({
       hasSpeed: watching('speed'),
       hasRpm: watching('rpm'),

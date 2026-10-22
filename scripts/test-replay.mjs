@@ -6,7 +6,7 @@ import { CsvStreamParser, MAX_FILE_BYTES, parseCsv, parseRecording, parseRecordi
 import { Recording } from '../js/recorder.js';
 import { LIVE_PIDS, BATTERY } from '../js/obd.js';
 
-const SAMPLE = new URL('../reports/vlinker-fs-usb-pt-cruiser-2026-10-02/wobd-recording-2026-10-02-192055.csv', import.meta.url);
+const SAMPLE = new URL('../reports/vlinker-fs-usb/chrysler/2001/pt-cruiser/wobd-recording-2026-10-02-192055.csv', import.meta.url);
 const def = (key) => LIVE_PIDS.find((d) => d.key === key);
 
 // A stream of the given chunks, as file.stream() or response.body would deliver them.
@@ -91,6 +91,13 @@ const cases = [
   ['unknown PIDs are skipped and reported', () => {
     const rec = parseRecording('timestamp,elapsed_ms,pid,name,value,unit\nx,1,0x0D,Speed,3,mph\nx,2,0x55,Unknown,90,\n');
     assert.equal(rec.readingCount, 1);
+    assert.deepEqual(rec.unknownPids, ['0x55']);
+  }],
+  ['raw-only rows are decoded from their bytes, including second values; undecodable ones stay skipped', () => {
+    const header = 'timestamp,elapsed_ms,pid,name,value,unit,protocol,baud,raw\n';
+    const rec = parseRecording(`${header}x,1,0x24,Wideband,,ratio,p,115200,80004000\nx,2,0x24,Wideband,,ratio,p,115200,80\nx,3,0x55,Unnamed,,,p,115200,1A2B\n`);
+    assert.equal(rec.readingCount, 2);
+    assert.deepEqual(rec.series.map((s) => [s.def.key, s.values[0]]), [['wideband1v', 1], ['wideband1v_volts', 2]]);
     assert.deepEqual(rec.unknownPids, ['0x55']);
   }],
   ['valueAt: latest reading at or before t', () => {
