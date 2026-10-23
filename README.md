@@ -16,6 +16,10 @@ A free, browser-based car diagnostic tool. Plug a USB OBD-II adapter into a Chro
 - **Tested adapters** (`tested-adapters.html`): personal adapter test results loaded from `data/tested-adapters.json`.
 - **Installable and offline**: WOBD is a PWA. After the first load, the scanner and bundled code search work offline. Scan data stays in the browser; only a search you choose to open leaves the site.
 
+### WOBD v1.72 release notes
+
+- `node scripts/make-report-graph.mjs --all` draws each test's graph PNG from its recording CSV (or pass one CSV with `--title` and `--out`), so all report graphs share one layout: speed/RPM, fuel trims, O2 sensors, catalyst temperature, airflow/throttle/load, and temperatures/voltage, with panels the car didn't report skipped and engine-off gaps shaded. It needs `npm install` (`@resvg/resvg-js`) and looks best with the DejaVu Sans font installed (`node scripts/test-report-graph.mjs`). The old Claude/GPT-made graphs were replaced and their `graphNote` credits removed.
+
 ### WOBD v1.71 release notes
 
 - Every export names the WOBD version that made it, taken from `js/version.js` (the only place a version is written; helpers in `js/version-info.js`). CSV recordings begin with a `# WOBD v1.71` line before the header (Replay skips it and shows the version; older files without it still replay, but recordings made now won't open in WOBD before 1.71). Adapter traffic logs and DTC reports include it too.

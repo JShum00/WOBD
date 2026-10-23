@@ -15,7 +15,6 @@
     "dateTested": "2026-10-02",
     "wobdVersion": "1.0",
     "notes": "Read codes matched an O'Reilly shop scan code-for-code (6 codes). Clear confirmed via before/after PDF exports. Live data streamed all PIDs; occasional brief dropouts recovered instantly.",
-    "graphNote": "Graph generated with Claude.",
     "reports": {
       "before": "reports/vlinker-fs-usb/chrysler/2001/pt-cruiser/before-cleared.pdf",
       "after": "reports/vlinker-fs-usb/chrysler/2001/pt-cruiser/after-cleared.pdf",
@@ -43,7 +42,6 @@
       "readCodes": "The code request worked and the vehicle reported no stored trouble codes, so there was nothing to list and no scan report was generated.",
       "clearCodes": "Not tested. The vehicle had no stored codes, so there was nothing to clear."
     },
-    "graphNote": "Graph generated with GPT. The gap in the middle is not missing data: the driver deliberately turned the vehicle off, and the lines resume when it was restarted.",
     "reports": {
       "before": null,
       "after": null,
