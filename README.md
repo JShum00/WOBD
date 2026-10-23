@@ -16,12 +16,19 @@ A free, browser-based car diagnostic tool. Plug a USB OBD-II adapter into a Chro
 - **Tested adapters** (`tested-adapters.html`): personal adapter test results loaded from `data/tested-adapters.json`.
 - **Installable and offline**: WOBD is a PWA. After the first load, the scanner and bundled code search work offline. Scan data stays in the browser; only a search you choose to open leaves the site.
 
+### WOBD v1.6 release notes
+
+- Every trouble code Bob has hand-written notes for now has its own page at `/codes/<code>` (for example `/codes/p0340`), listed on Code Search, with a `sitemap.xml`, `robots.txt`, canonical links, and structured data so search engines can index them. The home page gains a static intro and FAQ. Regenerate the pages with `node scripts/build-code-pages.mjs` after editing `data/codes.json`.
+- New `changelog.html` lists every release; the version in each page footer links to it.
+- Added decoders for wideband O2 sensors (`0x24`, `0x34`) and absolute EVAP pressure (`0x53`).
+- Tested adapters are organized as `reports/<adapter>/<make>/<year>/<model>/`, with a 2010 Highlander test added (graph, recording, and adapter traffic log). Reports and the tested-adapters table explain untested features with (i) popovers.
+- Recordings add `raw`, `mode`, and `ecu` columns: each reply's data bytes (hex), the service (`01`), and the responding ECU when the adapter reports it. A reply WOBD couldn't decode keeps an empty `value` and its raw bytes, and Replay decodes it from those bytes when a decoder exists. Second values in one reply (wideband voltage/current) are rows like `0x24.2`. Older CSVs without these columns still replay.
+- "Record undecoded parameters (raw)" is off by default. Turning it on opens an acknowledgement dialog (shown every time), and the setting is locked while recording. Undecoded PIDs are then sampled one at a time as raw-only rows, one row per responding ECU: every round when stopped (0 mph), every 3 rounds at low speed, every 6 rounds when driving or when speed is unavailable or stale. A time budget keeps raw reads to a small share of polling, so regular gauges keep priority (tests: `node scripts/test-raw-capture.mjs`).
+
 ### WOBD v1.5 release notes
 
 - Updated navigation and demo layout.
 - Replay imports CSV recordings incrementally with a 128 MiB file limit.
-- Recordings add `raw`, `mode`, and `ecu` columns: each reply's data bytes (hex), the service (`01`), and the responding ECU when the adapter reports it. A reply WOBD couldn't decode keeps an empty `value` and its raw bytes, and Replay decodes it from those bytes when a decoder exists. Second values in one reply (wideband voltage/current) are rows like `0x24.2`. Older CSVs without these columns still replay.
-- "Record undecoded parameters (raw)" is off by default. Turning it on opens an acknowledgement dialog (shown every time), and the setting is locked while recording. Undecoded PIDs are then sampled one at a time as raw-only rows, one row per responding ECU: every round when stopped (0 mph), every 3 rounds at low speed, every 6 rounds when driving or when speed is unavailable or stale. A time budget keeps raw reads to a small share of polling, so regular gauges keep priority (tests: `node scripts/test-raw-capture.mjs`).
 - Replay charts downsample for display while retaining the original readings for playback and hover; isolated spikes are preserved and detected visual gaps are not connected.
 
 ### WOBD v1.51 release notes
@@ -102,6 +109,8 @@ The pretend adapter behaves like a real ELM327 about protocols: it only reaches 
 | `js/demo.js` | Pretend adapter for demo mode and the simulator |
 | `simulator.html`, `js/simulator.js`, `js/vehicles.js` | Simulator page and the year/make/model to protocol rules |
 | `data/codes.json` | Bob's code book (detailed explanations) |
+| `codes/`, `sitemap.xml`, `scripts/build-code-pages.mjs` | Generated static page per code in `data/codes.json`, the sitemap, and the list in `codes.html` (test: `node scripts/test-code-pages.mjs`). `robots.txt` points to the sitemap |
+| `changelog.html` | Release history; add an entry with each release |
 | `data/models.json` | Models per make for the car form, generated from NHTSA vPIC |
 | `scripts/update-models.mjs` | Refreshes `data/models.json` and bumps `CACHE_VERSION` |
 | `.github/workflows/update-models.yml` | Runs that script weekly and commits any change |
@@ -110,7 +119,7 @@ The pretend adapter behaves like a real ELM327 about protocols: it only reaches 
 
 ## Contributing code explanations
 
-Each entry in `data/codes.json` needs a `title`, a plain-English `plain` line under 40 words, an `urgency` (`low`, `medium`, or `high`), a few `causes` (cheapest first), a `difficulty` (`diy`, `moderate`, or `shop`), and a `tellMechanic` line. Write explanations in your own words. The code search identifies manufacturer-specific P codes (P1 and P30-P33) and B, C, or U codes in the 1xxx and 2xxx ranges rather than giving them a generic definition.
+Each entry in `data/codes.json` needs a `title`, a plain-English `plain` line under 40 words, an `urgency` (`low`, `medium`, or `high`), a few `causes` (cheapest first), a `difficulty` (`diy`, `moderate`, or `shop`), and a `tellMechanic` line. Write explanations in your own words. After editing, run `node scripts/build-code-pages.mjs` to regenerate the static code pages and sitemap. The code search identifies manufacturer-specific P codes (P1 and P30-P33) and B, C, or U codes in the 1xxx and 2xxx ranges rather than giving them a generic definition.
 
 ## License
 

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>WOBD · Free car diagnostics in your browser</title>
   <meta name="description" content="Plug a USB OBD-II adapter into your laptop or Chromebook and read your car's trouble codes in plain English. Free, nothing to install.">
+  <link rel="canonical" href="https://wobd.app/">
   <link rel="icon" href="Assets/favicon.png" type="image/png">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="img/icons/apple-touch-icon.png">
@@ -16,6 +17,7 @@
   <script src="js/pwa.js" defer></script>
   <script src="js/site-nav.js" defer></script>
   <script src="js/version.js" defer></script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","name":"WOBD","url":"https://wobd.app/","description":"Free in-browser OBD-II scanner that reads your car's trouble codes and live data in plain English using a USB ELM327-compatible adapter.","applicationCategory":"UtilitiesApplication","operatingSystem":"Any (Chrome, Edge, or Opera on a laptop or Chromebook)","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is WOBD?","acceptedAnswer":{"@type":"Answer","text":"WOBD is a free OBD-II scanner that runs in your browser. It reads your car's trouble codes and live data and explains them in plain English."}},{"@type":"Question","name":"What do I need to use WOBD?","acceptedAnswer":{"@type":"Answer","text":"A car with OBD-II (US model year 1996 or newer), a USB ELM327-compatible adapter, and a laptop or Chromebook running Chrome, Edge, or Opera."}},{"@type":"Question","name":"Does WOBD work on a phone?","acceptedAnswer":{"@type":"Answer","text":"No. WOBD uses Web Serial, which phones and tablets don't support. Use a laptop or Chromebook."}},{"@type":"Question","name":"Is my data private?","acceptedAnswer":{"@type":"Answer","text":"Yes. Scan data stays in your browser. Only a search you choose to open leaves the site."}},{"@type":"Question","name":"Can I look up a code without an adapter?","acceptedAnswer":{"@type":"Answer","text":"Yes. Code Search explains trouble codes offline, with no adapter or car needed."}}]}]}</script>
 </head>
 <body>
   <header class="site-header">
@@ -220,6 +222,16 @@
     </aside>
   </main>
 
+  <section class="guide home-info" aria-labelledby="about-wobd">
+    <h2 id="about-wobd">Free OBD-II scanner in your browser</h2>
+    <p>WOBD reads your car's check engine light codes and live data through a USB OBD-II adapter and explains them in plain English: how urgent each code is, what usually causes it, and what to tell your mechanic. There's nothing to install and it's free. Not sure what a code means? Try <a href="codes">Code Search</a> or the <a href="guide">how-to guide</a>.</p>
+    <h3>Frequently asked questions</h3>
+    <details><summary>What do I need to use WOBD?</summary><p>A car with OBD-II (US model year 1996 or newer), a USB ELM327-compatible adapter, and a laptop or Chromebook running Chrome, Edge, or Opera.</p></details>
+    <details><summary>Does WOBD work on a phone?</summary><p>No. WOBD uses Web Serial, which phones and tablets don't support. Use a laptop or Chromebook.</p></details>
+    <details><summary>Is my data private?</summary><p>Yes. Scan data stays in your browser. Only a search you choose to open leaves the site.</p></details>
+    <details><summary>Can I look up a code without an adapter?</summary><p>Yes. <a href="codes">Code Search</a> explains trouble codes offline, with no adapter or car needed.</p></details>
+    <details><summary>What is WOBD?</summary><p>WOBD is a free OBD-II scanner that runs in your browser. It gives general information, not a professional diagnosis, so always confirm a problem before replacing parts.</p></details>
+  </section>
 
   <footer class="site-footer">
     <p>WOBD gives general information, not a professional diagnosis. Always confirm a problem before replacing parts.</p>

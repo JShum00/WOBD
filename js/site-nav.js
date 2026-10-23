@@ -9,7 +9,8 @@ const pages = {
 
 function updateCurrentPage() {
   const page = location.pathname.split('/').pop();
-  const current = pages[page] ?? (
+  // Static trouble code pages live at /codes/<code>.
+  const current = location.pathname.startsWith('/codes/') ? 'codes' : pages[page] ?? pages[`${page}.html`] ?? (
     page === '' || page === 'index.html'
       ? location.hash === '#demos' ? 'demos' : 'scanner'
       : null

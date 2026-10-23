@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Changelog · WOBD</title>
+  <meta name="description" content="What changed in each WOBD release: new features, decoders, reports, and fixes.">
+  <link rel="canonical" href="https://wobd.app/changelog">
+  <meta name="theme-color" content="#1F3F8F">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="Assets/favicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="img/icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/theme.js"></script>
+  <script src="js/pwa.js" defer></script>
+  <script src="js/site-nav.js" defer></script>
+  <script src="js/version.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="logo" href="./"><img class="logo-image" src="Assets/header-logo.png" alt="">WOBD</a>
+    <div class="header-right">
+      <nav class="site-nav" aria-label="Main navigation">
+        <a class="header-link" href="./" data-nav="scanner">Scanner</a>
+        <a class="header-link" href="codes.html" data-nav="codes">Code Search</a>
+        <a class="header-link" href="replay.html" data-nav="replay">Replay</a>
+        <a class="header-link" href="./#demos" data-nav="demos">Demos</a>
+        <a class="header-link" href="guide.html" data-nav="guide">How to Use</a>
+        <a class="header-link" href="tested-adapters.html" data-nav="adapters">Tested Adapters</a>
+      </nav>
+      <button id="theme-btn" type="button" class="theme-btn" aria-pressed="false" aria-label="Dark mode">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="currentColor"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></g></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="guide changelog">
+    <h1>Changelog</h1>
+    <p class="lede">What changed in each WOBD release, newest first.</p>
+
+    <section id="v1-6">
+      <h2>v1.6 <time datetime="2026-10-22">October 22, 2026</time></h2>
+      <ul>
+        <li><strong>Trouble code pages.</strong> Every code Bob has hand-written notes for now has its own page, like <a href="codes/p0340">P0340</a>, with urgency, common causes, and what to tell your mechanic. They're linked from <a href="codes">Code Search</a> so search engines and people can find them.</li>
+        <li><strong>Home page intro and FAQ</strong> in plain HTML, plus a sitemap and search-engine hints.</li>
+        <li><strong>New live data decoders:</strong> wideband oxygen sensors (PIDs 0x24 and 0x34) and absolute EVAP vapor pressure (0x53). Parameters WOBD can't name yet are now labelled "Unnamed parameter" instead of "Not a standard PID".</li>
+        <li><strong>Raw recording bytes.</strong> Recordings now keep each reply's raw bytes, the service, and the responding ECU, so readings can be decoded later when a decoder is added. Older recordings still replay.</li>
+        <li><strong>Optional raw capture of undecoded parameters,</strong> off by default and behind a confirmation dialog. It samples sparingly so normal gauges keep priority.</li>
+        <li><strong>Tested adapters reorganized</strong> by adapter, make, year, and model. Added a 2010 Toyota Highlander test with a live data replay, graph, and the adapter's traffic log.</li>
+        <li><strong>(i) popovers</strong> explain why a feature wasn't tested, such as clearing codes when there were none to clear.</li>
+        <li><strong>Changelog page</strong> (this one). The version in the footer links here.</li>
+      </ul>
+    </section>
+
+    <section id="v1-51">
+      <h2>v1.51 <time datetime="2026-10-21">October 21, 2026</time></h2>
+      <ul>
+        <li>New WOBD logo in the header and a new favicon.</li>
+      </ul>
+    </section>
+
+    <section id="v1-5">
+      <h2>v1.5 <time datetime="2026-10-21">October 21, 2026</time></h2>
+      <ul>
+        <li>Updated navigation and demo layout.</li>
+        <li>Replay loads CSV recordings in pieces and accepts files up to 128 MiB.</li>
+        <li>Replay charts are simplified for display while keeping every original reading for playback and hover.</li>
+      </ul>
+    </section>
+
+    <section id="v1-4">
+      <h2>v1.4 <time datetime="2026-10-20">October 20, 2026</time></h2>
+      <ul>
+        <li>Advanced diagnostics, with a tab per module when several modules answer a scan.</li>
+        <li>Fixed status reporting to combine results from every responding module.</li>
+        <li>Fixed replies on older J1850 and ISO headered protocols that included a stray checksum byte.</li>
+      </ul>
+    </section>
+
+    <section id="v1-3">
+      <h2>v1.3 <time datetime="2026-10-03">October 3, 2026</time></h2>
+      <ul>
+        <li>Choose a connection protocol yourself when automatic detection fails, with fuller troubleshooting help in the guide.</li>
+        <li>Car simulator for trying any year, make, and model without an adapter.</li>
+        <li>Recording, replay, and supported-parameter tests added.</li>
+      </ul>
+    </section>
+
+    <section id="v1-2">
+      <h2>v1.2 <time datetime="2026-10-02">October 2, 2026</time></h2>
+      <ul>
+        <li>Tested Adapters page with personal results for each adapter.</li>
+        <li>Connection info panel showing adapter details and clearer errors.</li>
+        <li>Optional year, make, and model for more precise code searches.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>WOBD gives general information, not a professional diagnosis. Always confirm a problem before replacing parts.</p>
+    <p>WOBD is free. If it helped you out, you can <a href="https://buymeacoffee.com/jShumway00" target="_blank" rel="noopener noreferrer">buy me a coffee ☕</a></p>
+  </footer>
+</body>
+</html>

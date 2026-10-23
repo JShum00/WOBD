@@ -1,7 +1,7 @@
 // Service worker: caches the static app shell only. Web Serial talks to the
 // USB adapter directly and never goes through fetch, so nothing here can touch
 // it. Bump CACHE_VERSION to force every returning user onto fresh files.
-const CACHE_VERSION = 'v41';
+const CACHE_VERSION = 'v42';
 const CACHE_NAME = `wobd-cache-${CACHE_VERSION}`;
 
 const APP_SHELL = [
@@ -14,6 +14,7 @@ const APP_SHELL = [
   'report.html',
   'replay.html',
   'simulator.html',
+  'changelog.html',
   'manifest.webmanifest',
   'css/style.css',
   'css/print.css',
@@ -103,6 +104,8 @@ async function fromCache(request) {
 
   // Pretty URLs: "/" is index.html and "/guide" is guide.html. Real files that
   // aren't cached, like report PDFs, go to the network instead of the home page.
+  // Trouble code pages (/codes/p0340) are fetched on demand, never the home page.
+  if (url.pathname.startsWith('/codes/')) return undefined;
   const name = url.pathname.split('/').pop();
   if (name.includes('.')) return undefined;
   const page = name === '' ? 'index.html' : `${name}.html`;

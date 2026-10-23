@@ -1152,6 +1152,14 @@ dialog.record-lock .btn { font-size: 1.15rem; padding: 0.7rem 1.4rem; }
 }
 .guide h2 { margin: 0 0 0.5rem; font-size: 1.2rem; color: var(--link); }
 .guide ol, .guide ul { padding-left: 1.3rem; }
+.guide .breadcrumb { margin: 0 0 0.5rem; color: var(--muted); font-size: 0.9rem; }
+.guide h2 time { color: var(--muted); font-size: 0.9rem; font-weight: 400; margin-left: 0.5rem; }
+.panel .code-list { margin-top: 1.5rem; }
+.panel .code-list h2 { font-size: 1.1rem; color: var(--heading); }
+.panel .code-list ul { padding-left: 1.2rem; columns: 2 18rem; }
+.home-info { margin-top: 1.5rem; }
+.home-info details { margin-bottom: 0.5rem; }
+.home-info summary { cursor: pointer; font-weight: 600; }
 .guide li { margin-bottom: 0.3rem; }
 .guide figure { margin: 0.75rem 0 0; }
 .guide figcaption { font-size: 0.85rem; color: var(--muted); }
