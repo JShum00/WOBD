@@ -17,6 +17,10 @@ A free, browser-based car diagnostic tool. Plug a USB OBD-II adapter into a Chro
 - **Tested adapters** (`tested-adapters.html`): personal adapter test results loaded from `data/tested-adapters.json`.
 - **Installable and offline**: WOBD is a PWA. After the first load, the scanner and bundled code search work offline. Scan data stays in the browser; only a search you choose to open, or a VIN lookup you agree to, leaves the site.
 
+### WOBD v1.81 release notes
+
+- Fixed Replay gauges showing their unit twice (for example `189 °F°F`) during playback.
+
 ### WOBD v1.8 release notes
 
 - Languages: a top-bar selector for English, French, German, Spanish, Japanese and Simplified Chinese. The core app (Scanner, Bob, Live data, Replay, the session report, errors and Bob's spoken voice) is translated, along with Bob's 66 code explanations. Translations are machine drafts, labelled "AI" with a notice, and not yet reviewed by native speakers. The guide, tested adapters, changelog, contact and `/codes` pages stay English. Everything works offline, the choice stays in your browser, and browser language only suggests a switch. A separate Units setting shows km/h and °C without changing recordings or exports. Strings live in `data/i18n/` (built by `node scripts/build-i18n.mjs`; `node scripts/test-i18n.mjs --require-all`).

@@ -6,9 +6,9 @@ Update this checklist whenever an implementation stage is completed. Keep accept
 
 ## Current Status / Where to Resume
 
-- **Latest completed milestone:** v1.8 (F1, F2 bus-error handling, F4–F6, F8 and F9: VIN lookup, detectors and notes, `.wobd`, session report, six languages and units). Before that v1.72 (report graphs generated from recordings by `scripts/make-report-graph.mjs`). Before that v1.71 patch (exports stamped with the WOBD version; report pages read it from the files). Before that v1.7 (F2 connection troubleshooting, F3 fuel level, dismissible banner). v1.6 added static code pages and SEO; v1.51 branding was `a07930b`.
-- **Current application label:** WOBD v1.8 (previously v1.72, v1.71, v1.7, before that v1.51; v1.5 had been released from `2a77544`).
-- **Current focus:** v1.8 is released. Remaining: F7 location (its own release) and F11 freeze-frame.
+- **Latest completed milestone:** v1.81 (fixes doubled Replay gauge units) on top of v1.8 (F1, F2 bus-error handling, F4–F6, F8 and F9: VIN lookup, detectors and notes, `.wobd`, session report, six languages and units). Before that v1.72 (report graphs generated from recordings by `scripts/make-report-graph.mjs`). Before that v1.71 patch (exports stamped with the WOBD version; report pages read it from the files). Before that v1.7 (F2 connection troubleshooting, F3 fuel level, dismissible banner). v1.6 added static code pages and SEO; v1.51 branding was `a07930b`.
+- **Current application label:** WOBD v1.81 (previously v1.8, v1.72, v1.71, v1.7, before that v1.51; v1.5 had been released from `2a77544`).
+- **Current focus:** v1.81 is released. Remaining: F7 location (its own release) and F11 freeze-frame.
 - **Chromebook result:** User confirmed the native Chrome file picker, large CSV playback, offline Replay, navigation, simulator, and USB Web Serial tests passed on the named preview. No quantitative device performance or memory measurements were reported.
 - **Release note:** `README.md` contains a v1.5 changelog limited to implemented UX and Replay functionality.
 

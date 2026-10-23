@@ -895,8 +895,6 @@ function render() {
     const def = displayPidDef(series.def);
     const value = valueAt(series, playhead);
     updateGauge(def, displayValue(value, series.def.unit));
-    const number = document.querySelector(`#gauge-${def.key} .gauge-number`);
-    if (number && def.style !== 'status') number.textContent = formatValue(series.def, value);
   }
   const scrub = $('replay-scrub');
   scrub.value = String(Math.round(playhead));
