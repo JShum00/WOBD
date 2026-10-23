@@ -6,9 +6,9 @@ Update this checklist whenever an implementation stage is completed. Keep accept
 
 ## Current Status / Where to Resume
 
-- **Latest completed milestone:** v1.51 branding release, committed as `a07930b` and deployed as Worker version `a7b1a9b4-fe9e-48c1-b44c-2f4f8a86e282`.
-- **Current application label:** WOBD v1.51 is live; v1.5 was previously released from `2a77544` (Worker version `e8cf302f-6b25-45ee-88fe-a5eee4e4b064`).
-- **Current focus:** v1.7 candidate (not released): F2 connection troubleshooting and F3 fuel level are implemented. Work stopped there on purpose: the next items (F1, F4 annotations, F5, F6, F7, F8, F9) each have open decisions listed under "Blockers and Unresolved Decisions" and need your answers first.
+- **Latest completed milestone:** v1.7 (F2 connection troubleshooting, F3 fuel level, dismissible banner). v1.6 added static code pages and SEO; v1.51 branding was `a07930b`.
+- **Current application label:** WOBD v1.7 (previously v1.51; v1.5 had been released from `2a77544`).
+- **Current focus:** v1.7 released: F2 connection troubleshooting and F3 fuel level are implemented. Work stopped there on purpose: the next items (F1, F4 annotations, F5, F6, F7, F8, F9) each have open decisions listed under "Blockers and Unresolved Decisions" and need your answers first.
 - **Chromebook result:** User confirmed the native Chrome file picker, large CSV playback, offline Replay, navigation, simulator, and USB Web Serial tests passed on the named preview. No quantitative device performance or memory measurements were reported.
 - **Release note:** `README.md` contains a v1.5 changelog limited to implemented UX and Replay functionality.
 
@@ -40,7 +40,7 @@ Update this checklist whenever an implementation stage is completed. Keep accept
 ## F2 — Connection Troubleshooting and Protocol Guidance
 
 - ✅ Existing adapter/serial/OBD error classification and protocol override remain available.
-- ✅ Explain adapter failure, ECU nonresponse, `NO DATA`, `CAN ERROR`, bus error, timeout, and parse failure distinctly in Bob's context-sensitive guidance (`js/troubleshoot.js`, `scripts/test-troubleshoot.mjs`, 9 cases; unreleased).
+- ✅ Explain adapter failure, ECU nonresponse, `NO DATA`, `CAN ERROR`, bus error, timeout, and parse failure distinctly in Bob's context-sensitive guidance (`js/troubleshoot.js`, `scripts/test-troubleshoot.mjs`, 9 cases).
 - ✅ On override failure, show the protocol by name and recommend automatic selection before external research.
 - ✅ Add an encoded, user-initiated vehicle/protocol search link; do not treat search snippets as authoritative.
 - ➖ Verify safe retry/reset and `ATSPx` / `ATDPN` behavior without unnecessary follow-up after definitive bus failure. (Partly done: the adapter's own reply, such as `CAN ERROR`, is now kept and written to the traffic log; `ATDP`/`ATDPN` are still only queried after `UNABLE TO CONNECT`. Needs a hardware or simulator trace.)
@@ -48,7 +48,7 @@ Update this checklist whenever an implementation stage is completed. Keep accept
 
 ## F3 — Fuel-Level PID and Related Parameters
 
-- ✅ Add Mode 01 PID `2F` only when advertised and response-validated; decode `100 × A / 255` (`LIVE_PIDS`; tests cover 0 / 255 / mid-scale, wrong lengths, and no data; unreleased).
+- ✅ Add Mode 01 PID `2F` only when advertised and response-validated; decode `100 × A / 255` (`LIVE_PIDS`; tests cover 0 / 255 / mid-scale, wrong lengths, and no data).
 - ➖ Preserve provenance, units, sample time, availability, and response errors; do not infer fuel from trims or the dash gauge.
 - ➖ If display smoothing is introduced, retain raw unsmoothed measurements and label the display behavior.
 - ➖ For unsupported vehicles, say unavailable through standard OBD-II; any manual fuel note must be labeled as user-entered.
@@ -168,8 +168,8 @@ Update this checklist whenever an implementation stage is completed. Keep accept
 - ✅ P1 streaming CSV parser and 128 MiB cap completed (`e36ec00`).
 - ✅ P1 Replay downsampling and gap rendering completed (`03846df`).
 - ➖ P1 Replay wall-clock display and annotation-only review workspace.
-- ✅ P1 connection-aware Bob troubleshooting / protocol search guidance (unreleased).
-- ✅ P1 fuel-level PID `012F` (unreleased; unsupported-vehicle wording and manual notes still open).
+- ✅ P1 connection-aware Bob troubleshooting / protocol search guidance.
+- ✅ P1 fuel-level PID `012F` (unsupported-vehicle wording and manual notes still open).
 - ➖ P2 VIN confirm/fallback/save flow.
 - ➖ P2 anomaly detection and event annotations.
 - ➖ P2 printable session report.

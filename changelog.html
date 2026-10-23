@@ -39,6 +39,16 @@
     <h1>Changelog</h1>
     <p class="lede">What changed in each WOBD release, newest first.</p>
 
+    <section id="v1-7">
+      <h2>v1.7 <time datetime="2026-10-22">October 22, 2026</time></h2>
+      <ul>
+        <li><strong>Clearer connection problems.</strong> Bob now tells apart a missing adapter, an adapter that stopped answering, a car that isn't answering, a data-line error, and a reply WOBD couldn't read, and shows what the adapter itself said (like "CAN ERROR").</li>
+        <li><strong>Protocol hints.</strong> If you forced a protocol and it fails, Bob names it and suggests going back to automatic first. With your car's year, make, and model filled in, there's an optional search link for its protocol.</li>
+        <li><strong>Fuel tank level</strong> appears as a live gauge on cars that report it (PID 0x2F).</li>
+        <li><strong>The development banner can be closed</strong> with the ✕. It comes back after the next release.</li>
+      </ul>
+    </section>
+
     <section id="v1-6">
       <h2>v1.6 <time datetime="2026-10-22">October 22, 2026</time></h2>
       <ul>

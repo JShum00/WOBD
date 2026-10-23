@@ -16,6 +16,12 @@ A free, browser-based car diagnostic tool. Plug a USB OBD-II adapter into a Chro
 - **Tested adapters** (`tested-adapters.html`): personal adapter test results loaded from `data/tested-adapters.json`.
 - **Installable and offline**: WOBD is a PWA. After the first load, the scanner and bundled code search work offline. Scan data stays in the browser; only a search you choose to open leaves the site.
 
+### WOBD v1.7 release notes
+
+- Connection failures are explained by type (adapter missing or silent, car silent, no data, bus error, unreadable reply, rejected command) in `js/troubleshoot.js`. The adapter's own wording, such as `CAN ERROR`, is shown and logged. A failed forced protocol is named and Bob recommends automatic selection first; with a year/make/model entered, a user-initiated protocol search link is offered (test: `node scripts/test-troubleshoot.mjs`).
+- Fuel tank level (PID `0x2F`, `100 × A / 255`) is a live gauge when the car advertises it.
+- The home-page development banner has a close button; the choice is remembered per release in `localStorage` (`js/banner.js`).
+
 ### WOBD v1.6 release notes
 
 - Every trouble code Bob has hand-written notes for now has its own page at `/codes/<code>` (for example `/codes/p0340`), listed on Code Search, with a `sitemap.xml`, `robots.txt`, canonical links, and structured data so search engines can index them. The home page gains a static intro and FAQ. Regenerate the pages with `node scripts/build-code-pages.mjs` after editing `data/codes.json`.
