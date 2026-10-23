@@ -63,6 +63,9 @@ export const LIVE_PIDS = [
     min: 0, max: 2, digits: 3, expectedBytes: 4, slow: true, decode: ([a, b]) => (a * 256 + b) * 2 / 65536 },
   { pid: 0x34, key: 'wideband1c', label: 'Wideband O2 sensor 1, equivalence ratio (current type)', unit: 'ratio', style: 'hbar',
     min: 0, max: 2, digits: 3, expectedBytes: 4, slow: true, decode: ([a, b]) => (a * 256 + b) * 2 / 65536 },
+  // Percent of tank capacity as the ECU reports it. Not fuel consumption or range.
+  { pid: 0x2F, key: 'fuellevel', label: 'Fuel tank level', unit: '%', style: 'hbar', min: 0, max: 100, digits: 0,
+    expectedBytes: 1, slow: true, priority: 'low', decode: ([a]) => a * 100 / 255 },
   { pid: 0x31, key: 'cleareddistance', label: 'Distance since codes cleared', unit: 'km', style: 'hbar', min: 0, max: 1000, digits: 0,
     expectedBytes: 2, slow: true, priority: 'low', decode: ([a, b]) => a * 256 + b },
   { pid: 0x3C, key: 'catalystb1s1', label: 'Catalyst temperature, bank 1 sensor 1', unit: '°F', style: 'hbar', min: 0, max: 1800, digits: 0,
@@ -173,12 +176,13 @@ const PID_CATEGORIES = new Map([
   [0x0E, 'Ignition and timing'], [0x0F, 'Temperature'], [0x10, 'Fuel and air management'],
   [0x11, 'Engine performance'], [0x14, 'Oxygen sensors'], [0x15, 'Oxygen sensors'],
   [0x1C, 'Diagnostic information'], [0x21, 'Vehicle speed and distance'],
-  [0x23, 'Fuel and air management'], [0x24, 'Oxygen sensors'], [0x34, 'Oxygen sensors'], [0x53, 'Emissions'], [0x31, 'Vehicle speed and distance'],
+  [0x23, 'Fuel and air management'], [0x24, 'Oxygen sensors'], [0x34, 'Oxygen sensors'], [0x53, 'Emissions'], [0x2F, 'Fuel and air management'], [0x31, 'Vehicle speed and distance'],
   [0x3C, 'Emissions'], [0x3D, 'Emissions'], [0x3E, 'Emissions'], [0x3F, 'Emissions'],
   [0x42, 'Electrical system'], [0x44, 'Fuel and air management'], [0x46, 'Temperature'], [0x5C, 'Temperature'],
 ]);
 
 const PID_DESCRIPTIONS = new Map([
+  [0x2F, 'Fuel tank level as a percentage of capacity, reported by the car. It is not fuel consumption or remaining range.'],
   [0x1C, 'Identifies the OBD standard the vehicle reports complying with.'],
   [0x21, 'Distance traveled while the malfunction indicator lamp was on.'],
   [0x31, 'Distance traveled since diagnostic trouble codes were cleared.'],

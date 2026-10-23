@@ -2,9 +2,11 @@
 // command waits for the previous reply (ending in the ">" prompt) first.
 
 export class ElmError extends Error {
-  constructor(code, message) {
+  // reply is the adapter's own wording (like "CAN ERROR"), kept for troubleshooting.
+  constructor(code, message, reply = null) {
     super(message);
     this.code = code;
+    this.reply = reply;
   }
 }
 
@@ -97,7 +99,7 @@ function cleanReply(raw, command) {
 
   for (const line of lines) {
     for (const [pattern, code, message] of ERROR_REPLIES) {
-      if (pattern.test(line.toUpperCase())) throw new ElmError(code, message);
+      if (pattern.test(line.toUpperCase())) throw new ElmError(code, message, line.trim());
     }
   }
   return lines;

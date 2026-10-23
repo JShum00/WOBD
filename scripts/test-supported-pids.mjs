@@ -131,7 +131,7 @@ const cases = [
     assert.deepEqual(elm.sent, ['0100', '0120', '0140']);
     for (const pid of [0x0C, 0x0D, 0x21, 0x2F, 0x33, 0x42, 0x46, 0x51, 0x5C]) assert.ok(pids.has(pid), `0x${pid.toString(16)}`);
     const { undecoded } = pickerChoices(pids);
-    assert.deepEqual(undecoded.map((u) => u.pid), [0x13, 0x2F, 0x33, 0x51]);
+    assert.deepEqual(undecoded.map((u) => u.pid), [0x13, 0x33, 0x51]);
   }],
   ['the second ECU alone can carry the chain bit', async () => {
     const elm = fakeElm({ '0100': ['4100BE3FB810', '410000000001'], '0120': ['412000000000', '412080000000'] });
@@ -252,6 +252,23 @@ const cases = [
     assert.equal(catalog[1].unit, 'km');
     assert.deepEqual(catalog[1].ecuSources, ['7E8', '7E9']);
     assert.equal(catalog[2].decoderAvailable, false);
+  }],
+  ['fuel level 0x2F decodes 0, mid-scale and full, and rejects bad lengths', async () => {
+    const def = LIVE_PIDS.find((d) => d.pid === 0x2F);
+    assert.equal(def.unit, '%');
+    assert.equal(await readPid(fakeElm({ '012F': ['412F00'] }), def), 0);
+    assert.equal(await readPid(fakeElm({ '012F': ['412FFF'] }), def), 100);
+    assert.ok(Math.abs(await readPid(fakeElm({ '012F': ['412F80'] }), def) - 50.196) < 0.01);
+    await assert.rejects(readPid(fakeElm({ '012F': ['412F8080'] }), def), { code: 'MALFORMED_RESPONSE' });
+    await assert.rejects(readPid(fakeElm({ '012F': ['412F'] }), def), { code: 'MALFORMED_RESPONSE' });
+    assert.equal(await readPid(fakeElm({ '012F': ['NO DATA'] }), def), null);
+  }],
+  ['fuel level is only offered when the car advertises it', () => {
+    const withFuel = pickerChoices(new Set([0x0C, 0x2F]));
+    assert.ok(withFuel.offered.some((d) => d.key === 'fuellevel'));
+    assert.ok(!withFuel.undecoded.some((u) => u.pid === 0x2F));
+    const without = pickerChoices(new Set([0x0C]));
+    assert.ok(!without.offered.some((d) => d.key === 'fuellevel'));
   }],
 ];
 

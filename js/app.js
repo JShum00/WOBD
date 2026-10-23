@@ -13,6 +13,8 @@ import { DriveLock, Recording } from './recorder.js';
 import { RawBudget, RawOptIn, SPEED_FRESH_MS, rawEvery } from './raw-capture.js';
 import { RecordLock } from './record-lock.js';
 import { GaugePicker, defaultKeys, pickerChoices } from './gauge-picker.js';
+import { h } from './dom.js';
+import { diagnoseConnection } from './troubleshoot.js';
 import { baudLabel, collectConnInfo, friendlyError, hideConnInfo, initConnInfo, isLowBattery, renderConnInfo, FRIENDLY } from './conninfo.js';
 
 const DETECT_PROGRESS_DELAY = 300;  // ms before the baud-rate progress bar appears
@@ -177,6 +179,20 @@ function showError(err) {
   bob.say({ tone: 'high', mood: 'warning', text: friendlyError(err) });
 }
 
+// Connection failures get a message for where the conversation stopped, plus
+// the adapter's own wording and an optional user-initiated protocol search.
+function showConnectError(err, protocol) {
+  console.error('[WOBD]', err);
+  const result = diagnoseConnection(err, { protocol, car: ui.getCar() });
+  traffic.add('note', `Failure type: ${result.category}${result.adapterReply ? ` (adapter said "${result.adapterReply}")` : ''}`);
+  const details = [];
+  if (result.adapterReply) details.push(h('p', { class: 'hint' }, `The adapter said: ${result.adapterReply}`));
+  if (result.searchUrl) {
+    details.push(h('a', { href: result.searchUrl, target: '_blank', rel: 'noopener noreferrer' }, 'Search for this car\'s protocol'));
+  }
+  bob.say({ tone: 'high', mood: 'warning', text: result.text, details });
+}
+
 // ---------- Connect ----------
 
 // ?demo=sim builds the car from the year, make, and model in the header when you connect.
@@ -287,7 +303,7 @@ async function connectTo(transport, { baudRate, protocol } = {}) {
     } else if (err.rates) {
       showBaudRetry(transport, err);
     } else {
-      showError(err);
+      showConnectError(err, protocol);
     }
     return;
   }

@@ -43,6 +43,7 @@ const APP_SHELL = [
   'js/smartbauder.js',
   'js/theme.js',
   'js/traffic.js',
+  'js/troubleshoot.js',
   'js/tested-adapters.js',
   'js/ui.js',
   'js/vehicles.js',
