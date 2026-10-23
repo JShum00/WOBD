@@ -1,3 +1,5 @@
+import { t } from './i18n.js';
+
 // Small "i" button that opens a shared popover with an explanation. Click or press
 // Enter to toggle; click elsewhere, press Escape, or scroll to close. Hover shows the text as a tooltip too.
 let bubble = null;
@@ -42,7 +44,7 @@ function open(button, text) {
   owner = button;
 }
 
-export function infoTip(text, label = 'More info') {
+export function infoTip(text, label = t('app.ui.moreInfo')) {
   const button = document.createElement('button');
   button.type = 'button';
   button.className = 'info-tip';

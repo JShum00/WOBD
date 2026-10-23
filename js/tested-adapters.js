@@ -1,3 +1,4 @@
+import './i18n-boot.js';
 // Test records and their validation live in js/adapter-data.js.
 import { infoTip } from './info-tip.js';
 import { hasReports, loadResults, notTested, vehicleName, versionInfo } from './adapter-data.js';

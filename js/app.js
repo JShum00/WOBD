@@ -1,3 +1,5 @@
+import './i18n-boot.js';
+import { formatNumber, onLanguageChange, t } from './i18n.js';
 // Wires the adapter, OBD requests, Bob, and the UI together and holds app state.
 import { SerialTransport, checkBrowser } from './serial.js';
 import { DemoTransport, DemoBaudTransport, BAUD_DEMOS } from './demo.js';
@@ -10,12 +12,14 @@ import * as ui from './ui.js';
 import { Voice } from './voice.js';
 import { createTrafficView } from './traffic.js';
 import { DriveLock, Recording } from './recorder.js';
+import { createBackup } from './backup.js';
 import { RawBudget, RawOptIn, SPEED_FRESH_MS, rawEvery } from './raw-capture.js';
 import { RecordLock } from './record-lock.js';
 import { GaugePicker, defaultKeys, pickerChoices } from './gauge-picker.js';
 import { h } from './dom.js';
 import { versionLine } from './version-info.js';
 import { diagnoseConnection } from './troubleshoot.js';
+import { forgetVehicle, loadSavedVehicle, lookupVin, saveVehicle } from './vin.js';
 import { baudLabel, collectConnInfo, friendlyError, hideConnInfo, initConnInfo, isLowBattery, renderConnInfo, FRIENDLY } from './conninfo.js';
 
 const DETECT_PROGRESS_DELAY = 300;  // ms before the baud-rate progress bar appears
@@ -26,6 +30,7 @@ const browser = checkBrowser();
 
 const $ = (id) => document.getElementById(id);
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const pluralText = (key, count, params = {}) => t(key, { ...params, count }).replace(String(count), formatNumber(count));
 
 const state = {
   transport: null,
@@ -43,6 +48,7 @@ const state = {
   pickerIntroDone: false,
   lastHint: null,    // preset Bob last explained in the picker
   vin: null,
+  vinStatus: 'none',
   scan: null,        // { scannedAt, status, entries }
   selected: null,    // code Bob is explaining
   tab: 'scan',
@@ -76,17 +82,26 @@ function trafficHeader() {
 const voice = new Voice();
 const bob = new Bob({ slot: $('bob-slot'), live: $('bob-live'), getCar: ui.getCar, voice });
 const rawOptIn = new RawOptIn();
+const backup = createBackup({ $, download: (data, name, type) => downloadCsv(data, name, type) });
 const recordLock = new RecordLock({ onSave: saveRecording, onKeep: keepRecording });
 const picker = new GaugePicker({ root: $('gauge-picker'), onApply: applyGauges, onPresetHint: presetHint });
 
 // What Bob says about each picker preset when it's pointed at or tapped.
 const PRESET_LINES = {
-  basics: { tone: 'low', text: 'The everyday four plus battery. Quick to refresh, and a good first look at any car.' },
-  fuel: { text: "Good for checking if the engine's running lean or rich. Watch the fuel trims and the O2 sensors together." },
-  all: { tone: 'medium', text: 'Everything your car offers. Handy, but on older cars each gauge updates slower.' },
+  basics: () => ({ tone: 'low', text: t('app.preset.basics') }),
+  fuel: () => ({ text: t('app.preset.fuel') }),
+  all: () => ({ tone: 'medium', text: t('app.preset.all') }),
 };
 
 start();
+
+onLanguageChange(() => {
+  if (!state.busy) ui.setConnection(state.elm ? 'connected' : 'idle', state.elm ? t('app.conn.connected', { connection: connectionLabel() }) : t('app.conn.notConnected'));
+  if (state.connInfo && state.elm) renderConnInfo(state.connInfo, { baudRate: state.baudRate });
+  if (state.scan) { showScanResults(); announceScan(state.scan); }
+  else if (!state.busy && !state.recording) bobIdle();
+  if (state.selected) bob.explain(lookup(state.selected));
+});
 
 async function start() {
   if (!browser.supported) ui.showBrowserAlert(browser, { demo });
@@ -100,7 +115,7 @@ async function start() {
     voice.setEnabled(on);
     if (on) bob.repeat();  // the click is the user gesture browsers need before speaking
   });
-  ui.setConnection('idle', 'Not connected');
+  ui.setConnection('idle', t('app.conn.notConnected'));
   ui.setControls({});
   ui.renderGauges(pickerChoices(null).offered);  // preview until a car reports what it supports
 
@@ -113,15 +128,17 @@ async function start() {
     ]);
     ui.initCarForm(makes, models);
     if (demo === 'sim') ui.setCar({ year: params.get('year'), make: params.get('make'), model: params.get('model') });
+    else restoreSavedCar();
   } catch (err) {
     showError(new Error(`I couldn't load my notes. ${err.message}`));
     return;
   }
 
   $('connect-btn').addEventListener('click', onConnectClick);
-  $('scan-btn').addEventListener('click', () => busy('Scanning…', scan));
+  $('scan-btn').addEventListener('click', () => busy(t('app.scan.scanning'), scan));
   $('clear-btn').addEventListener('click', onClearClick);
   $('print-btn').addEventListener('click', () => window.print());
+  backup.init().catch(() => {});
   $('record-btn').addEventListener('click', startRecording);
   $('record-raw').addEventListener('change', async (e) => {
     if (!e.target.checked) { rawOptIn.disable(); return; }
@@ -146,8 +163,8 @@ function bobIdle() {
       tone: 'medium',
       mood: 'warning',
       text: state.elm
-        ? 'Only watch live data while parked or from the passenger seat. Driver, eyes on the road!'
-        : 'Connect first and I’ll show live numbers here. And only watch them while parked or from the passenger seat.',
+        ? t('app.live.parkedConnected')
+        : t('app.live.connectFirst'),
     });
   } else if (state.selected) {
     bob.explain(lookup(state.selected));
@@ -157,19 +174,19 @@ function bobIdle() {
     bob.say({
       tone: 'low',
       mood: 'check',
-      text: 'Connected! Tell me the year, make, and model up top so my search links are more useful, or skip it. Then click Scan.',
+      text: t('app.conn.connectedIntro'),
     });
   } else if (demo) {
-    bob.say({ text: "Hi, I'm Bob! This is demo mode, so a pretend car is hooked up. Click Connect to get started." });
+    bob.say({ text: t('app.welcome.demoBob') });
   } else if (!browser.supported) {
     bob.say({
       tone: 'unknown',
       mood: 'question',
-      text: `Hi, I'm Bob! ${browser.reason} ${browser.fix} Until then, try one of the demos.`,
+      text: t('app.welcome.browserBob', { reason: browser.reason, fix: browser.fix }),
     });
   } else {
     bob.say({
-      text: "Hi, I'm Bob! You'll need a USB OBD-II adapter. Plug it into your car and this computer, turn the ignition on, then click Connect. No adapter yet? Try a demo.",
+      text: t('app.welcome.adapterBob'),
     });
   }
 }
@@ -185,9 +202,9 @@ function showConnectError(err, protocol) {
   const result = diagnoseConnection(err, { protocol, car: ui.getCar() });
   traffic.add('note', `Failure type: ${result.category}${result.adapterReply ? ` (adapter said "${result.adapterReply}")` : ''}`);
   const details = [];
-  if (result.adapterReply) details.push(h('p', { class: 'hint' }, `The adapter said: ${result.adapterReply}`));
+  if (result.adapterReply) details.push(h('p', { class: 'hint' }, `${t('app.trouble.adapterSaid')} ${result.adapterReply}`));
   if (result.searchUrl) {
-    details.push(h('a', { href: result.searchUrl, target: '_blank', rel: 'noopener noreferrer' }, 'Search for this car\'s protocol'));
+    details.push(h('a', { href: result.searchUrl, target: '_blank', rel: 'noopener noreferrer' }, t('app.trouble.searchLink')));
   }
   bob.say({ tone: 'high', mood: 'warning', text: result.text, details });
 }
@@ -209,27 +226,27 @@ function demoTransport(name) {
 async function onConnectClick() {
   if (state.elm) {
     await disconnect();
-    bob.say({ text: "Disconnected. Click Connect when you're ready for another scan." });
+    bob.say({ text: t('app.conn.disconnected') });
     return;
   }
 
   const protocol = ui.getProtocolOverride();
   if (protocol === '') {
-    bob.say({ tone: 'medium', mood: 'question', text: 'Choose a protocol or uncheck the override to use automatic selection.' });
+    bob.say({ tone: 'medium', mood: 'question', text: t('app.conn.chooseProtocol') });
     return;
   }
 
-  ui.setConnection('busy', 'Connecting…');
+  ui.setConnection('busy', t('app.conn.connecting'));
   let transport;
   try {
     transport = demo ? demoTransport(demo) : await SerialTransport.request();
   } catch (err) {
-    ui.setConnection('idle', 'Not connected');
+    ui.setConnection('idle', t('app.conn.notConnected'));
     if (err.name === 'NotFoundError') {
       bob.say({
         tone: 'unknown',
         mood: 'question',
-        text: "No adapter picked. If yours isn't in the list, reseat the cable or try another USB port.",
+        text: t('app.conn.noAdapterPicked'),
       });
     } else {
       showError(err);
@@ -243,16 +260,16 @@ async function onConnectClick() {
 
 // Opens the adapter and says hello to the car. baudRate skips detection (the manual Retry).
 async function connectTo(transport, { baudRate, protocol } = {}) {
-  ui.setConnection('busy', 'Connecting…');
-  bob.say({ text: 'Looking for your adapter…' });
+  ui.setConnection('busy', t('app.conn.connecting'));
+  bob.say({ text: t('app.conn.lookingForAdapter') });
 
   // Unplugging or cancelling stops detection at once.
   const abort = abortOnUnplug(transport);
   traffic.attach(transport);
   try {
     const { elm, baudRate: connectedBaud } = await openAdapter(transport, { baudRate, protocol, abort });
-    ui.setConnection('busy', 'Talking to the car…');
-    bob.say({ text: "Found the adapter. Now I'm saying hello to the car. Older cars can take a few seconds." });
+    ui.setConnection('busy', t('app.conn.talkingToCar'));
+    bob.say({ text: t('app.conn.foundAdapter') });
 
     let supported;
     try {
@@ -272,7 +289,10 @@ async function connectTo(transport, { baudRate, protocol } = {}) {
     }
     else console.info("[WOBD] The car didn't report its supported PIDs; offering the default gauges.");
     state.protocol = await obd.readProtocol(elm);
-    state.vin = await obd.readVin(elm);
+    ({ vin: state.vin, status: state.vinStatus } = await obd.readVinInfo(elm));
+  // The VIN stays out of printouts unless the user opts in each connection.
+  $('print-vin').checked = false;
+  $('print-vin-wrap').hidden = !state.vin;
     state.connInfo = await collectConnInfo(elm);
     if (!supported) {
       console.info('[WOBD] Adapter protocol after unanswered 0100:', {
@@ -296,9 +316,9 @@ async function connectTo(transport, { baudRate, protocol } = {}) {
     traffic.add('note', `Connection failed: ${err.code ?? 'error'}: ${err.message}`);
     transport.onDisconnect = () => {};
     await transport.close();
-    ui.setConnection('idle', 'Not connected');
+    ui.setConnection('idle', t('app.conn.notConnected'));
     if (err.code === 'CANCELLED') {
-      bob.say({ text: "Cancelled. Click Connect when you're ready to try again." });
+      bob.say({ text: t('app.conn.cancelled') });
     } else if (err.rates) {
       showBaudRetry(transport, err);
     } else {
@@ -312,9 +332,7 @@ async function connectTo(transport, { baudRate, protocol } = {}) {
     bob.say({
       tone: 'high',
       mood: 'warning',
-      text: state.recording
-        ? "I lost the adapter mid-recording, but I kept everything up to that point. Once you're parked, save the CSV, then check the cable."
-        : 'I lost the adapter. Check that the cable is plugged in, then click Connect.',
+      text: state.recording ? t('app.conn.adapterLostRecording') : t('app.conn.adapterLost'),
     });
   };
   ui.setWelcomeVisible(false);
@@ -325,12 +343,56 @@ async function connectTo(transport, { baudRate, protocol } = {}) {
   if (!state.supportedPids) bob.say(FALLBACK_LINE);
   if (state.tab === 'live') showLive();  // the picker's intro mentions the fallback too
   if (isLowBattery(state.connInfo)) bob.say({ tone: 'medium', mood: 'warning', text: FRIENDLY.lowBattery });
+  // Demo cars carry made-up VINs that must never be sent anywhere.
+  if (!(transport instanceof DemoTransport)) offerVehicleMatch(state.vin, state.vinStatus);
+}
+
+// A car the user confirmed earlier fills the form on the next visit. Only year, make, and model are kept.
+function restoreSavedCar() {
+  const saved = loadSavedVehicle();
+  if (!saved) return;
+  ui.setCar(saved);
+  ui.showForgetCar(true, () => { forgetVehicle(); ui.showForgetCar(false); });
+}
+
+// Fire-and-forget after connecting, so a missing, malformed, or slow VIN never delays the scanner.
+// The VIN only leaves the device after the user agrees, every time; any failure leaves the lists as they are.
+async function offerVehicleMatch(vin, status) {
+  const typed = ui.getCar();
+  if (typed.year && typed.make && typed.model) return;
+  if (!vin) {
+    if (status === 'malformed' || status === 'conflict') {
+      bob.say({ tone: 'unknown', mood: 'question', text: t('app.vin.untrusted') });
+    }
+    return;
+  }
+  try {
+    if (!await ui.confirmVinLookup()) return;
+    const car = await lookupVin(vin);
+    if (!car) {
+      bob.say({ tone: 'unknown', mood: 'question', text: t('app.vin.notFound') });
+      return;
+    }
+    const { confirmed, remember } = await ui.confirmVehicleMatch(car);
+    if (!confirmed) {
+      $('car-year')?.focus();
+      return;
+    }
+    ui.setCar(car);
+    if (remember) {
+      saveVehicle(car);
+      ui.showForgetCar(true, () => { forgetVehicle(); ui.showForgetCar(false); });
+    }
+  } catch (err) {
+    console.warn('[WOBD] VIN lookup failed:', err);
+    bob.say({ tone: 'unknown', mood: 'question', text: t('app.vin.lookupFailed') });
+  }
 }
 
 const FALLBACK_LINE = {
   tone: 'unknown',
   mood: 'question',
-  text: "Your car didn't tell me which live readings it supports, so I'll offer my usual set. A few gauges might stay blank.",
+  get text() { return t('app.live.fallback'); },
 };
 
 // Detects the baud rate with a quick ID probe, then resets and configures the adapter once.
@@ -374,7 +436,7 @@ async function detect(transport, { baudRate, abort }) {
   const timer = setTimeout(() => {
     view = ui.createBaudProgress(() => abort.abort(new ElmError('CANCELLED', 'Cancelled.')));
     if (latest) view.update(latest);
-    bob.say({ text: 'One second, checking the device baud rate...', details: [view.el] });
+    bob.say({ text: t('app.conn.checkingBaud'), details: [view.el] });
   }, DETECT_PROGRESS_DELAY);
 
   try {
@@ -388,7 +450,7 @@ async function detect(transport, { baudRate, abort }) {
     });
     if (found === null) {
       throw Object.assign(new ElmError('NOT_ELM',
-        "The adapter didn't answer. Make sure it's an ELM327-compatible USB cable, then unplug it, plug it back in, and try again."),
+        t('app.conn.noBaudResponse')),
       { rates: rateOptions(transport.info) });
     }
     return found;
@@ -426,7 +488,7 @@ async function disconnect() {
   ui.renderParameterCatalog([]);
   hideConnInfo();
   await transport?.close();
-  ui.setConnection('idle', 'Not connected');
+  ui.setConnection('idle', t('app.conn.notConnected'));
   ui.setControls({ print: Boolean(state.scan) });
   $('record-btn').disabled = true;
   ui.setWelcomeVisible(!state.scan);
@@ -434,11 +496,11 @@ async function disconnect() {
 
 // "SAE J1850 VPW · 115200 baud", the same wording everywhere the connection is shown.
 function connectionLabel() {
-  return `${state.protocol?.name ?? 'Protocol unknown'} · ${baudLabel(state.baudRate)}`;
+  return `${state.protocol?.name ?? t('app.conn.protocolUnknown')} · ${baudLabel(state.baudRate)}`;
 }
 
 function showConnected() {
-  ui.setConnection('connected', `Connected · ${connectionLabel()}`);
+  ui.setConnection('connected', t('app.conn.connected', { connection: connectionLabel() }));
   const hasProblems = Boolean(state.scan && (state.scan.entries.length || state.scan.status?.milOn));
   ui.setControls({ scan: true, print: Boolean(state.scan), clear: hasProblems });
   $('record-btn').disabled = false;
@@ -489,7 +551,7 @@ function buildModules(status, services, knownSources) {
 }
 
 async function scan() {
-  bob.say({ text: 'Scanning… hang tight.' });
+  bob.say({ text: t('app.scan.hangTight') });
   const { status, services } = await obd.readScan(state.elm, state.protocol.isCan);
   const codes = services.flatMap((service) => service.codes.map((entry) => ({
     ...entry,
@@ -525,19 +587,19 @@ function showScanResults() {
   const shown = module ? entries.filter((entry) => entry.ecuSource === module.source) : entries;
   ui.renderCodes(shown, onSelectCode);
   if (module) {
-    ui.setEmptyMessage(`${module.name} reported no trouble codes in the services it answered.`);
+    ui.setEmptyMessage(t('app.scan.moduleNoCodes', { module: module.name }));
     ui.setModuleDetail(module);
     ui.setSummary('');
     return;
   }
   ui.setModuleDetail(null);
   ui.setEmptyMessage(services.some((service) => !service.available)
-    ? 'No codes found in the available services. One or more DTC services could not be read.'
-    : 'No trouble codes found.');
+    ? t('app.scan.codesUnavailableIncomplete')
+    : t('app.scan.noCodesFound'));
   ui.setSummary([
-    status ? `Check engine light ${status.milOn ? 'ON' : 'off'}` : null,
-    ...services.map((service) => `${service.label}: ${service.available ? service.codes.length : 'unavailable'}`),
-    modules.length > 1 ? `${modules.length} modules responded` : null,
+    status ? t('app.scan.engineLightStatus', { status: t(status.milOn ? 'app.scan.on' : 'app.scan.off') }) : null,
+    ...services.map((service) => t('app.scan.serviceSummary', { label: service.label, count: service.available ? formatNumber(service.codes.length) : t('app.ui.unavailable') })),
+    modules.length > 1 ? t('app.scan.moduleCount', { count: formatNumber(modules.length) }) : null,
     ui.carLabel(ui.getCar()) || null,
   ].filter(Boolean).join(' · '));
 }
@@ -546,27 +608,27 @@ function announceScan({ status, services, entries }) {
   const unavailable = services.filter((service) => !service.available).map((service) => service.label.toLowerCase());
   if (entries.length) {
     bob.say({
-      text: `I found ${entries.length} code${entries.length === 1 ? '' : 's'}. Click a code and I'll explain it.`,
+      text: pluralText('app.scan.foundCodes', entries.length),
     });
   } else if (status?.milOn) {
     bob.say({
       tone: 'unknown',
       mood: 'question',
       text: unavailable.length
-        ? `Your check engine light is on, but I couldn't find codes. I couldn't read the ${unavailable.join(', ')} DTC service${unavailable.length === 1 ? '' : 's'}, so this scan may be incomplete.`
-        : "Your check engine light is on, but no trouble codes were returned. Check again after the car has been driven; the cause may not have stored a code yet.",
+        ? t(unavailable.length === 1 ? 'app.scan.engineLightNoCodesIncompleteOne' : 'app.scan.engineLightNoCodesIncompleteMany', { services: unavailable.join(', ') })
+        : t('app.scan.engineLightNoCodes'),
     });
   } else if (unavailable.length) {
     bob.say({
       tone: 'unknown',
       mood: 'question',
-      text: `No codes were found in the services I could read. I couldn't read the ${unavailable.join(', ')} DTC service${unavailable.length === 1 ? '' : 's'}, so this scan may be incomplete.`,
+      text: t(unavailable.length === 1 ? 'app.scan.servicesUnreadableOne' : 'app.scan.servicesUnreadableMany', { services: unavailable.join(', ') }),
     });
   } else {
     bob.say({
       tone: 'low',
       mood: 'check',
-      text: "👍 No stored, pending, or permanent trouble codes were found in the services your car supports.",
+      text: t('app.scan.noTroubleCodes'),
     });
   }
 }
@@ -590,7 +652,7 @@ function onKeydown(e) {
 
 async function onClearClick() {
   if (!(await ui.confirmClear())) return;
-  await busy('Clearing codes…', async () => {
+  await busy(t('app.scan.clearingCodes'), async () => {
     await obd.clearCodes(state.elm);
     await scan();
     const remaining = state.scan?.entries ?? [];
@@ -598,17 +660,17 @@ async function onClearClick() {
     const unavailable = state.scan?.services.some((service) => !service.available);
     let message;
     if (unavailable && remaining.length) {
-      message = `The clear command was accepted, but ${remaining.length} code${remaining.length === 1 ? ' remains' : 's remain'} and one or more DTC services couldn't be checked. The scan may be incomplete.`;
+      message = pluralText('app.scan.clearRemainingIncomplete', remaining.length);
     } else if (unavailable) {
-      message = "The clear command was accepted, but one or more DTC services couldn't be checked afterward. The scan may be incomplete.";
+      message = t('app.scan.clearServicesIncomplete');
     } else if (permanentCount === remaining.length && permanentCount > 0) {
-      message = `The clear command was accepted, but ${permanentCount} permanent code${permanentCount === 1 ? ' remains' : 's remain'}. Permanent codes clear only after the vehicle confirms the problem is fixed and completes its checks.`;
+      message = pluralText('app.scan.permanentCodesRemain', permanentCount);
     } else if (remaining.length) {
-      message = `The clear command was accepted, but ${remaining.length} code${remaining.length === 1 ? ' remains or has returned' : 's remain or have returned'}. The underlying issue may still be present.`;
+      message = pluralText('app.scan.codesRemain', remaining.length);
     } else if (state.scan?.status?.milOn) {
-      message = 'No trouble codes were returned after the clear, but the check engine light is still on. The cause may not have stored a code yet.';
+      message = t('app.scan.lightStillOn');
     } else {
-      message = "Codes cleared, so the check engine light should be off. If the problem isn't really fixed, the light will come back.";
+      message = t('app.scan.codesCleared');
     }
     bob.say({
       tone: remaining.length || unavailable || state.scan?.status?.milOn ? 'unknown' : 'low',
@@ -622,7 +684,7 @@ async function onClearClick() {
 
 function renderReport() {
   if (!state.scan) return;
-  ui.renderReport({ ...state.scan, car: ui.getCar(), vin: state.vin });
+  ui.renderReport({ ...state.scan, car: ui.getCar(), vin: $('print-vin').checked ? state.vin : null });
 }
 
 // ---------- Live data ----------
@@ -663,10 +725,10 @@ function showPicker(checked, mode = state.monitorMode) {
     bob.say(state.supportedPids ? {
       tone: 'low',
       mood: 'check',
-      text: 'Your car told me which live readings it supports. Pick what you want to watch. Fewer gauges means each one updates faster.',
+      text: t('app.live.pickerIntro'),
     } : {
       ...FALLBACK_LINE,
-      text: `${FALLBACK_LINE.text} Pick what you want to watch. Fewer gauges means each one updates faster.`,
+      text: t('app.live.pickerFallbackIntro', { fallback: FALLBACK_LINE.text }),
     });
   }
 }
@@ -698,7 +760,7 @@ function changeGauges() {
 function presetHint(preset) {
   if (!picker.isOpen || state.lastHint === preset.id) return;
   state.lastHint = preset.id;
-  bob.say(PRESET_LINES[preset.id]);
+  bob.say(PRESET_LINES[preset.id]());
 }
 
 async function startLive() {
@@ -747,7 +809,10 @@ async function sampleRaw(elm, round, active) {
   const replies = await obd.readRawPid(elm, pid).catch(() => []);
   rec.budget.note('raw', performance.now() - started);
   const now = Date.now();
-  for (const { raw, ecu } of replies) rec.data.add({ pid, label: undecodedName(pid) }, null, now, raw, ecu);
+  for (const { raw, ecu } of replies) {
+    const row = rec.data.add({ pid, label: undecodedName(pid) }, null, now, raw, ecu);
+    if (row) rec.backup?.add(Recording.store(row), now);
+  }
 }
 
 function undecodedName(pid) {
@@ -788,8 +853,10 @@ function reading(def, value, { raw = null, ecu = null, failure = null, extras = 
     }
   }
   if (!state.recording) return;
-  state.recording.data.add(def, value, now, raw, ecu);
-  for (const extra of extras) state.recording.data.add(extra.def, extra.value, now, null, ecu);
+  const { data, backup: copy } = state.recording;
+  const keep = (row) => { if (row && copy) copy.add(Recording.store(row), now); };
+  keep(data.add(def, value, now, raw, ecu));
+  for (const extra of extras) keep(data.add(extra.def, extra.value, now, null, ecu));
   state.recording.lock.update(def, value, now);
 }
 
@@ -805,7 +872,7 @@ function startRecording() {
     bob.say({
       tone: 'medium',
       mood: 'warning',
-      text: "I need Speed on the dashboard to know when you've stopped, so I can unlock the screen safely. Add it with Change gauges, then record.",
+      text: t('app.live.needSpeed'),
     });
     return;
   }
@@ -822,6 +889,7 @@ function startRecording() {
       hasPids: state.gauges.some((def) => def.pid !== undefined),
     }, now),
   };
+  state.recording.backup = backup.start(state.recording.data);
   rawOptIn.lock();
   $('record-raw').disabled = true;
   $('record-raw-hint').hidden = false;
@@ -830,7 +898,7 @@ function startRecording() {
   bob.say({
     tone: 'medium',
     mood: 'warning',
-    text: "Recording! Next time, hit Record before you pull out. Once you're moving, hands off the screen. I've got it from here.",
+    text: t('app.live.recordingStarted'),
   });
 }
 
@@ -844,6 +912,7 @@ function saveRecording() {
   if (!recording) return;
   downloadCsv(recording.data.toCsv(), recording.data.filename());
   state.recording = null;
+  backup.finish();
   rawOptIn.unlock();
   $('record-raw').disabled = false;
   $('record-raw-hint').hidden = true;
@@ -853,13 +922,13 @@ function saveRecording() {
   bob.say({
     tone: 'low',
     mood: 'check',
-    text: `Saved! Your drive is in your Downloads folder as ${recording.data.filename()}. Open it in a spreadsheet to graph it, or watch it play back on the Replay a Drive page.`,
-    details: [Object.assign(document.createElement('a'), { href: 'replay.html', textContent: 'Replay a drive →' })],
+    text: t('app.live.recordingSaved', { filename: recording.data.filename() }),
+    details: [Object.assign(document.createElement('a'), { href: 'replay.html', textContent: t('app.live.replayLink') })],
   });
 }
 
-function downloadCsv(text, filename) {
-  const url = URL.createObjectURL(new Blob([text], { type: 'text/csv' }));
+function downloadCsv(data, filename, type = 'text/csv') {
+  const url = URL.createObjectURL(new Blob([data], { type }));
   const link = Object.assign(document.createElement('a'), { href: url, download: filename });
   document.body.append(link);
   link.click();

@@ -4,6 +4,8 @@
 // thumb, not a lookup of real vehicles. Add a MODEL_RULES entry when a real car
 // turns out to differ.
 
+import { t } from './i18n.js';
+
 // canFrom: first model year that talks CAN 11-bit 500k. Before that, `legacy` applies.
 const FAMILIES = [
   { makes: ['Ford', 'Lincoln', 'Mercury', 'Mazda'], legacy: '1', canFrom: 2008 },
@@ -36,9 +38,9 @@ const TIMING = {
 };
 
 export const CODE_SETS = {
-  none: { label: 'No trouble codes', codes: [] },
-  few: { label: 'A few codes (misfire, lean, EVAP leak)', codes: ['P0301', 'P0171', 'P0442'] },
-  brand: { label: 'A generic and a brand-specific code', codes: ['P0420', 'P1491'] },
+  none: { get label() { return t('bob.codeSet.none'); }, codes: [] },
+  few: { get label() { return t('bob.codeSet.few'); }, codes: ['P0301', 'P0171', 'P0442'] },
+  brand: { get label() { return t('bob.codeSet.brand'); }, codes: ['P0420', 'P1491'] },
 };
 
 export const DEFAULT_CODE_SET = 'few';
@@ -49,18 +51,18 @@ const norm = (text) => String(text ?? '').trim().toLowerCase();
 export function pickProtocol({ year, make, model } = {}) {
   const y = Number(year) || null;
   const rule = MODEL_RULES.find((r) => norm(r.make) === norm(make) && norm(r.model) === norm(model) && y !== null && y < r.until);
-  if (rule) return { protocol: rule.protocol, reason: `${rule.make} ${rule.model} before ${rule.until}` };
+  if (rule) return { protocol: rule.protocol, reason: t('bob.vehicle.reason.pt', { make: rule.make, model: rule.model, year: rule.until }) };
 
   const family = FAMILIES.find((f) => f.makes.some((m) => norm(m) === norm(make)));
-  if (!y) return { protocol: '6', reason: 'No year chosen, so a modern CAN car' };
+  if (!y) return { protocol: '6', reason: t('bob.vehicle.reason.noYear') };
   if (!family) {
     return y >= 2008
-      ? { protocol: '6', reason: 'CAN is required from 2008' }
-      : { protocol: '3', reason: 'Unknown make before 2008, guessing ISO 9141-2' };
+      ? { protocol: '6', reason: t('bob.vehicle.reason.canRequired') }
+      : { protocol: '3', reason: t('bob.vehicle.reason.unknownOld') };
   }
   return y >= family.canFrom
-    ? { protocol: '6', reason: `${family.makes[0]}-family cars use CAN from ${family.canFrom}` }
-    : { protocol: family.legacy, reason: `${family.makes[0]}-family cars before ${family.canFrom}` };
+    ? { protocol: '6', reason: t('bob.vehicle.reason.familyCan', { make: family.makes[0], year: family.canFrom }) }
+    : { protocol: family.legacy, reason: t('bob.vehicle.reason.familyLegacy', { make: family.makes[0], year: family.canFrom }) };
 }
 
 // The profile DemoTransport takes as its scenario.
@@ -69,7 +71,7 @@ export function vehicleProfile({ year, make, model, codeSet = DEFAULT_CODE_SET, 
   const can = /^[6-9A-C]$/.test(protocol);
   const y = Number(year) || null;
   return {
-    label: [year, make, model].filter(Boolean).join(' ') || 'Unspecified car',
+    label: [year, make, model].filter(Boolean).join(' ') || t('bob.vehicle.unspecified'),
     protocol,
     reason,
     // Mode 9 (VIN) is rare on older non-CAN cars.

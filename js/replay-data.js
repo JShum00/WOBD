@@ -3,9 +3,16 @@
 // scripts/test-replay.mjs can check it in Node.
 import { LIVE_PIDS, BATTERY, DERIVED_PIDS } from './obd.js';
 import { parseVersionLine } from './version-info.js';
+import { gapThreshold } from './replay-downsample.js';
+import { t } from './i18n.js';
 
 export const MAX_FILE_BYTES = 128 * 1024 * 1024;
 const REQUIRED = ['timestamp', 'elapsed_ms', 'pid', 'name', 'value', 'unit'];
+
+// A wall clock that steps back or drifts from elapsed time by more than this is reported
+// as a possible clock change rather than trusted.
+export const CLOCK_JUMP_MS = 5000;
+const HAS_ZONE = /(?:Z|[+-]\d\d(?::?\d\d)?)$/i;
 
 export class ReplayError extends Error {}
 
@@ -111,6 +118,37 @@ class RecordingBuilder {
     this.startedAt = null;
     this.readingCount = 0;
     this.wobdVersion = null;
+    this.rowNumber = 0;
+    this.prevElapsed = null;
+    this.prevAt = null;
+    this.stamped = 0;
+    this.unzoned = 0;
+    this.quality = {
+      missingTimestamps: 0, malformedTimestamps: 0, duplicateRows: 0, outOfOrderRows: 0,
+      clockJumps: 0, firstProblem: {},
+    };
+  }
+
+  #flag(kind) {
+    this.quality[kind]++;
+    this.quality.firstProblem[kind] ??= this.rowNumber;
+  }
+
+  // Data-quality checks only; no row is ever changed or dropped because of them.
+  #checkTime(row, elapsed, series) {
+    const { col } = this;
+    const text = (row[col.timestamp] ?? '').trim();
+    if (series && series.times.length > 1 && series.times.at(-2) === elapsed) this.#flag('duplicateRows');
+    if (this.prevElapsed !== null && elapsed < this.prevElapsed) this.#flag('outOfOrderRows');
+    this.prevElapsed = elapsed;
+    if (!text) { this.#flag('missingTimestamps'); return; }
+    const at = Date.parse(text);
+    if (!Number.isFinite(at)) { this.#flag('malformedTimestamps'); return; }
+    this.stamped++;
+    if (!HAS_ZONE.test(text)) this.unzoned++;
+    if (this.startedAt === null) this.startedAt = at - elapsed;
+    else if (Math.abs(at - elapsed - this.startedAt) > CLOCK_JUMP_MS || (this.prevAt !== null && at < this.prevAt - CLOCK_JUMP_MS)) this.#flag('clockJumps');
+    this.prevAt = at;
   }
 
   addRow(row) {
@@ -123,11 +161,13 @@ class RecordingBuilder {
     if (!this.col) {
       this.col = Object.fromEntries(row.map((name, i) => [name.trim(), i]));
       if (!REQUIRED.every((name) => name in this.col)) {
-        throw new ReplayError("This doesn't look like a WOBD recording. Pick a CSV saved from WOBD's Live data recording.");
+        throw new ReplayError(t('replay.load.notWobdCsv'));
       }
       return;
     }
     const { col } = this;
+    this.rowNumber++;
+    const before = this.readingCount;
     const elapsed = Number(row[col.elapsed_ms]);
     const def = defFor(row[col.pid]);
     if (!def) {
@@ -151,8 +191,7 @@ class RecordingBuilder {
       return;
     }
 
-    const at = Date.parse(row[col.timestamp]);
-    if (this.startedAt === null && Number.isFinite(at)) this.startedAt = at - elapsed;
+    if (this.readingCount > before) this.#checkTime(row, elapsed, this.byPid.get(def));
     if (this.protocol === null && 'protocol' in col && row[col.protocol] && row[col.protocol] !== 'unknown') this.protocol = row[col.protocol];
     const baud = 'baud' in col ? Number(row[col.baud]) : NaN;
     if (this.baudRate === null && Number.isInteger(baud) && baud > 0) this.baudRate = baud;
@@ -168,9 +207,9 @@ class RecordingBuilder {
 
   finish() {
     if (!this.col) {
-      throw new ReplayError("This doesn't look like a WOBD recording. Pick a CSV saved from WOBD's Live data recording.");
+      throw new ReplayError(t('replay.load.notWobdCsv'));
     }
-    if (!this.readingCount) throw new ReplayError("This recording doesn't have any readings to replay.");
+    if (!this.readingCount) throw new ReplayError(t('replay.load.noReadings'));
 
     let durationMs = 0;
     for (const series of this.byPid.values()) {
@@ -186,16 +225,45 @@ class RecordingBuilder {
       durationMs = Math.max(durationMs, series.times.at(-1));
     }
 
+    // A connection gap is a stretch where no reading of any PID arrived.
+    const all = new Float64Array(this.readingCount);
+    let n = 0;
+    for (const { times } of this.byPid.values()) for (const t of times) all[n++] = t;
+    all.sort();
+    const limit = gapThreshold(all);
+    const gaps = [];
+    for (let i = 1; i < all.length; i++) if (all[i] - all[i - 1] > limit) gaps.push({ from: all[i - 1], to: all[i] });
+
+    // Identifies this recording's content (not its file name) so notes only attach to the same data.
+    let hash = 2166136261;
+    const mix = (n) => { hash = Math.imul(hash ^ (n | 0), 16777619) >>> 0; };
+    for (const { def, times, values } of this.byPid.values()) {
+      for (const ch of String(def.pid ?? def.key)) mix(ch.charCodeAt(0));
+      for (let i = 0; i < times.length; i++) {
+        mix(times[i]);
+        const v = values[i];
+        mix(typeof v === 'number' ? Math.round(v * 1000) : String(v).length);
+      }
+    }
+    const fingerprint = { readings: this.readingCount, durationMs, startedAt: this.startedAt, hash: hash.toString(16).padStart(8, '0') };
+
+    const timeInfo = this.stamped === 0
+      ? { source: 'elapsed', zone: null }
+      : { source: 'recorded', zone: this.unzoned === 0 ? 'explicit' : 'assumed-local' };
+
     const gaugeOrder = [...LIVE_PIDS, ...DERIVED_PIDS, BATTERY];
     const series = [...this.byPid.values()].sort((a, b) => gaugeOrder.indexOf(a.def) - gaugeOrder.indexOf(b.def));
     return {
       startedAt: this.startedAt, durationMs, readingCount: this.readingCount,
       protocol: this.protocol, baudRate: this.baudRate, wobdVersion: this.wobdVersion, series, unknownPids: [...this.unknownPids],
+      gaps, gapMs: limit, quality: this.quality, timeInfo, fingerprint,
     };
   }
 }
 
-// Returns { startedAt, durationMs, readingCount, protocol, baudRate, wobdVersion, series, unknownPids }.
+// Returns { startedAt, durationMs, readingCount, protocol, baudRate, wobdVersion, series, unknownPids, gaps, gapMs, quality, timeInfo }.
+// startedAt is null when no row has a usable timestamp (elapsed time only); a wall clock is never invented.
+// gaps are [{ from, to }] in elapsed ms where no PID answered; quality counts timestamp problems and never alters rows.
 // wobdVersion is null for files from before v1.71.
 // series is in Live data gauge order; each entry is { def, times, values } sorted by time.
 export function parseRecording(text) {

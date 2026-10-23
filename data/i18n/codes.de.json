@@ -1,0 +1,691 @@
+{
+  "P0011": {
+    "title": "Nockenwellensteuerzeiten zu weit vorverlegt (Bank 1)",
+    "plain": "Die Ventilsteuerung des Motors ist weiter vorverlegt, als das Motorsteuergerät vorgibt. Häufig ist zu wenig oder verschmutztes Motoröl die Ursache.",
+    "causes": [
+      "Zu wenig oder verschmutztes Motoröl",
+      "Schwergängiges Magnetventil der variablen Ventilsteuerung (VVT)",
+      "Gelängte Steuerkette"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0011. Können Sie zuerst den Ölstand und das Magnetventil der Nockenwellenverstellung prüfen?"
+  },
+  "P0016": {
+    "title": "Kurbelwellen-/Nockenwellenposition unplausibel (Bank 1, Sensor A)",
+    "plain": "Kurbelwelle und Nockenwelle stehen nicht so zueinander, wie das Motorsteuergerät es erwartet. Häufig ist eine gelängte oder übersprungene Steuerkette beziehungsweise ein übersprungener Zahnriemen die Ursache. Bei vielen Motoren kann eine übergesprungene Steuerkette die Ventile verbiegen. Fahren Sie nicht weiter, bis das geprüft wurde.",
+    "causes": [
+      "Gelängte Steuerkette oder übergesprungener Zahnriemen",
+      "Defektes Magnetventil der variablen Ventilsteuerung (VVT)",
+      "Defekter Nockenwellen- oder Kurbelwellensensor",
+      "Zu wenig oder verschmutztes Motoröl"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0016 für die Kurbelwellen-/Nockenwellenposition. Können Sie die Steuerkette und das VVT-Magnetventil prüfen?"
+  },
+  "P0101": {
+    "title": "Luftmassenmesser (MAF): Bereichs-/Leistungsproblem",
+    "plain": "Der Sensor, der die in den Motor strömende Luft misst, liefert unplausible Werte. Der Motor kann unrund laufen oder schlecht Gas annehmen.",
+    "causes": [
+      "Verschmutzter Luftmassenmesser",
+      "Verstopfter Luftfilter",
+      "Undichtigkeit zwischen Sensor und Motor",
+      "Defekter Luftmassenmesser"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0101. Können Sie den MAF-Sensor reinigen oder prüfen und nach Undichtigkeiten im Ansaugsystem suchen?"
+  },
+  "P0102": {
+    "title": "Signal des Luftmassenmessers zu niedrig",
+    "plain": "Der Luftmassenmesser meldet weniger Luft, als der Motor ansaugen sollte. Häufig sind ein verschmutzter Sensor oder eine Undichtigkeit die Ursache.",
+    "causes": [
+      "Verschmutzter Luftmassenmesser",
+      "Lockerer oder gerissener Ansaugschlauch hinter dem Sensor",
+      "Beschädigte Verkabelung oder Steckverbindung",
+      "Defekter Sensor"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0102. Können Sie den MAF-Sensor prüfen und nach Undichtigkeiten im Ansaugsystem suchen?"
+  },
+  "P0103": {
+    "title": "Signal des Luftmassenmessers zu hoch",
+    "plain": "Der Luftmassenmesser meldet mehr Luft, als der Motor ansaugen sollte. Häufig sind ein verschmutzter Sensor oder ein Problem mit der Verkabelung die Ursache.",
+    "causes": [
+      "Verschmutzter oder verunreinigter Luftmassenmesser",
+      "Kurzschluss in der Verkabelung oder schlechte Masseverbindung",
+      "Zu stark eingeölter Zubehör-Luftfilter",
+      "Defekter Sensor"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0103. Können Sie den MAF-Sensor und seine Verkabelung prüfen?"
+  },
+  "P0106": {
+    "title": "Saugrohrdruck-/Luftdrucksensor: Bereichs-/Leistungsproblem",
+    "plain": "Der Messwert des Saugrohrdrucksensors passt nicht zum Motorbetrieb. Häufig sind ein Unterdruckleck oder ein defekter Sensor die Ursache.",
+    "causes": [
+      "Rissiger oder lockerer Unterdruckschlauch",
+      "Undichtigkeit im Unterdrucksystem",
+      "Defekter MAP-Sensor"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0106. Können Sie das Ansaugsystem auf Unterdrucklecks abdrücken und den MAP-Sensor prüfen?"
+  },
+  "P0113": {
+    "title": "Signal des Ansauglufttemperatursensors zu hoch",
+    "plain": "Der Sensor für die Ansauglufttemperatur sendet ein zu hohes Signal. Meist ist er nicht angeschlossen oder seine Verkabelung ist beschädigt.",
+    "causes": [
+      "Nicht angeschlossener oder korrodierter Sensorstecker",
+      "Beschädigte Verkabelung",
+      "Defekter Ansauglufttemperatursensor"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0113. Können Sie den Ansauglufttemperatursensor und seinen Stecker prüfen?"
+  },
+  "P0117": {
+    "title": "Signal des Kühlmitteltemperatursensors zu niedrig",
+    "plain": "Der Motortemperatursensor meldet eine unrealistisch hohe Temperatur. Häufig sind ein Kurzschluss in der Verkabelung oder ein defekter Sensor die Ursache. Temperaturanzeige und Kühlerlüfter können sich ungewöhnlich verhalten.",
+    "causes": [
+      "Kurzschluss in der Sensorverkabelung",
+      "Defekter Kühlmitteltemperatursensor",
+      "Beschädigter Stecker"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0117. Können Sie den Kühlmitteltemperatursensor und seine Verkabelung prüfen?"
+  },
+  "P0118": {
+    "title": "Signal des Kühlmitteltemperatursensors zu hoch",
+    "plain": "Der Motortemperatursensor meldet eine unrealistisch niedrige Temperatur. Häufig ist der Sensor nicht angeschlossen oder defekt. Temperaturanzeige und Kühlerlüfter können sich ungewöhnlich verhalten.",
+    "causes": [
+      "Nicht angeschlossener oder korrodierter Sensorstecker",
+      "Kabelbruch",
+      "Defekter Kühlmitteltemperatursensor"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0118. Können Sie den Kühlmitteltemperatursensor und seinen Stecker prüfen?"
+  },
+  "P0121": {
+    "title": "Drosselklappen-/Pedalstellungssensor A: Bereichs-/Leistungsproblem",
+    "plain": "Der gemessene Drosselklappenwinkel passt nicht zum Motorverhalten. Möglicherweise beschleunigt das Auto schlecht oder der Leerlauf schwankt.",
+    "causes": [
+      "Verschmutzte Drosselklappe",
+      "Verschlissener Drosselklappenstellungssensor",
+      "Problem mit Verkabelung oder Stecker",
+      "Defekte elektronische Drosselklappe"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0121. Können Sie die Drosselklappe reinigen und den Drosselklappenstellungssensor prüfen?"
+  },
+  "P0122": {
+    "title": "Signal des Drosselklappen-/Pedalstellungssensors A zu niedrig",
+    "plain": "Der Drosselklappenstellungssensor meldet eine sehr niedrige Spannung. Möglicherweise ruckelt der Motor, reagiert schlecht oder hat weniger Leistung.",
+    "causes": [
+      "Lockere oder beschädigte Verkabelung",
+      "Defekter Drosselklappen- oder Fahrpedalstellungssensor",
+      "Defekte Drosselklappe"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0122. Können Sie den Stromkreis des Drosselklappenstellungssensors und die Verkabelung prüfen?"
+  },
+  "P0128": {
+    "title": "Kühlmittelthermostat: Temperatur unter dem Regelbereich",
+    "plain": "Der Motor braucht zu lange, um warm zu werden. Meist klemmt das Thermostat in geöffneter Stellung.",
+    "causes": [
+      "Thermostat klemmt offen",
+      "Defekter Kühlmitteltemperatursensor",
+      "Zu niedriger Kühlmittelstand"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0128. Können Sie das Thermostat und den Kühlmitteltemperatursensor prüfen?"
+  },
+  "P0131": {
+    "title": "Niedrige Spannung am Lambdasonden-Stromkreis (Bank 1, Sensor 1)",
+    "plain": "Die Lambdasonde vor dem Katalysator meldet einen niedrigen Wert, der auf ein zu mageres Gemisch hindeutet. Ursache können die Sonde selbst, ein Leck oder tatsächlich ein zu mageres Gemisch sein.",
+    "causes": [
+      "Abgasleck in der Nähe der Sonde",
+      "Defekte Lambdasonde",
+      "Beschädigte Verkabelung",
+      "Unterdruckleck mit tatsächlich zu magerem Gemisch"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0131. Können Sie vor dem Austausch der vorderen Lambdasonde auf Abgas- und Unterdrucklecks prüfen?"
+  },
+  "P0133": {
+    "title": "Lambdasonde reagiert zu langsam (Bank 1, Sensor 1)",
+    "plain": "Die Lambdasonde vor dem Katalysator reagiert zu langsam, was den Kraftstoffverbrauch erhöhen kann. Häufig ist einfach die Sonde verschlissen.",
+    "causes": [
+      "Verschlissene vordere Lambdasonde",
+      "Abgasleck vor der Sonde",
+      "Beschädigte Sondenverkabelung"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0133. Können Sie vor dem Austausch der vorderen Lambdasonde auf Abgaslecks prüfen?"
+  },
+  "P0134": {
+    "title": "Keine Aktivität der Lambdasonde erkannt (Bank 1, Sensor 1)",
+    "plain": "Die Lambdasonde vor dem Katalysator reagiert nicht. Das Motorsteuergerät kann das Kraftstoff-Luft-Gemisch nicht genau einstellen, wodurch der Verbrauch steigen kann.",
+    "causes": [
+      "Defekte Lambdasonde",
+      "Durchgebrannte Sicherung oder beschädigte Verkabelung",
+      "Abgasleck"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0134. Können Sie die vordere Lambdasonde, ihren Heizkreis und die Verkabelung prüfen?"
+  },
+  "P0135": {
+    "title": "Heizkreis der Lambdasonde (Bank 1, Sensor 1)",
+    "plain": "Die integrierte Heizung der Lambdasonde vor dem Katalysator funktioniert nicht. Dadurch dauert es länger, bis die Sonde Messwerte liefert.",
+    "causes": [
+      "Defekte Heizung in der Lambdasonde",
+      "Durchgebrannte Sicherung der Sondenheizung",
+      "Beschädigte Verkabelung oder Steckverbindung"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0135. Können Sie vor dem Austausch der Sonde die Sicherung der Lambdasondenheizung prüfen?"
+  },
+  "P0138": {
+    "title": "Hohe Spannung am Lambdasonden-Stromkreis (Bank 1, Sensor 2)",
+    "plain": "Die Lambdasonde hinter dem Katalysator meldet einen hohen Wert. Meist sind die Sonde oder ihre Verkabelung die Ursache; normalerweise fährt das Auto trotzdem ganz normal.",
+    "causes": [
+      "Defekte hintere Lambdasonde",
+      "Kurzschluss der Verkabelung gegen Spannung",
+      "Durch Kühlmittel oder Silikon verunreinigte Sonde"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0138. Können Sie die hintere Lambdasonde und ihre Verkabelung prüfen?"
+  },
+  "P0141": {
+    "title": "Heizkreis der Lambdasonde (Bank 1, Sensor 2)",
+    "plain": "Die integrierte Heizung der Lambdasonde hinter dem Katalysator funktioniert nicht.",
+    "causes": [
+      "Defekte Heizung in der Lambdasonde",
+      "Durchgebrannte Sicherung der Sondenheizung",
+      "Beschädigte Verkabelung oder Steckverbindung"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0141. Können Sie die Sicherung der Lambdasondenheizung und die Verkabelung der hinteren Sonde prüfen?"
+  },
+  "P0171": {
+    "title": "Gemisch zu mager (Bank 1)",
+    "plain": "Der Motor bekommt zu viel Luft oder zu wenig Kraftstoff. Am häufigsten ist ein Unterdruckleck die Ursache.",
+    "causes": [
+      "Unterdruckleck durch einen rissigen Schlauch",
+      "Verschmutzter Luftmassenmesser",
+      "Schwache Kraftstoffpumpe oder verstopfter Kraftstofffilter",
+      "Undichte Ansaugkrümmerdichtung"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0171 für ein zu mageres Gemisch. Können Sie das Ansaugsystem auf Unterdrucklecks prüfen und den MAF-Sensor kontrollieren?"
+  },
+  "P0172": {
+    "title": "Gemisch zu fett (Bank 1)",
+    "plain": "Der Motor bekommt im Verhältnis zur Luftmenge zu viel Kraftstoff. Möglicherweise riecht es nach Kraftstoff oder der Verbrauch steigt.",
+    "causes": [
+      "Verschmutzter Luftmassenmesser",
+      "Undichte Einspritzdüse",
+      "Defekter Kraftstoffdruckregler",
+      "Verstopfter Luftfilter"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0172 für ein zu fettes Gemisch. Können Sie den MAF-Sensor und den Kraftstoffdruck prüfen?"
+  },
+  "P0174": {
+    "title": "Gemisch zu mager (Bank 2)",
+    "plain": "Eine Motorseite bekommt zu viel Luft oder zu wenig Kraftstoff. Am häufigsten ist ein Unterdruckleck die Ursache.",
+    "causes": [
+      "Unterdruckleck durch einen rissigen Schlauch",
+      "Verschmutzter Luftmassenmesser",
+      "Schwache Kraftstoffpumpe oder verstopfter Kraftstofffilter",
+      "Undichte Ansaugkrümmerdichtung"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0174 für ein zu mageres Gemisch. Können Sie das Ansaugsystem auf Unterdrucklecks prüfen und den MAF-Sensor kontrollieren?"
+  },
+  "P0175": {
+    "title": "Gemisch zu fett (Bank 2)",
+    "plain": "Eine Motorseite bekommt im Verhältnis zur Luftmenge zu viel Kraftstoff. Möglicherweise riecht es nach Kraftstoff oder der Verbrauch steigt.",
+    "causes": [
+      "Verschmutzter Luftmassenmesser",
+      "Undichte Einspritzdüse",
+      "Defekter Kraftstoffdruckregler",
+      "Verstopfter Luftfilter"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0175 für ein zu fettes Gemisch. Können Sie den MAF-Sensor und den Kraftstoffdruck prüfen?"
+  },
+  "P0217": {
+    "title": "Motor überhitzt",
+    "plain": "Ihr Motor ist überhitzt. Halten Sie an, sobald es sicher ist, denn die Hitze kann Motorteile verformen oder beschädigen.",
+    "causes": [
+      "Zu wenig Kühlmittel durch ein Leck",
+      "Kühlerlüfter läuft nicht",
+      "Thermostat klemmt",
+      "Wasserpumpe defekt"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0217 wegen Überhitzung. Können Sie das Kühlsystem auf Dichtheit prüfen und den Lüfter kontrollieren?"
+  },
+  "P0299": {
+    "title": "Ladedruck des Turboladers/Kompressors zu niedrig",
+    "plain": "Der Turbolader baut nicht so viel Druck auf, wie das Motorsteuergerät vorgibt. Dadurch hat das Auto weniger Leistung. Häufig ist ein Leck im Ladedrucksystem die Ursache.",
+    "causes": [
+      "Lockerer oder rissiger Ladeluftschlauch oder Ladeluftrohr",
+      "Verstopfter Luftfilter",
+      "Klemmendes Wastegate oder defektes Ladedruckregelventil",
+      "Verschlissener Turbolader"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0299 wegen zu niedrigem Ladedruck. Können Sie das Ansaug- und Ladeluftsystem auf Lecks prüfen und das Wastegate kontrollieren?"
+  },
+  "P0300": {
+    "title": "Zufällige/mehrere Zündaussetzer erkannt",
+    "plain": "Der Motor hat Zündaussetzer, das heißt, die Zylinder verbrennen nicht richtig. Möglicherweise spüren Sie Ruckeln oder Zögern. Blinkt die Motorkontrollleuchte, halten Sie an und lassen Sie das Auto abschleppen. Leuchtet sie dauerhaft, fahren Sie vorsichtig und lassen Sie den Fehler bald prüfen.",
+    "causes": [
+      "Verschlissene Zündkerzen",
+      "Defekte Zündspulen oder Zündkabel",
+      "Unterdruckleck",
+      "Zu niedriger Kraftstoffdruck"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0300 wegen zufälliger Zündaussetzer. Können Sie die Zündkerzen und Zündspulen prüfen und nach Unterdrucklecks suchen?"
+  },
+  "P0301": {
+    "title": "Zündaussetzer in Zylinder 1 erkannt",
+    "plain": "Zylinder 1 arbeitet nicht richtig, möglicherweise spüren Sie Ruckeln oder Zögern. Blinkt die Motorkontrollleuchte, halten Sie an und lassen Sie das Auto abschleppen. Leuchtet sie dauerhaft, fahren Sie vorsichtig und lassen Sie den Fehler bald prüfen.",
+    "causes": [
+      "Verschlissene Zündkerze in Zylinder 1",
+      "Defekte Zündspule oder Zündkabel",
+      "Verstopfte oder undichte Einspritzdüse",
+      "Zu geringe Kompression"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0301. Können Sie die Zündspule von Zylinder 1 mit der eines anderen Zylinders tauschen und prüfen, ob der Zündaussetzer mitwandert?"
+  },
+  "P0302": {
+    "title": "Zündaussetzer in Zylinder 2 erkannt",
+    "plain": "Zylinder 2 arbeitet nicht richtig, möglicherweise spüren Sie Ruckeln oder Zögern. Blinkt die Motorkontrollleuchte, halten Sie an und lassen Sie das Auto abschleppen. Leuchtet sie dauerhaft, fahren Sie vorsichtig und lassen Sie den Fehler bald prüfen.",
+    "causes": [
+      "Verschlissene Zündkerze in Zylinder 2",
+      "Defekte Zündspule oder Zündkabel",
+      "Verstopfte oder undichte Einspritzdüse",
+      "Zu geringe Kompression"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0302. Können Sie die Zündspule von Zylinder 2 mit der eines anderen Zylinders tauschen und prüfen, ob der Zündaussetzer mitwandert?"
+  },
+  "P0303": {
+    "title": "Zündaussetzer in Zylinder 3 erkannt",
+    "plain": "Zylinder 3 arbeitet nicht richtig, möglicherweise spüren Sie Ruckeln oder Zögern. Blinkt die Motorkontrollleuchte, halten Sie an und lassen Sie das Auto abschleppen. Leuchtet sie dauerhaft, fahren Sie vorsichtig und lassen Sie den Fehler bald prüfen.",
+    "causes": [
+      "Verschlissene Zündkerze in Zylinder 3",
+      "Defekte Zündspule oder Zündkabel",
+      "Verstopfte oder undichte Einspritzdüse",
+      "Zu geringe Kompression"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0303. Können Sie die Zündspule von Zylinder 3 mit der eines anderen Zylinders tauschen und prüfen, ob der Zündaussetzer mitwandert?"
+  },
+  "P0304": {
+    "title": "Zündaussetzer in Zylinder 4 erkannt",
+    "plain": "Zylinder 4 arbeitet nicht richtig, möglicherweise spüren Sie Ruckeln oder Zögern. Blinkt die Motorkontrollleuchte, halten Sie an und lassen Sie das Auto abschleppen. Leuchtet sie dauerhaft, fahren Sie vorsichtig und lassen Sie den Fehler bald prüfen.",
+    "causes": [
+      "Verschlissene Zündkerze in Zylinder 4",
+      "Defekte Zündspule oder Zündkabel",
+      "Verstopfte oder undichte Einspritzdüse",
+      "Zu geringe Kompression"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0304. Können Sie die Zündspule von Zylinder 4 mit der eines anderen Zylinders tauschen und prüfen, ob der Zündaussetzer mitwandert?"
+  },
+  "P0305": {
+    "title": "Zündaussetzer in Zylinder 5 erkannt",
+    "plain": "Zylinder 5 arbeitet nicht richtig, möglicherweise spüren Sie Ruckeln oder Zögern. Blinkt die Motorkontrollleuchte, halten Sie an und lassen Sie das Auto abschleppen. Leuchtet sie dauerhaft, fahren Sie vorsichtig und lassen Sie den Fehler bald prüfen.",
+    "causes": [
+      "Verschlissene Zündkerze in Zylinder 5",
+      "Defekte Zündspule oder Zündkabel",
+      "Verstopfte oder undichte Einspritzdüse",
+      "Zu geringe Kompression"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0305. Können Sie die Zündspule von Zylinder 5 mit der eines anderen Zylinders tauschen und prüfen, ob der Zündaussetzer mitwandert?"
+  },
+  "P0306": {
+    "title": "Zündaussetzer in Zylinder 6 erkannt",
+    "plain": "Zylinder 6 arbeitet nicht richtig, möglicherweise spüren Sie Ruckeln oder Zögern. Blinkt die Motorkontrollleuchte, halten Sie an und lassen Sie das Auto abschleppen. Leuchtet sie dauerhaft, fahren Sie vorsichtig und lassen Sie den Fehler bald prüfen.",
+    "causes": [
+      "Verschlissene Zündkerze in Zylinder 6",
+      "Defekte Zündspule oder Zündkabel",
+      "Verstopfte oder undichte Einspritzdüse",
+      "Zu geringe Kompression"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0306. Können Sie die Zündspule von Zylinder 6 mit der eines anderen Zylinders tauschen und prüfen, ob der Zündaussetzer mitwandert?"
+  },
+  "P0307": {
+    "title": "Zündaussetzer in Zylinder 7 erkannt",
+    "plain": "Zylinder 7 arbeitet nicht richtig, möglicherweise spüren Sie Ruckeln oder Zögern. Blinkt die Motorkontrollleuchte, halten Sie an und lassen Sie das Auto abschleppen. Leuchtet sie dauerhaft, fahren Sie vorsichtig und lassen Sie den Fehler bald prüfen.",
+    "causes": [
+      "Verschlissene Zündkerze in Zylinder 7",
+      "Defekte Zündspule oder Zündkabel",
+      "Verstopfte oder undichte Einspritzdüse",
+      "Zu geringe Kompression"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0307. Können Sie die Zündspule von Zylinder 7 mit der eines anderen Zylinders tauschen und prüfen, ob der Zündaussetzer mitwandert?"
+  },
+  "P0308": {
+    "title": "Zündaussetzer in Zylinder 8 erkannt",
+    "plain": "Zylinder 8 arbeitet nicht richtig, möglicherweise spüren Sie Ruckeln oder Zögern. Blinkt die Motorkontrollleuchte, halten Sie an und lassen Sie das Auto abschleppen. Leuchtet sie dauerhaft, fahren Sie vorsichtig und lassen Sie den Fehler bald prüfen.",
+    "causes": [
+      "Verschlissene Zündkerze in Zylinder 8",
+      "Defekte Zündspule oder Zündkabel",
+      "Verstopfte oder undichte Einspritzdüse",
+      "Zu geringe Kompression"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0308. Können Sie die Zündspule von Zylinder 8 mit der eines anderen Zylinders tauschen und prüfen, ob der Zündaussetzer mitwandert?"
+  },
+  "P0325": {
+    "title": "Stromkreis des Klopfsensors 1 (Bank 1)",
+    "plain": "Der Sensor, der auf Motorklopfen achtet, sendet kein korrektes Signal. Das Motorsteuergerät kann vorsorglich die Leistung reduzieren.",
+    "causes": [
+      "Beschädigte Verkabelung des Klopfsensors",
+      "Korrodierter Stecker",
+      "Defekter Klopfsensor"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0325. Können Sie vor dem Austausch des Klopfsensors dessen Verkabelung prüfen?"
+  },
+  "P0335": {
+    "title": "Stromkreis des Kurbelwellenpositionssensors A",
+    "plain": "Das Motorsteuergerät hat das Signal verloren, das ihm die Position der Kurbelwelle mitteilt. Der Motor kann ausgehen oder nicht mehr anspringen.",
+    "causes": [
+      "Defekter Kurbelwellensensor",
+      "Beschädigte Sensorverkabelung",
+      "Beschädigter Geberkranz an der Kurbelwelle"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0335. Können Sie das Signal des Kurbelwellensensors und seine Verkabelung prüfen?"
+  },
+  "P0340": {
+    "title": "Stromkreis des Nockenwellenpositionssensors A (Bank 1)",
+    "plain": "Das Motorsteuergerät erhält kein korrektes Signal vom Nockenwellensensor. Das Auto kann schlecht anspringen oder schlecht laufen.",
+    "causes": [
+      "Defekter Nockenwellensensor",
+      "Beschädigte Verkabelung oder Steckverbindung",
+      "Übergesprungener Zahnriemen oder übergesprungene Steuerkette"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0340. Können Sie den Nockenwellensensor und seine Verkabelung prüfen und sicherstellen, dass die Steuerzeiten stimmen?"
+  },
+  "P0401": {
+    "title": "Abgasrückführung (EGR): Durchfluss zu gering",
+    "plain": "Durch das System, das einen Teil der Abgase zur Emissionsminderung zurück in den Motor leitet, strömt zu wenig Abgas. Beim Beschleunigen kann ein Klingeln zu hören sein.",
+    "causes": [
+      "Durch Ruß verstopfte EGR-Kanäle",
+      "Klemmendes EGR-Ventil",
+      "Defekter EGR-Drucksensor"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0401. Können Sie vor dem Austausch des EGR-Ventils die Kanäle auf Rußablagerungen prüfen?"
+  },
+  "P0411": {
+    "title": "Sekundärluftsystem: Durchfluss fehlerhaft",
+    "plain": "Die Pumpe, die beim Kaltstart Frischluft in den Auspuff bläst, fördert zu wenig Luft. Das betrifft die Abgaswerte nur während der ersten Minute oder so.",
+    "causes": [
+      "Defekte Sekundärluftpumpe",
+      "Klemmendes Rückschlagventil",
+      "Durchgebrannte Sicherung oder defektes Relais",
+      "Rissiger Luftschlauch"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0411. Können Sie die Sicherung und das Relais der Sekundärluftpumpe sowie das Rückschlagventil prüfen?"
+  },
+  "P0420": {
+    "title": "Katalysatorwirkung unter Grenzwert (Bank 1)",
+    "plain": "Ihr Katalysator reinigt die Abgase nicht mehr so gut wie vorgesehen.",
+    "causes": [
+      "Defekte hintere Lambdasonde",
+      "Abgasleck",
+      "Verschlissener Katalysator"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0420. Können Sie die Lambdasonden prüfen und vor dem Austausch des Katalysators nach Abgaslecks suchen?"
+  },
+  "P0421": {
+    "title": "Katalysatorwirkung beim Aufwärmen unter Grenzwert (Bank 1)",
+    "plain": "Ihr Katalysator reinigt die Abgase während des Warmlaufens nicht ausreichend.",
+    "causes": [
+      "Defekte hintere Lambdasonde",
+      "Abgasleck",
+      "Verschlissener Katalysator"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0421. Können Sie die Lambdasonden prüfen und vor dem Austausch des Katalysators nach Abgaslecks suchen?"
+  },
+  "P0430": {
+    "title": "Katalysatorwirkung unter Grenzwert (Bank 2)",
+    "plain": "Der Katalysator auf einer Motorseite reinigt die Abgase nicht mehr so gut wie vorgesehen.",
+    "causes": [
+      "Defekte hintere Lambdasonde",
+      "Abgasleck",
+      "Verschlissener Katalysator"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0430. Können Sie die Lambdasonden prüfen und vor dem Austausch des Katalysators nach Abgaslecks suchen?"
+  },
+  "P0431": {
+    "title": "Katalysatorwirkung beim Aufwärmen unter Grenzwert (Bank 2)",
+    "plain": "Der Katalysator auf Bank 2 reinigt die Abgase während des Warmlaufens nicht ausreichend.",
+    "causes": [
+      "Defekte hintere Lambdasonde",
+      "Abgasleck",
+      "Verschlissener Katalysator"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0431. Können Sie die Lambdasonden auf Bank 2 prüfen und vor dem Austausch des Katalysators nach Abgaslecks suchen?"
+  },
+  "P0440": {
+    "title": "Störung im Tankentlüftungssystem (EVAP)",
+    "plain": "Im System, das Kraftstoffdämpfe aus dem Tank auffängt, wurde eine Störung erkannt. Das Fahrverhalten wird dadurch nicht beeinträchtigt.",
+    "causes": [
+      "Lockerer oder verschlissener Tankdeckel",
+      "Rissiger Kraftstoffdampfschlauch",
+      "Defektes Entlüftungs- oder Spülventil"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0440. Können Sie das EVAP-System mit Rauch auf Undichtigkeiten prüfen?"
+  },
+  "P0441": {
+    "title": "Tankentlüftungssystem (EVAP): Spüldurchfluss fehlerhaft",
+    "plain": "Das System, das Kraftstoffdämpfe zum Motor leitet, fördert nicht die richtige Menge. Meist ist ein klemmendes Spülventil die Ursache.",
+    "causes": [
+      "Klemmendes Spülventil",
+      "Rissiger oder abgezogener Kraftstoffdampfschlauch",
+      "Verstopfter Aktivkohlebehälter"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0441. Können Sie das EVAP-Spülventil und die Kraftstoffdampfschläuche prüfen?"
+  },
+  "P0442": {
+    "title": "Kleine Undichtigkeit im Tankentlüftungssystem (EVAP)",
+    "plain": "Im System, das Kraftstoffdämpfe auffängt, gibt es eine kleine Undichtigkeit. Oft dichtet nur der Tankdeckel nicht richtig ab. Ziehen Sie ihn zuerst fest, bis er einrastet.",
+    "causes": [
+      "Lockerer oder verschlissener Tankdeckel",
+      "Rissiger Kraftstoffdampfschlauch",
+      "Defektes Entlüftungs- oder Spülventil"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0442. Können Sie das EVAP-System mit Rauch auf Undichtigkeiten prüfen und die Dichtung des Tankdeckels kontrollieren?"
+  },
+  "P0443": {
+    "title": "Stromkreis des Spülventils im Tankentlüftungssystem (EVAP)",
+    "plain": "Das Motorsteuergerät kann das Ventil, das Kraftstoffdämpfe zum Motor leitet, nicht ansteuern. Meist liegt es am Ventil oder seiner Verkabelung.",
+    "causes": [
+      "Defektes Spülventil",
+      "Lockerer oder korrodierter Stecker",
+      "Durchgebrannte Sicherung",
+      "Beschädigte Verkabelung"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0443. Können Sie das EVAP-Spülventil und seine Verkabelung prüfen?"
+  },
+  "P0446": {
+    "title": "Stromkreis der Entlüftungssteuerung des Tankentlüftungssystems (EVAP)",
+    "plain": "Das Ventil, über das das Kraftstoffdampfsystem belüftet wird, funktioniert nicht richtig. Das Fahrverhalten wird dadurch nicht beeinträchtigt.",
+    "causes": [
+      "Defektes Entlüftungsventil",
+      "Verstopfter Entlüftungsfilter",
+      "Beschädigte Verkabelung zum Entlüftungsventil"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0446. Können Sie das EVAP-Entlüftungsventil und seine Verkabelung prüfen?"
+  },
+  "P0449": {
+    "title": "Stromkreis des Entlüftungsventils/-magnetventils (EVAP)",
+    "plain": "Am EVAP-Entlüftungsventil liegt ein elektrischer Fehler vor. Das Ventil am Kraftstofftank kann klemmen oder seine Verkabelung korrodiert sein. Auch Probleme beim Tanken sind möglich.",
+    "causes": [
+      "Defektes Entlüftungsventil",
+      "Korrodierter Stecker oder korrodierte Verkabelung am Tank",
+      "Durchgebrannte Sicherung"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0449. Können Sie das EVAP-Entlüftungsventil prüfen und seine Verkabelung sowie den Stecker kontrollieren?"
+  },
+  "P0455": {
+    "title": "Große Undichtigkeit im Tankentlüftungssystem (EVAP)",
+    "plain": "Im System, das Kraftstoffdämpfe auffängt, gibt es eine große Undichtigkeit. Prüfen Sie zuerst, ob der Tankdeckel aufgesetzt und fest zugedreht ist.",
+    "causes": [
+      "Fehlender oder lockerer Tankdeckel",
+      "Abgezogener Kraftstoffdampfschlauch",
+      "Offen klemmendes Entlüftungsventil",
+      "Rissiger Aktivkohlebehälter"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0455. Können Sie das EVAP-System mit Rauch auf eine große Undichtigkeit prüfen, insbesondere Tankdeckel und Kraftstoffdampfschläuche?"
+  },
+  "P0456": {
+    "title": "Sehr kleine Undichtigkeit im Tankentlüftungssystem (EVAP)",
+    "plain": "Im System, das Kraftstoffdämpfe auffängt, gibt es eine sehr kleine Undichtigkeit. Häufig ist die Dichtung des Tankdeckels verschlissen.",
+    "causes": [
+      "Verschlissene Tankdeckeldichtung",
+      "Kleiner Riss in einem Kraftstoffdampfschlauch",
+      "Undichtes Spül- oder Entlüftungsventil"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0456. Können Sie das EVAP-System mit Rauch auf eine kleine Undichtigkeit prüfen?"
+  },
+  "P0457": {
+    "title": "Tankentlüftungssystem undicht: Tankdeckel locker oder fehlt",
+    "plain": "Der Tankdeckel ist locker oder fehlt. Drehen Sie ihn fest, bis er einrastet. Nach einigen Fahrten sollte die Warnleuchte erlöschen.",
+    "causes": [
+      "Tankdeckel nicht fest zugedreht",
+      "Tankdeckel fehlt",
+      "Verschlissene Tankdeckeldichtung"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0457. Ich habe den Tankdeckel fest zugedreht. Könnte die Dichtung des Deckels defekt sein?"
+  },
+  "P0500": {
+    "title": "Fahrzeuggeschwindigkeitssensor A",
+    "plain": "Das Motorsteuergerät erhält kein Geschwindigkeitssignal. Der Tachometer kann ausfallen und ein Automatikgetriebe kann ungewöhnlich schalten.",
+    "causes": [
+      "Defekter Fahrzeuggeschwindigkeitssensor",
+      "Beschädigte Verkabelung oder Steckverbindung",
+      "Verschlissenes Antriebsrad des Sensors"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0500. Können Sie den Geschwindigkeitssensor und seine Verkabelung prüfen?"
+  },
+  "P0505": {
+    "title": "Leerlaufregelung",
+    "plain": "Der Motor kann die Leerlaufdrehzahl nicht konstant halten. Die Drehzahl kann zu hoch oder zu niedrig sein, oder der Motor kann im Stand ausgehen.",
+    "causes": [
+      "Verschmutzte Drosselklappe",
+      "Defektes Leerlaufregelventil",
+      "Unterdruckleck"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0505. Können Sie die Drosselklappe reinigen und das Leerlaufregelventil prüfen?"
+  },
+  "P0507": {
+    "title": "Leerlaufdrehzahl höher als erwartet",
+    "plain": "Der Motor läuft im Leerlauf schneller, als das Motorsteuergerät vorgibt. Meist sind eine verschmutzte Drosselklappe oder ein Unterdruckleck die Ursache.",
+    "causes": [
+      "Verschmutzte Drosselklappe",
+      "Unterdruckleck durch einen rissigen Schlauch oder eine undichte Ansaugkrümmerdichtung",
+      "Defektes Leerlaufregelventil oder Drosselklappensteller",
+      "Offen klemmendes PCV-Ventil"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0507 wegen zu hoher Leerlaufdrehzahl. Können Sie die Drosselklappe reinigen, das Ansaugsystem auf Unterdrucklecks prüfen und die Drosselklappe neu anlernen?"
+  },
+  "P0524": {
+    "title": "Motoröldruck zu niedrig",
+    "plain": "Der Motoröldruck ist zu niedrig. Halten Sie an, sobald es sicher ist, und prüfen Sie den Ölstand, denn zu niedriger Öldruck kann einen Motor sehr schnell schwer beschädigen.",
+    "causes": [
+      "Zu niedriger Motorölstand",
+      "Falsches oder verschlissenes Motoröl",
+      "Defekte Ölpumpe",
+      "Defekter Öldrucksensor"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0524. Können Sie den tatsächlichen Öldruck mit einem Manometer prüfen?"
+  },
+  "P0562": {
+    "title": "Bordnetzspannung zu niedrig",
+    "plain": "Die Spannung im Bordnetz ist zu niedrig. Möglicherweise sind die Batterie oder die Lichtmaschine bald defekt.",
+    "causes": [
+      "Schwache oder alte Batterie",
+      "Defekte Lichtmaschine",
+      "Lockere oder korrodierte Batteriekabel"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0562. Können Sie die Batterie und die Ladeleistung der Lichtmaschine prüfen?"
+  },
+  "P0606": {
+    "title": "Prozessorfehler im Steuergerät",
+    "plain": "Das Motorsteuergerät hat einen Fehler in sich selbst festgestellt. Manchmal hilft ein Softwareupdate, manchmal muss das Steuergerät ersetzt werden.",
+    "causes": [
+      "Interner Fehler des Motorsteuergeräts",
+      "Mangelhafte Stromversorgung oder Masseverbindung des Steuergeräts",
+      "Veraltete Steuergerätesoftware"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0606. Können Sie die Stromversorgung und Masseverbindungen des Motorsteuergeräts sowie verfügbare Softwareupdates prüfen?"
+  },
+  "P0700": {
+    "title": "Störung im Getriebesteuerungssystem",
+    "plain": "Das Getriebesteuergerät hat ein Problem erkannt und einen eigenen Fehlercode gespeichert. Ein Auslesen des Getriebesteuergeräts zeigt die Details.",
+    "causes": [
+      "Im Getriebesteuergerät gespeicherter Fehler",
+      "Defektes Schaltmagnetventil",
+      "Zu wenig oder altes Getriebeöl"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0700. Können Sie die Fehlercodes des Getriebesteuergeräts auslesen?"
+  },
+  "P0730": {
+    "title": "Falsches Übersetzungsverhältnis",
+    "plain": "Das Getriebe hat nicht das Übersetzungsverhältnis, das das Steuergerät erwartet. Das bedeutet meist, dass das Getriebe rutscht. Weiterzufahren kann das Getriebe beschädigen.",
+    "causes": [
+      "Zu wenig oder verbranntes Getriebeöl",
+      "Verschlissene Kupplungsscheiben oder Bremsbänder",
+      "Defektes Schaltmagnetventil oder defekter Ventilkörper"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0730 wegen eines falschen Übersetzungsverhältnisses. Können Sie das Getriebeöl prüfen und testen, ob das Getriebe rutscht?"
+  },
+  "P0740": {
+    "title": "Stromkreis des Drehmomentwandler-Überbrückungskupplungskreises unterbrochen/fehlerhaft",
+    "plain": "Im Stromkreis der Wandlerüberbrückungskupplung liegt ein Fehler vor. Möglicherweise ruckelt das Auto, die Drehzahl ist bei Autobahntempo hoch oder der Verbrauch steigt.",
+    "causes": [
+      "Zu wenig oder altes Getriebeöl",
+      "Defektes Magnetventil der Wandlerüberbrückungskupplung",
+      "Problem mit der Verkabelung",
+      "Verschlissener Drehmomentwandler"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0740. Können Sie das Getriebeöl und das Magnetventil der Wandlerüberbrückungskupplung prüfen?"
+  },
+  "P0741": {
+    "title": "Wandlerüberbrückungskupplung: Funktion gestört oder dauerhaft ausgeschaltet",
+    "plain": "Die Wandlerüberbrückungskupplung schließt nicht, wenn sie sollte. Bei Autobahntempo kann die Drehzahl höher sein und der Verbrauch steigen.",
+    "causes": [
+      "Zu wenig oder verbranntes Getriebeöl",
+      "Verschlissenes Magnetventil der Wandlerüberbrückungskupplung",
+      "Verschlissener Drehmomentwandler"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P0741. Können Sie das Getriebeöl prüfen und die Wandlerüberbrückungskupplung testen?"
+  },
+  "P2096": {
+    "title": "Kraftstoffkorrektur nach dem Katalysator zu mager (Bank 1)",
+    "plain": "Das Abgas hinter dem Katalysator deutet auf ein zu mageres Gemisch hin. Häufig sind ein Abgasleck oder eine defekte hintere Lambdasonde die Ursache.",
+    "causes": [
+      "Abgasleck vor der hinteren Lambdasonde",
+      "Defekte hintere Lambdasonde",
+      "Unterdruckleck oder unzureichende Kraftstoffversorgung"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P2096. Können Sie auf Abgaslecks prüfen und die hintere Lambdasonde testen?"
+  },
+  "P2097": {
+    "title": "Kraftstoffkorrektur nach dem Katalysator zu fett (Bank 1)",
+    "plain": "Das Abgas hinter dem Katalysator deutet auf ein zu fettes Gemisch hin. Häufig sind eine defekte hintere Lambdasonde oder zu viel Kraftstoff die Ursache.",
+    "causes": [
+      "Defekte hintere Lambdasonde",
+      "Undichte Einspritzdüse oder zu hoher Kraftstoffdruck",
+      "Verschmutzter Luftfilter oder MAF-Sensor"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P2097. Können Sie die hintere Lambdasonde prüfen und den Kraftstoffdruck kontrollieren?"
+  },
+  "P2135": {
+    "title": "Spannungsabweichung zwischen Drosselklappen-/Pedalstellungssensor A und B",
+    "plain": "Die beiden Drosselklappensensoren liefern unterschiedliche Werte. Das Motorsteuergerät kann zum Schutz die Motorleistung begrenzen (Notlauf).",
+    "causes": [
+      "Verschmutzte Drosselklappe",
+      "Problem mit Verkabelung oder Stecker",
+      "Defekte elektronische Drosselklappe"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode P2135. Können Sie die Drosselklappe und die Signale beider Stellungssensoren prüfen?"
+  },
+  "U0100": {
+    "title": "Kommunikation mit Motorsteuergerät ECM/PCM „A“ unterbrochen",
+    "plain": "Andere Steuergeräte im Auto können nicht mit dem Motorsteuergerät kommunizieren. Der Motor kann ausgehen oder nicht anspringen, und weitere Warnleuchten können aufleuchten.",
+    "causes": [
+      "Schwache Batterie oder lockerer Batterieanschluss",
+      "Durchgebrannte Sicherung oder mangelhafte Stromversorgung beziehungsweise Masseverbindung des Motorsteuergeräts",
+      "Beschädigte CAN-Bus-Verkabelung",
+      "Defektes Motorsteuergerät"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode U0100 wegen unterbrochener Kommunikation mit dem Motorsteuergerät. Können Sie zuerst Batterie, Sicherungen und CAN-Bus-Verkabelung prüfen?"
+  },
+  "U0101": {
+    "title": "Kommunikation mit Getriebesteuergerät TCM unterbrochen",
+    "plain": "Andere Steuergeräte im Auto können nicht mit dem Getriebesteuergerät kommunizieren. Das Getriebe kann ungewöhnlich schalten oder in einem Gang bleiben.",
+    "causes": [
+      "Schwache Batterie oder lockerer Batterieanschluss",
+      "Durchgebrannte Sicherung oder mangelhafte Stromversorgung beziehungsweise Masseverbindung des Getriebesteuergeräts",
+      "Beschädigte CAN-Bus-Verkabelung",
+      "Defektes Getriebesteuergerät"
+    ],
+    "tellMechanic": "Ich habe den Fehlercode U0101 wegen unterbrochener Kommunikation mit dem Getriebesteuergerät. Können Sie zuerst Batterie, Sicherungen und CAN-Bus-Verkabelung prüfen?"
+  }
+}

@@ -1,13 +1,20 @@
 // Rendering: tabs, the car form, the codes table, live gauges, dialogs, and
 // the printable report. No OBD logic lives here.
 import { h, svg } from './dom.js';
+import { formatDate, formatNumber, onLanguageChange, pidLabel, t } from './i18n.js';
+import { displayDef, displayUnit, displayValue, onUnitsChange } from './units.js';
 import { infoTip } from './info-tip.js';
 import { versionLine } from './version-info.js';
 import { URGENCY, DIFFICULTY, urgencyBadge } from './bob.js';
+import { BATTERY, LIVE_PIDS } from './obd.js';
 
 const $ = (id) => document.getElementById(id);
+const PARAMETER_DEFS = [...LIVE_PIDS, BATTERY];
+const parameterLabel = (entry) => {
+  const def = entry.pid == null ? BATTERY : PARAMETER_DEFS.find((item) => item.pid === entry.pid);
+  return def ? pidLabel(def) : entry.name;
+};
 
-const DISCLAIMER = 'WOBD gives general information, not a professional diagnosis. Always confirm a problem before replacing parts.';
 
 // Set when this browser can't reach an adapter, so Connect stays off.
 let connectBlocked = false;
@@ -15,7 +22,7 @@ let connectBlocked = false;
 // check: the result of checkBrowser() in serial.js.
 export function showBrowserAlert(check, { demo }) {
   $('browser-alert-title').textContent = check.reason;
-  $('browser-alert-text').textContent = `${check.fix} You can still try the demos below.`;
+  $('browser-alert-text').textContent = t('app.ui.browserAlertSuffix', { fix: check.fix });
   $('browser-alert').hidden = false;
   if (!demo) {
     connectBlocked = true;
@@ -113,19 +120,27 @@ export function initCarForm(makes, models = {}) {
   const other = $('car-make-other');
   const model = $('car-model');
   const modelOther = $('car-model-other');
-  make.append(...makes.map((m) => h('option', { value: m }, m)), h('option', { value: 'Other' }, 'Other'));
+  make.append(...makes.map((m) => h('option', { value: m }, m)), h('option', { value: 'Other' }, t('app.ui.other')));
 
   const fillModels = () => {
     const list = models[make.value] ?? [];
     const typed = make.value !== '' && list.length === 0;
-    model.replaceChildren(h('option', { value: '' }, 'Model'), ...list.map((m) => h('option', { value: m }, m)),
-      list.length > 0 && h('option', { value: MODEL_OTHER }, 'Other'));
+    model.replaceChildren(h('option', { value: '' }, t('app.ui.model')), ...list.map((m) => h('option', { value: m }, m)),
+      list.length > 0 && h('option', { value: MODEL_OTHER }, t('app.ui.other')));
     model.hidden = typed;
     model.disabled = make.value === '';
     modelOther.hidden = !typed;
     modelOther.value = '';
   };
   fillModels();
+  onLanguageChange(() => {
+    const otherMake = [...make.options].find((option) => option.value === 'Other');
+    if (otherMake) otherMake.textContent = t('app.ui.other');
+    const emptyModel = [...model.options].find((option) => option.value === '');
+    if (emptyModel) emptyModel.textContent = t('app.ui.model');
+    const otherModel = [...model.options].find((option) => option.value === MODEL_OTHER);
+    if (otherModel) otherModel.textContent = t('app.ui.other');
+  });
 
   make.addEventListener('change', () => {
     other.hidden = make.value !== 'Other';
@@ -191,7 +206,7 @@ export function carLabel(car) {
 export function setConnection(state, text) {
   $('conn-status').dataset.state = state;
   $('conn-status').textContent = text;
-  $('connect-btn').textContent = state === 'connected' ? 'Disconnect' : 'Connect';
+  $('connect-btn').textContent = state === 'connected' ? t('app.ui.disconnect') : t('app.ui.connect');
   $('connect-btn').disabled = connectBlocked || state === 'busy';
   $('protocol-options').disabled = state !== 'idle';
   $('protocol-select').disabled = !$('protocol-override').checked || state !== 'idle';
@@ -216,19 +231,19 @@ export function createBaudProgress(onCancel) {
   const bar = h('div', {
     class: 'progress',
     role: 'progressbar',
-    'aria-label': 'Checking the device baud rate',
+    'aria-label': t('app.ui.checkingBaud'),
     'aria-valuemin': 0,
     'aria-valuemax': 1,
     'aria-valuenow': 0,
   }, fill);
   const el = h('div', { class: 'baud-progress' }, bar,
-    h('button', { type: 'button', class: 'link-button', onClick: onCancel }, 'Cancel'));
+    h('button', { type: 'button', class: 'link-button', onClick: onCancel }, t('app.ui.cancel')));
   return {
     el,
     update({ attempt, total }) {
       bar.setAttribute('aria-valuemax', String(total));
       bar.setAttribute('aria-valuenow', String(attempt));
-      bar.setAttribute('aria-valuetext', `Trying speed ${attempt} of ${total}`);
+      bar.setAttribute('aria-valuetext', t('app.ui.tryingSpeed', { attempt: formatNumber(attempt), total: formatNumber(total) }));
       fill.style.width = `${(attempt / total) * 100}%`;
     },
     remove() { el.remove(); },
@@ -237,8 +252,8 @@ export function createBaudProgress(onCancel) {
 
 // Manual fallback when no rate answered. onRetry gets the chosen rate.
 export function baudRetryForm(rates, onRetry) {
-  const select = h('select', {}, rates.map((rate) => h('option', { value: String(rate) }, `${rate} baud`)));
-  const button = h('button', { type: 'submit', class: 'btn' }, 'Retry');
+  const select = h('select', {}, rates.map((rate) => h('option', { value: String(rate) }, t('app.conn.baud', { rate: formatNumber(rate, { useGrouping: false }) }))));
+  const button = h('button', { type: 'submit', class: 'btn' }, t('app.ui.retry'));
   return h('form', {
     class: 'baud-retry',
     onSubmit: (e) => {
@@ -247,7 +262,7 @@ export function baudRetryForm(rates, onRetry) {
       button.disabled = true;
       onRetry(Number(select.value));
     },
-  }, h('label', {}, 'Try a specific speed ', select), button);
+  }, h('label', {}, t('app.ui.trySpecificSpeed'), select), button);
 }
 
 // ---------- Codes table ----------
@@ -277,21 +292,21 @@ export function renderModuleTabs(modules, active, onSelect) {
     'aria-selected': String(source === active),
     onClick: () => onSelect(source),
   }, label);
-  bar.replaceChildren(tab('all', 'All modules'), ...modules.map((m) => tab(m.source, m.name)));
+  bar.replaceChildren(tab('all', t('app.ui.allModules')), ...modules.map((m) => tab(m.source, m.name))); 
 }
 
 export function setModuleDetail(module) {
   const el = $('module-detail');
   el.hidden = !module;
   if (!module) return;
-  const count = (list) => (list === null ? 'unavailable' : list.length);
+  const count = (list) => (list === null ? t('app.ui.unavailable') : formatNumber(list.length));
   el.replaceChildren(
     h('strong', {}, module.name),
-    ` · address ${module.source}`,
-    module.confidence === 'inferred' ? ' · name inferred from address' : ' · name unknown',
+    t('app.ui.moduleAddress', { address: module.source }),
+    module.confidence === 'inferred' ? ` · ${t('app.ui.nameInferred')}` : ` · ${t('app.ui.nameUnknown')}`,
     h('br'),
-    module.milOn === null ? 'Check engine light status not reported' : `Check engine light ${module.milOn ? 'ON' : 'off'}`,
-    ` · Stored: ${count(module.dtcs.stored)} · Pending: ${count(module.dtcs.pending)} · Permanent: ${count(module.dtcs.permanent)}`,
+    module.milOn === null ? t('app.ui.milNotReported') : t('app.ui.milStatus', { status: module.milOn ? t('app.ui.on') : t('app.ui.off') }),
+    ` · ${t('app.ui.stored')}: ${count(module.dtcs.stored)} · ${t('app.ui.pending')}: ${count(module.dtcs.pending)} · ${t('app.ui.permanent')}: ${count(module.dtcs.permanent)}`, 
   );
 }
 
@@ -314,7 +329,7 @@ const DIAL_CIRCUMFERENCE = 2 * Math.PI * DIAL_RADIUS;
 const DIAL_ARC = DIAL_CIRCUMFERENCE * 0.75;  // 270 degrees, open at the bottom
 
 const gaugeNumber = () => h('span', { class: 'gauge-number' }, '—');
-const gaugeUnit = (def) => def.unit && h('span', { class: 'gauge-unit' }, def.unit);
+const gaugeUnit = (def) => def.unit && h('span', { class: 'gauge-unit' }, displayUnit(def.unit));
 
 function gaugeShell(def, ...children) {
   const meter = def.style !== 'status';
@@ -322,7 +337,7 @@ function gaugeShell(def, ...children) {
     class: `gauge gauge-${def.style}`,
     id: `gauge-${def.key}`,
     role: meter ? 'meter' : null,
-    'aria-label': meter ? def.label : null,
+    'aria-label': meter ? pidLabel(def) : null,
     'aria-valuemin': meter ? def.min : null,
     'aria-valuemax': meter ? def.max : null,
     dataset: { zone: 'ok' },
@@ -338,41 +353,49 @@ function radialGauge(def) {
     h('div', { class: 'dial' },
       svg('svg', { viewBox: '0 0 120 120', 'aria-hidden': 'true' }, ring('dial-track', DIAL_ARC), ring('dial-fill', 0)),
       h('p', { class: 'gauge-value' }, gaugeNumber(), gaugeUnit(def)),
-      h('span', { class: 'dial-end dial-min' }, String(def.min)),
-      h('span', { class: 'dial-end dial-max' }, String(def.max))),
-    h('p', { class: 'gauge-label' }, def.label));
+      h('span', { class: 'dial-end dial-min' }, formatNumber(def.min, { useGrouping: false })),
+      h('span', { class: 'dial-end dial-max' }, formatNumber(def.max, { useGrouping: false }))),
+    h('p', { class: 'gauge-label' }, pidLabel(def)));
 }
 
 function verticalGauge(def) {
   return gaugeShell(def,
     h('p', { class: 'gauge-value' }, gaugeNumber(), gaugeUnit(def)),
     h('div', { class: 'vbar-track' }, def.bipolar && h('span', { class: 'bar-zero' }), h('div', { class: 'bar-fill' })),
-    h('p', { class: 'gauge-label' }, def.label));
+    h('p', { class: 'gauge-label' }, pidLabel(def)));
 }
 
 function horizontalGauge(def) {
   return gaugeShell(def,
     h('div', { class: 'hbar-head' },
-      h('p', { class: 'gauge-label' }, def.label),
+      h('p', { class: 'gauge-label' }, pidLabel(def)),
       h('p', { class: 'gauge-value' }, gaugeNumber(), gaugeUnit(def))),
     h('div', { class: 'hbar-track' }, h('div', { class: 'bar-fill' })));
 }
 
 function statusGauge(def) {
   return gaugeShell(def,
-    h('p', { class: 'gauge-label' }, def.label),
+    h('p', { class: 'gauge-label' }, pidLabel(def)),
     h('p', { class: 'gauge-value' }, h('span', { class: 'status-dot', 'aria-hidden': 'true' }), gaugeNumber()));
 }
 
 const GAUGE_BUILDERS = { radial: radialGauge, vbar: verticalGauge, hbar: horizontalGauge, status: statusGauge };
+let activeGaugeDefs = [];
+const activeGaugeValues = new Map();
 
 // Draws exactly these gauges (the picker's choice, or a replay's readings), grouped by style.
-export function renderGauges(defs) {
+export function renderGauges(defs, { preserveValues = false } = {}) {
+  if (!preserveValues) activeGaugeValues.clear();
+  activeGaugeDefs = [...defs];
+  const activeKeys = new Set(activeGaugeDefs.map((def) => def.key));
+  for (const key of activeGaugeValues.keys()) if (!activeKeys.has(key)) activeGaugeValues.delete(key);
+  const shownDefs = activeGaugeDefs.map((def) => displayDef(def));
   const group = (cls, style) => {
-    const gauges = defs.filter((def) => (style === 'hbar' ? def.style === 'hbar' || def.style === 'status' : def.style === style));
+    const gauges = shownDefs.filter((def) => (style === 'hbar' ? def.style === 'hbar' || def.style === 'status' : def.style === style));
     return gauges.length > 0 && h('div', { class: `cluster ${cls}` }, gauges.map((def) => GAUGE_BUILDERS[def.style](def)));
   };
   $('gauges').replaceChildren(...[group('cluster-radial', 'radial'), group('cluster-vbar', 'vbar'), group('cluster-hbar', 'hbar')].filter(Boolean));
+  for (const def of activeGaugeDefs) if (activeGaugeValues.has(def.key)) updateGauge(def, activeGaugeValues.get(def.key));
 }
 
 function zoneFor(def, value) {
@@ -390,6 +413,9 @@ function statusZone(text) {
 
 // value is a number, a string for status gauges, or null when the car didn't answer.
 export function updateGauge(def, value) {
+  activeGaugeValues.set(def.key, value);
+  const shownDef = displayDef(def);
+  const shownValue = displayValue(value, def.unit);
   const gauge = $(`gauge-${def.key}`);
   if (!gauge) return;
   const number = gauge.querySelector('.gauge-number');
@@ -400,16 +426,16 @@ export function updateGauge(def, value) {
     return;
   }
 
-  const hasValue = typeof value === 'number' && Number.isFinite(value);
-  const sign = def.bipolar && hasValue && value > 0 ? '+' : '';
+  const hasValue = typeof shownValue === 'number' && Number.isFinite(shownValue);
+  const sign = def.bipolar && hasValue && shownValue > 0 ? '+' : '';
   number.textContent = hasValue
-    ? sign + value.toLocaleString(undefined, { minimumFractionDigits: def.digits, maximumFractionDigits: def.digits })
+    ? sign + formatNumber(shownValue, { minimumFractionDigits: def.digits, maximumFractionDigits: def.digits })
     : '\u2014';
-  gauge.dataset.zone = hasValue ? zoneFor(def, value) : 'ok';
-  if (hasValue) gauge.setAttribute('aria-valuenow', value.toFixed(def.digits));
+  gauge.dataset.zone = hasValue ? zoneFor(shownDef, shownValue) : 'ok';
+  if (hasValue) gauge.setAttribute('aria-valuenow', shownValue.toFixed(def.digits));
   else gauge.removeAttribute('aria-valuenow');
 
-  const fraction = hasValue ? Math.min(1, Math.max(0, (value - def.min) / (def.max - def.min))) : 0;
+  const fraction = hasValue ? Math.min(1, Math.max(0, (shownValue - shownDef.min) / (shownDef.max - shownDef.min))) : 0;
   if (def.style === 'radial') {
     const fill = gauge.querySelector('.dial-fill');
     fill.style.strokeDasharray = `${DIAL_ARC * fraction} ${DIAL_CIRCUMFERENCE}`;
@@ -430,6 +456,7 @@ export function updateGauge(def, value) {
 }
 
 let liveCatalogRows = new Map();
+let liveCatalogEntries = [];
 
 function catalogKey(pid) {
   return pid == null ? 'ATRV' : pid.toString(16).toUpperCase().padStart(2, '0');
@@ -439,24 +466,25 @@ function catalogValue(entry) {
   const value = entry.lastSuccessfulReading;
   if (value == null) return '—';
   return typeof value === 'number'
-    ? `${value.toFixed(entry.digits ?? entry.decoder?.digits ?? 2)}${entry.unit ? ` ${entry.unit}` : ''}`
+    ? `${formatNumber(displayValue(value, entry.unit), { minimumFractionDigits: entry.digits ?? entry.decoder?.digits ?? 2, maximumFractionDigits: entry.digits ?? entry.decoder?.digits ?? 2, useGrouping: false })}${entry.unit ? ` ${displayUnit(entry.unit)}` : ''}`
     : String(value);
 }
 
 export function renderParameterCatalog(entries) {
+  liveCatalogEntries = [...entries];
   const table = h('table', { class: 'live-catalog-table' },
     h('thead', {}, h('tr', {},
-      h('th', { scope: 'col' }, 'Parameter'),
-      h('th', { scope: 'col' }, 'PID'),
-      h('th', { scope: 'col' }, 'Latest value'),
-      h('th', { scope: 'col' }, 'Status'),
-      h('th', { scope: 'col' }, 'Last successful reading'))),
+      h('th', { scope: 'col' }, t('app.ui.parameter')),
+      h('th', { scope: 'col' }, t('app.ui.pid')),
+      h('th', { scope: 'col' }, t('app.ui.latestValue')),
+      h('th', { scope: 'col' }, t('app.ui.status')),
+      h('th', { scope: 'col' }, t('app.ui.lastReading')))),
     h('tbody'));
   const body = table.querySelector('tbody');
   liveCatalogRows = new Map();
   const rows = [...entries, {
     pid: null,
-    name: 'Adapter voltage',
+    name: t('app.ui.adapterVoltage'),
     unit: 'V',
     digits: 1,
     ecuSources: [],
@@ -466,12 +494,14 @@ export function renderParameterCatalog(entries) {
   }];
   for (const entry of rows) {
     const key = catalogKey(entry.pid);
+    const status = h('td', { class: 'catalog-status' }, entry.availability);
+    if (entry.statusNote) status.append(' ', infoTip(entry.statusNote, t('app.ui.whyParameter', { name: parameterLabel(entry) ?? t('app.ui.thisParameter') })));
     const row = h('tr', {},
-      h('th', { scope: 'row' }, entry.name),
+      h('th', { scope: 'row' }, parameterLabel(entry)),
       h('td', { class: 'mono' }, entry.pid == null ? 'ATRV' : `0x${key}`),
       h('td', { class: 'catalog-value' }, catalogValue(entry)),
-      h('td', { class: 'catalog-status' }, entry.availability),
-      h('td', { class: 'catalog-time' }, 'Not read yet'));
+      status,
+      h('td', { class: 'catalog-time' }, entry.lastUpdatedAt ? formatDate(entry.lastUpdatedAt, { hour: 'numeric', minute: '2-digit', second: '2-digit' }) : t('app.ui.notReadYet')));
     body.append(row);
     liveCatalogRows.set(key, { row, entry });
   }
@@ -482,12 +512,14 @@ export function updateParameterCatalog(entry) {
   const row = liveCatalogRows.get(catalogKey(entry.pid));
   if (!row) return;
   row.entry = entry;
+  const existing = liveCatalogEntries.findIndex((item) => catalogKey(item.pid) === catalogKey(entry.pid));
+  if (existing >= 0) liveCatalogEntries[existing] = entry;
   row.row.querySelector('.catalog-value').textContent = catalogValue(entry);
   const status = row.row.querySelector('.catalog-status');
   status.textContent = entry.availability;
-  if (entry.statusNote) status.append(' ', infoTip(entry.statusNote, `Why: ${entry.name ?? 'this parameter'}`));
+  if (entry.statusNote) status.append(' ', infoTip(entry.statusNote, t('app.ui.whyParameter', { name: parameterLabel(entry) ?? t('app.ui.thisParameter') }))); 
   row.row.querySelector('.catalog-time').textContent = entry.lastUpdatedAt
-    ? new Date(entry.lastUpdatedAt).toLocaleTimeString() : 'Not read yet';
+    ? formatDate(entry.lastUpdatedAt, { hour: 'numeric', minute: '2-digit', second: '2-digit' }) : t('app.ui.notReadYet');
 }
 
 // ---------- Clear codes dialog ----------
@@ -514,6 +546,38 @@ export function confirmRawCapture(optIn) {
   });
 }
 
+// Asks before a VIN is sent to NHTSA. Resolves true only on "Look it up".
+export function confirmVinLookup() {
+  const dialog = $('vin-dialog');
+  dialog.returnValue = '';
+  dialog.showModal();
+  return new Promise((resolve) => {
+    dialog.addEventListener('close', () => resolve(dialog.returnValue === 'lookup'), { once: true });
+  });
+}
+
+// Shows the decoded car. Resolves { confirmed, remember }; closing or Escape counts as "no".
+export function confirmVehicleMatch(car) {
+  const dialog = $('vin-match-dialog');
+  $('vin-match-car').textContent = carLabel(car);
+  $('vin-remember').checked = false;
+  dialog.returnValue = '';
+  dialog.showModal();
+  return new Promise((resolve) => {
+    dialog.addEventListener('close', () => resolve({
+      confirmed: dialog.returnValue === 'yes',
+      remember: dialog.returnValue === 'yes' && $('vin-remember').checked,
+    }), { once: true });
+  });
+}
+
+export function showForgetCar(visible, onForget) {
+  const button = $('car-forget');
+  if (!button) return;
+  button.hidden = !visible;
+  button.onclick = onForget;
+}
+
 export function confirmClear() {
   const dialog = $('clear-dialog');
   const check = $('clear-ready');
@@ -530,27 +594,31 @@ export function confirmClear() {
 
 // ---------- Printable report ----------
 
-export function renderReport({ scannedAt, car, vin, status, services, entries, connection }) {
+export function renderReport(data) {
+  lastReport = data;
+  const { scannedAt, car, vin, status, services, entries, connection } = data;
   const vehicle = carLabel(car);
-  const codeCount = `${entries.length} code${entries.length === 1 ? '' : 's'} found`;
-  const serviceSummary = services.map((service) =>
-    `${service.label}: ${service.available ? `${service.codes.length} reported` : 'unavailable'}`).join(' · ');
+  const codeCount = t('app.report.codes', { count: entries.length }).replace(String(entries.length), formatNumber(entries.length));
+  const serviceSummary = services.map((service) => t('app.report.serviceSummary', {
+    label: service.label,
+    result: service.available ? t('app.report.reportedCount', { count: formatNumber(service.codes.length) }) : t('app.ui.unavailable'),
+  })).join(' · ');
 
   const parts = [
     h('header', { class: 'report-header' },
-      h('p', { class: 'report-logo' }, 'WOBD', h('small', {}, 'Web On-Board Diagnostics · Scan report')),
+      h('p', { class: 'report-logo' }, 'WOBD', h('small', {}, t('app.report.subtitle'))),
       h('p', { class: 'report-meta' },
-        `Scanned ${scannedAt.toLocaleString()}`,
-        h('br'), vehicle || 'Vehicle not entered',
-        vin && [h('br'), `VIN ${vin}`],
+        t('app.report.scannedAt', { date: formatDate(scannedAt, { dateStyle: 'medium', timeStyle: 'medium' }) }),
+        h('br'), vehicle || t('app.report.vehicleNotEntered'),
+        vin && [h('br'), t('app.report.vin', { vin })],
         connection && [h('br'), connection],
-        h('br'), `Generated by ${versionLine()}`)),
+        h('br'), t('app.report.generatedBy', { version: versionLine() }))),
     h('p', { class: 'report-status' },
-      h('strong', {}, 'Check engine light: '), status ? (status.milOn ? 'ON' : 'OFF') : 'Unknown',
+      h('strong', {}, t('app.report.engineLight')), ' ', status ? t(status.milOn ? 'app.report.on' : 'app.report.off') : t('app.report.unknown'),
       ` · ${codeCount}`,
-      serviceSummary && [h('br'), `DTC services: ${serviceSummary}`]),
+      serviceSummary && [h('br'), t('app.report.dtcServices', { services: serviceSummary })]),
     entries.length > 0 && h('table', {},
-      h('thead', {}, h('tr', {}, h('th', {}, 'Code'), h('th', {}, 'Title'), h('th', {}, 'Urgency'), h('th', {}, 'Status / ECU'), h('th', {}, 'What it means'))),
+      h('thead', {}, h('tr', {}, h('th', {}, t('app.report.code')), h('th', {}, t('app.report.title')), h('th', {}, t('app.report.urgency')), h('th', {}, t('app.report.statusEcu')), h('th', {}, t('app.report.meaning')))),
       h('tbody', {}, entries.map((e) => h('tr', {},
         h('td', { class: 'mono' }, e.code),
         h('td', {}, e.title),
@@ -559,18 +627,31 @@ export function renderReport({ scannedAt, car, vin, status, services, entries, c
         h('td', {}, e.plain))))),
     entries.map((e) => h('section', { class: 'report-code' },
       h('h3', {}, `${e.code} · ${e.title} (${e.dtcStatus})`),
-      h('p', {}, h('strong', {}, 'Urgency: '), `${(URGENCY[e.urgency] ?? URGENCY.unknown).label}. `,
+      h('p', {}, h('strong', {}, t('app.report.urgencyColon')), ` ${(URGENCY[e.urgency] ?? URGENCY.unknown).label}. `,
         (URGENCY[e.urgency] ?? URGENCY.unknown).says),
-      e.causes.length > 0 && [h('p', {}, h('strong', {}, 'Common causes:')), h('ul', {}, e.causes.map((c) => h('li', {}, c)))],
-      e.difficulty && h('p', {}, h('strong', {}, 'DIY or shop: '), DIFFICULTY[e.difficulty]),
-      h('p', {}, h('strong', {}, 'Tell your mechanic: '), `“${e.tellMechanic}”`))),
+      e.causes.length > 0 && [h('p', {}, h('strong', {}, t('app.report.commonCauses'))), h('ul', {}, e.causes.map((c) => h('li', {}, c)))],
+      e.difficulty && h('p', {}, h('strong', {}, t('app.report.diyOrShop')), ' ', DIFFICULTY[e.difficulty]),
+      h('p', {}, h('strong', {}, t('app.report.tellMechanic')), ` “${e.tellMechanic}”`))),
     entries.length === 0 && h('p', {}, services.some((service) => !service.available)
-      ? 'No codes were found in the available DTC services. This scan may be incomplete.'
-      : 'No stored, pending, or permanent trouble codes were found.'),
+      ? t('app.report.noCodesIncomplete')
+      : t('app.report.noCodes')),
     h('footer', { class: 'report-footer' },
-      h('p', {}, DISCLAIMER),
-      h('p', {}, "WOBD is in active testing and development, and its results aren't guaranteed yet."),
-      h('p', {}, 'Free car diagnostics at wobd.app')),
+      h('p', {}, t('footer.disclaimer')),
+      h('p', {}, t('app.report.testingNotice')),
+      h('p', {}, t('app.report.freeDiagnostics'))),
   ];
   $('report').replaceChildren(...parts.flat().filter(Boolean));
 }
+
+let lastReport = null;
+onLanguageChange(() => {
+  const connToggle = $('conn-info-toggle');
+  if (connToggle) connToggle.textContent = connToggle.getAttribute('aria-expanded') === 'true' ? t('app.conn.lessInfo') : t('app.conn.moreInfo');
+  if (activeGaugeDefs.length) renderGauges(activeGaugeDefs, { preserveValues: true });
+  if (liveCatalogEntries.length) renderParameterCatalog(liveCatalogEntries);
+  if (lastReport) renderReport(lastReport);
+});
+onUnitsChange(() => {
+  if (activeGaugeDefs.length) renderGauges(activeGaugeDefs, { preserveValues: true });
+  if (liveCatalogEntries.length) renderParameterCatalog(liveCatalogEntries);
+});

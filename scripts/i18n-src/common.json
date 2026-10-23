@@ -1,0 +1,17 @@
+{
+  "nav.main": "Main navigation",
+  "nav.scanner": "Scanner",
+  "nav.codes": "Code Search",
+  "nav.replay": "Replay",
+  "nav.demos": "Demos",
+  "nav.guide": "How to Use",
+  "nav.adapters": "Tested Adapters",
+  "nav.theme": "Dark mode",
+  "footer.disclaimer": "WOBD gives general information, not a professional diagnosis. Always confirm a problem before replacing parts.",
+  "footer.free": "WOBD is free. If it helped you out, you can <a href=\"https://buymeacoffee.com/jShumway00\">buy me a coffee ☕</a>",
+  "lang.label": "Language",
+  "lang.machine": "This translation was drafted by software and has not been checked by a native speaker yet. Safety advice in particular may be wrong, so check anything important in English.",
+  "units.label": "Units",
+  "units.imperial": "mph, °F",
+  "units.metric": "km/h, °C"
+}

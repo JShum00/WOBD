@@ -6,9 +6,9 @@ Update this checklist whenever an implementation stage is completed. Keep accept
 
 ## Current Status / Where to Resume
 
-- **Latest completed milestone:** v1.72 (report graphs generated from recordings by `scripts/make-report-graph.mjs`). Before that v1.71 patch (exports stamped with the WOBD version; report pages read it from the files). Before that v1.7 (F2 connection troubleshooting, F3 fuel level, dismissible banner). v1.6 added static code pages and SEO; v1.51 branding was `a07930b`.
-- **Current application label:** WOBD v1.72 (previously v1.71, v1.7, before that v1.51; v1.5 had been released from `2a77544`).
-- **Current focus:** v1.7 released: F2 connection troubleshooting and F3 fuel level are implemented. Work stopped there on purpose: the next items (F1, F4 annotations, F5, F6, F7, F8, F9) each have open decisions listed under "Blockers and Unresolved Decisions" and need your answers first.
+- **Latest completed milestone:** v1.8 (F1, F2 bus-error handling, F4–F6, F8 and F9: VIN lookup, detectors and notes, `.wobd`, session report, six languages and units). Before that v1.72 (report graphs generated from recordings by `scripts/make-report-graph.mjs`). Before that v1.71 patch (exports stamped with the WOBD version; report pages read it from the files). Before that v1.7 (F2 connection troubleshooting, F3 fuel level, dismissible banner). v1.6 added static code pages and SEO; v1.51 branding was `a07930b`.
+- **Current application label:** WOBD v1.8 (previously v1.72, v1.71, v1.7, before that v1.51; v1.5 had been released from `2a77544`).
+- **Current focus:** v1.8 is released. Remaining: F7 location (its own release) and F11 freeze-frame.
 - **Chromebook result:** User confirmed the native Chrome file picker, large CSV playback, offline Replay, navigation, simulator, and USB Web Serial tests passed on the named preview. No quantitative device performance or memory measurements were reported.
 - **Release note:** `README.md` contains a v1.5 changelog limited to implemented UX and Replay functionality.
 
@@ -31,11 +31,11 @@ Update this checklist whenever an implementation stage is completed. Keep accept
 ## F1 — VIN-Assisted Vehicle Identification
 
 - ✅ Existing startup `0902` VIN probe is present; this is a baseline capability, not the proposed vehicle-match flow.
-- ➖ Validate VIN payloads for legacy and CAN multi-frame responses; reject malformed or conflicting ECU VINs.
-- ➖ Offer a local or consented external decoder and an explicit vehicle-match confirmation.
-- ➖ Preserve manual year/make/model selection on `NO DATA`, malformed VIN, timeout, offline, or user decline.
-- ➖ Add optional local saved-vehicle identity with change/delete controls; keep VIN out of ordinary UI and reports.
-- ➖ Test success, correction, PT Cruiser `NO DATA`, malformed/short/multiframe data, network failure, consent decline, and privacy masking.
+- ✅ Validate VIN payloads for legacy and CAN multi-frame responses; reject malformed or conflicting ECU VINs (`js/vin.js`: 17 chars, no I/O/Q, check digit for North American VINs, per-ECU grouping).
+- ✅ Decision: NHTSA vPIC only, after a consent prompt every time; no offline decoder. Explicit "Is this your car?" confirmation (Yes / No, I'll pick it).
+- ✅ Manual year/make/model selection is preserved on `NO DATA`, malformed VIN, conflict, lookup failure, offline, or decline; the lookup runs after connect and never delays it. Skipped when the form is already filled and for demo cars.
+- ✅ Optional saved car stores year/make/model only (never the VIN) in `localStorage`, with a "Forget saved car" control. ✅ The DTC print report hides the VIN by default; an "Unhide VIN in the printed report" checkbox (unchecked each connection) opts in. ➖ Not yet browser-verified.
+- ✅ `scripts/test-vin.mjs` (14 cases) covers success, malformed/short/multi-ECU/conflict data, vPIC parsing, HTTP and network failure, and saved-car privacy; dialogs and restore/forget were exercised in a browser. ➖ Not tested end to end with a real adapter connecting to a car that reports a VIN (the Highlander is the candidate), and Escape-to-dismiss was not driven in the automation.
 
 ## F2 — Connection Troubleshooting and Protocol Guidance
 
@@ -43,16 +43,16 @@ Update this checklist whenever an implementation stage is completed. Keep accept
 - ✅ Explain adapter failure, ECU nonresponse, `NO DATA`, `CAN ERROR`, bus error, timeout, and parse failure distinctly in Bob's context-sensitive guidance (`js/troubleshoot.js`, `scripts/test-troubleshoot.mjs`, 9 cases).
 - ✅ On override failure, show the protocol by name and recommend automatic selection before external research.
 - ✅ Add an encoded, user-initiated vehicle/protocol search link; do not treat search snippets as authoritative.
-- ➖ Verify safe retry/reset and `ATSPx` / `ATDPN` behavior without unnecessary follow-up after definitive bus failure. (Partly done: the adapter's own reply, such as `CAN ERROR`, is now kept and written to the traffic log; `ATDP`/`ATDPN` are still only queried after `UNABLE TO CONNECT`. Needs a hardware or simulator trace.)
-- ➖ Test PT Cruiser automatic `ATSP0` / `A2` against deliberate `ATSP6` / `CAN ERROR` (message logic is unit-tested with canned errors; a real or recorded trace is still needed); keep the v1.1 Ranger failure labeled unverified for current versions.
+- ✅ Safe retry/reset and `ATSPx` / `ATDPN` behavior verified against the simulator: every connect starts with `ATZ`, the override sends the chosen `ATSPx`, `ATDPN` shows `A2` for automatic and the bare number for a forced protocol. A definitive `CAN ERROR` / `BUS ERROR` / `FB ERROR` on the first `0100` now stops connecting immediately (it was being swallowed, so the app carried on with extra requests and never showed the F2 message); `BUS BUSY` and `BUFFER FULL` still fall back. `ATDP`/`ATDPN` are still only queried after `UNABLE TO CONNECT`.
+- ✅ PT Cruiser case reproduced in the simulator (`test-simulator.mjs`): automatic `ATSP0` connects as `A2`; forced `ATSP6` gives `CAN ERROR` and Bob's message names the protocol and recommends automatic first. ➖ Still open: the simulator's forced-CAN `CAN ERROR` is modelled from the earlier PT Cruiser observation, not a captured trace; a real vLinker trace of the forced-`ATSP6` failure would close this. The v1.1 Ranger failure stays unverified for current versions.
 
 ## F3 — Fuel-Level PID and Related Parameters
 
 - ✅ Add Mode 01 PID `2F` only when advertised and response-validated; decode `100 × A / 255` (`LIVE_PIDS`; tests cover 0 / 255 / mid-scale, wrong lengths, and no data).
-- ➖ Preserve provenance, units, sample time, availability, and response errors; do not infer fuel from trims or the dash gauge.
-- ➖ If display smoothing is introduced, retain raw unsmoothed measurements and label the display behavior.
-- ➖ For unsupported vehicles, say unavailable through standard OBD-II; any manual fuel note must be labeled as user-entered.
-- ➖ Test 0 / 255 / mid-scale, unsupported and malformed responses, recording boundaries, raw/display values, and legacy CSV. (0 / 255 / mid-scale, malformed, unsupported, and not-offered cases are done in `test-supported-pids.mjs`; recording boundaries and legacy CSV are not.)
+- ✅ Provenance, units, sample time, and availability are kept: each CSV row carries the PID (`0x2F`), name, unit (`%`), timestamp, and raw bytes for undecodable replies; malformed or missing replies are skipped, never guessed. Fuel is not inferred from trims or the dash gauge.
+- ✅ Decision: no display smoothing. Gauges and recordings show the raw ECU value, so nothing needs labeling.
+- ✅ Decision: no manual fuel note. When the car doesn't offer `2F`, the gauge picker says "Fuel level: not available through standard OBD-II on this car."
+- ✅ Tests: 0 / 255 / mid-scale, unsupported, and malformed responses (`test-supported-pids.mjs`); recording first/last sample, dropouts, and legacy 6-column CSV with fuel (`test-replay.mjs`). ➖ Not verified on real hardware: whether the user's vehicles actually advertise `2F`.
 
 ## F4 — Replay Timeline and Review Workspace
 
@@ -69,26 +69,34 @@ Update this checklist whenever an implementation stage is completed. Keep accept
 
 ### Still planned
 
-- ➖ Show elapsed and local date/time for the selected sample; retain timestamp source, UTC/offset, and DST semantics.
-- ➖ Add a zoomable timeline, connection-gap markers, known/user-annotated engine-off intervals, and per-PID sample ages.
-- ➖ Add annotation-only Session Review; never rewrite source measurements.
-- ➖ Support post-drive event notes and keep automatic detections separate from user annotations.
-- ➖ Key annotations to unified session time; retain row order/source data and existing CSV compatibility.
-- ➖ Map absolute-timestamp legacy CSV to relative time plus an honest timestamp anchor; map relative-only CSV without inventing a wall clock; support order-only data.
-- ➖ Handle missing, malformed, duplicate, out-of-order, and backward-jump timestamps without silently changing source rows; flag quality issues.
-- ➖ Persist legacy annotations in a sidecar with a file fingerprint and safe mismatch behavior.
-- ➖ Preserve CSV timestamp/row compatibility and round-trip unannotated legacy exports.
-- ➖ Test time zones, DST, invalid timestamps, gaps, annotations, seek/zoom, and slow devices.
+- ✅ Elapsed and local date/time for the selected sample are shown beside the playback time (recorded instant converted to this device's zone, labeled with the zone name). Files with no usable timestamp show "Clock time not recorded" and no date is invented; zone-less timestamps are labeled "assumed local".
+- ✅ Timeline: zoom out / in buttons, "Whole drive" reset, a pan slider, and an overview bar showing the visible window, the playhead, and connection gaps. Zoom stays at least 10 s wide, and the window follows the playhead during playback. Graphs clip to the plot and keep raw readings untouched.
+- ✅ Connection gaps (no PID of any kind answered for `max(10 s, 5 × median interval)`) are shaded on every graph and listed in text, with a note that a gap doesn't say why. ➖ Known/user-annotated engine-off intervals wait for annotations.
+- ✅ Per-PID sample ages at the playhead ("How old is each reading?").
+- ✅ Timestamp data-quality flags (blank, malformed, duplicate, out-of-order, clock jump/drift) with counts and the first affected data row, shown in a "Recording quality" panel; no source row is changed or dropped. Elapsed-only files are noted.
+- ✅ Relative-only and absolute-timestamp legacy CSVs map correctly (`test-replay-time.mjs`, 13 cases, plus the existing replay suites).
+- ✅ Annotation-only notes on the Replay page (panel under the graphs): presets (engine hesitation, stop sign, intentional ignition off, refueling, road condition) plus a custom label, with an optional comment. Notes are keyed to session-relative time (`t_rel`) and to a content fingerprint (readings, duration, start, hash of every time/value), never to the file name, and the CSV is never modified. They show as amber ticks on every graph and the overview bar, click to jump, delete individually.
+- ✅ Notes save in browser storage; Export writes `<name>-notes.json`, Import validates the format, caps size/count/text, and asks before applying notes made for a different recording (`js/annotations.js`, `test-annotations.mjs`, 13 cases). Blocked or full storage is reported and notes stay in memory.
+- ✅ Automatic detections are kept out of notes by design (they arrive with F5 as a separate list).
+- ➖ Notes attach to a single moment, not a range. Known/user-annotated engine-off *intervals* would need ranges; `ignition-off` notes are the marker for now.
+- ➖ Browser-checked: add/validate/reload persistence, jump, delete, import, and the mismatch prompt. Not checked: the Export download itself (the integrated browser doesn't surface downloads; the JSON round-trip is unit-tested).
+- ➖ Order-only (no `elapsed_ms`) files: not supported today (the importer requires `elapsed_ms`).
+- ➖ Test DST transitions, seek/zoom on slow devices, and the native file chooser. Browser-checked only in the integrated browser: the PT Cruiser replay, zoom/pan/overview, and a synthetic gap file.
 
 ## F5 — Automatic Anomaly and Event Detection
 
-- ➖ Implement pure/testable detectors for candidate RPM, trim, temperature, voltage, fuel-control, sensor-dropout, and communication patterns.
-- ➖ Gate detections on fresh, quality-checked samples; account for polling skew, intervals, hysteresis, dwell, debounce, speed/load, and stale data.
-- ➖ Store evidence, exact time range, PID/ECU, thresholds, context, and detector version on each marker.
-- ➖ Keep automatic events distinct from annotations; allow false-positive dismissal/classification without deleting evidence.
-- ➖ Use cautious, authored explanations, not definitive component diagnoses.
-- ➖ Enforce the no-stall rule: a gap or missing RPM alone never means stall; suspected stall needs fresh valid RPM falling to zero with ignition context.
-- ➖ Test normal shifts, RPM changes, irregular intervals, ignition-on at zero speed, engine-off stop, stale/dropout data, open-loop deceleration, spikes, and gaps.
+Pass 1 covers four detectors, run on Replay only (no live alerts), with fixed conservative thresholds and no sensitivity selector. Code: `js/detectors.js`; tests: `scripts/test-detectors.mjs` (22) and `scripts/test-annotations.mjs`.
+
+- ✅ Detectors: RPM change at steady speed, open/closed-loop changes (plus fault and flapping), adapter communication loss, and suspected stall.
+- ➖ Trim, temperature, voltage, and sensor-dropout detectors are not built. Deliberately left out of pass 1.
+- ✅ Detections require fresh samples, dwell time, hysteresis-style merging, single-sample spike rejection, and speed/throttle context.
+- ✅ Each event stores evidence readings, exact time range, PID keys, thresholds, and detector version.
+- ✅ Automatic events live in a separate "Detected patterns" panel, not in notes.
+- ✅ Dismiss or classify (normal, known issue, real problem) without deleting evidence. Reviews are saved in the same browser entry and travel in the notes export/import file.
+- ✅ Authored, cautious explanations; routine events are hidden behind a checkbox.
+- ✅ No-stall rule: a gap alone is reported as communication loss, never a stall. Suspected stall needs fresh RPM dropping to zero while other gauges still answer.
+- ✅ Tests cover shifts, spikes, irregular intervals, stale data, gaps, engine-off stops, and hybrids.
+- ➖ Browser-verified in the integrated browser only on the Highlander recording (routine toggle, classification, persistence across reload; no console errors). The real PT Cruiser recording produced no events. RPM-swing, stall, and comm-loss events were only unit-tested, not seen on a real recording or on hardware.
 
 ## F6 — Flight Recorder, Resilience, and Export
 
@@ -96,22 +104,38 @@ Update this checklist whenever an implementation stage is completed. Keep accept
 
 - ✅ Existing in-memory live-data CSV capture/export and recording driving lock remain in place; recorder regression passes (21 cases in the latest run).
 
-### Planned storage and format work — not implemented
+### Part A — browser backup (IndexedDB), implemented, not released
 
-- ➖ Record separate session and segment IDs/sequences; persist `sample_seq`, UTC wall time, and per-segment monotonic time.
-- ➖ Preserve canonical ordering across reloads; report wall-clock adjustments/regressions without reordering or retiming samples.
-- ➖ Store quality states and explicit interruption/gap events; never fabricate measurements, zero-fill, interpolate, or infer engine stall from a gap.
-- ➖ Add IndexedDB chunked persistence, retention controls, local session listing, explicit delete/export, and best-effort crash recovery.
-- ➖ Recover open/interrupted sessions by validation; quarantine corrupt tails; offer recover/export/discard; never silently resume or delete.
-- ➖ Monitor estimated storage, persistent-storage availability, and projected duration; warn clearly when storage is unavailable or nearing quota.
-- ➖ Handle quota/transaction/database failures independently of warning thresholds; keep stored data, bound in-memory tail, report failure, and offer export.
-- ➖ Batch writes atomically; test crash mid-batch, torn tail, missing end record, sequence gaps, invalid schema, multiple open sessions, and quota failure with misleading estimates.
-- ➖ Implement approved versioned `.wobd` ZIP with chunked JSONL, bounded ZIP validation, checksums, security caps, and stated browser fallback.
-- ➖ Keep CSV import/export compatible.
-- ➖ Implement lossless CSV migration preserving original bytes by default, unknown PIDs, extra columns, raw values, original timestamps, row order, and residual/malformed rows.
-- ➖ Add visible migration report and explicit confirmation before omitting embedded source CSV.
-- ➖ Test 1 / 3 / 7-hour measured-rate, assumed-CAN, and enriched fixtures; report measured vs assumed size, memory, timing, compression, integrity, and recovery.
-- ➖ Verify production implementation independently; feasibility prototypes are not production code.
+Opt-in checkbox "Keep a backup copy in this browser while recording". Code: `js/flight-store.js` (storage logic), `js/backup.js` (page glue); tests: `scripts/test-flight-store.mjs` (17).
+
+- ✅ Chunked persistence: rows written in checksummed chunks (every 5 s or 250 rows), each committed in one transaction with the session record.
+- ✅ Retention: saved copies are removed after 30 days. Interrupted sessions are never deleted automatically.
+- ✅ Local session list on the home page with explicit Download CSV and Delete (confirmed).
+- ✅ Crash recovery: interrupted sessions are listed on the next visit with Download or Delete. Never auto-resumed. Recovered CSV is byte-identical to what the live recording would have saved.
+- ✅ Validation: a bad, missing, or out-of-order chunk ends the usable data; later chunks are left out and the problem is reported. Nothing is repaired, filled, or inferred.
+- ✅ Storage monitoring: `navigator.storage.estimate()` warns at 70% / 90% or low free space, projects hours left, shows persistent vs best-effort, and asks for persistence only after the user ticks the box.
+- ✅ Failures (quota, transaction, blocked IndexedDB) stop only the backup, keep stored data, say so, and leave the in-memory recording and normal CSV save untouched. The waiting buffer is bounded.
+- ✅ CSV import/export unchanged and compatible (recorder tests still pass).
+- ➖ Verified in the integrated browser with the simulated drive only: write, interrupted-session list after a reload, and delete. The Download CSV button was not observed (embedded browser hides downloads); its content is covered by a unit test.
+- ➖ Not tested: real quota exhaustion, private-mode blocking, `persist()` prompts, multi-hour sessions, multiple tabs recording at once, a real hardware drive.
+- ➖ Limitation: the live recording still lives in memory too, so very long sessions are not yet bounded in RAM.
+
+### Part B — `.wobd` export/import and lossless CSV migration, implemented, not released
+
+Spec: [WOBD-Format-Spec.md](./WOBD-Format-Spec.md). Code: `js/zip.js`, `js/wobd.js`, `js/csv-lossless.js`. Tests: `scripts/test-wobd.mjs` (34). Decisions: `.wobd` / `application/vnd.wobd.session+zip`; no per-row latency/quality; stored-entry fallback for Chrome/Edge 89–102; compression ratio is a warning only; original CSV embedded by default.
+
+- ✅ In-house ZIP reader/writer with bounded, hostile-input validation and caps; accepted by Python `zipfile`.
+- ✅ Chunked JSONL telemetry, manifest with CRC-32 and SHA-256, versioned (unknown major refused, unknown minor fields ignored).
+- ✅ Gaps, clock regressions, and inferred crashes are stored as events. Readings are never invented, and a gap is never called a stall. Rows are never reordered.
+- ✅ Lossless CSV migration: both real recordings round-trip to identical bytes with and without the embedded original. Fixtures cover unknown PIDs, extra columns, empty/non-numeric values, malformed/duplicate/out-of-order rows, `0.50`, `1e3`, `0500`, BOM, LF, no final newline, and invalid UTF-8.
+- ✅ The original is only left out when WOBD proves the CSV rebuilds exactly; leaving it out needs a confirmation.
+- ✅ Visible "What was kept" migration report.
+- ✅ UI: Replay opens `.wobd` files (notes inside are applied) and has "Save as .wobd"; saved/interrupted backups have "Download .wobd".
+- ✅ CSV import/export is unchanged.
+- ✅ Size: the Highlander archive is under a third of its CSV size (the PT Cruiser archive is 26 KB without the original, from a 251 KB CSV).
+- ➖ Browser-verified in the integrated browser: Save as .wobd on the PT Cruiser recording, the report, and writing then re-reading an archive in-page (byte-identical) and opening it in Replay. The file download and the native file chooser were then tested by the owner: a `.wobd` download and upload both work.
+- ➖ Not done or not tested: 1 / 3 / 7-hour size, memory, and timing fixtures; Safari and Chrome/Edge 89–102; quarantine of a single damaged entry (a damaged file is refused); per-segment monotonic time (not recorded by the recorder); streaming import above ~100 MiB; locations and raw replies in the archive. Part A's session/segment IDs are one session and one segment per file.
+- ➖ Independent verification of the production implementation has not been done; the same author wrote the code and tests.
 
 ## F7 — Geolocation and Route Visualization
 
@@ -127,22 +151,30 @@ Update this checklist whenever an implementation stage is completed. Keep accept
 
 ## F8 — Printable Diagnostic-Session Report
 
-- ✅ Existing DTC scan print report is present; this is not the proposed session report.
-- ➖ Generate a client-side, multi-page report with truthful vehicle/session metadata, duration/gaps, sample counts, and a non-diagnosis disclaimer.
-- ➖ Add meaningful numeric statistics and suppress misleading categorical/unsupported statistics.
-- ➖ Put overview graphs early; show timestamps, extrema, annotations, and visible gaps.
-- ➖ Include all automatic events by default with uncertainty and references; include user annotations by explicit selection.
-- ➖ Add evidence/context for each event and optional methodology, DTC/module, freeze-frame, or GPS appendix only when actually captured and authorized.
-- ➖ Test empty/no-event/many-event sessions, 3/7-hour sessions, missing data, localization/units, long tables, page breaks, privacy, and legacy CSV.
+- ✅ Existing DTC scan print report is present; this is separate from the session report.
+- ✅ Replay has "Print session report": a client-side, multi-page report (cover facts, length, readings count, gaps, protocol, recorded-with version, non-diagnosis disclaimer on the cover and in a repeating footer). Optional vehicle text is typed by the user; the VIN is never printed and recordings do not store one. No location is included.
+- ✅ Summary table with lowest/highest (and when), sample count and average for numeric gauges only; state gauges (e.g. fuel system) are listed as not summarized. Gauges that go quiet while others keep answering are named.
+- ✅ Overview graphs follow the summary: inline SVG per gauge, gap-aware (lines break, grey bands for all-gauge gaps), min/max markers, note markers, detected-pattern bands.
+- ✅ Every detected pattern is listed in an index (routine and dismissed included, with your review). First 40 get detail sections with evidence and a 30 s context chart; the report says when more exist.
+- ✅ Notes: each note has an "In report" checkbox (all ticked by default); left-out notes are counted.
+- ✅ Methodology section lists detector rules, gap rule and limits. No DTC, freeze-frame or GPS appendix yet (not captured in recordings).
+- ✅ `scripts/test-session-report.mjs` (14 tests, model/charts/real PT Cruiser). The new file is in `APP_SHELL`.
+- ➖ Browser-verified in the integrated browser only: the Highlander and PT Cruiser reports render (screenshotted with print.css applied), note selection works. Not verified: the real print dialog/PDF page breaks and repeating footer, Safari/Firefox print, 3/7-hour recordings, localization and unit display.
+- ➖ A DTC/module appendix, freeze frames and GPS route are deferred until those are captured.
 
 ## F9 — Language Selection and Offline Localization
 
-- ➖ Inventory user-facing strings and introduce stable translation keys/versioned bundles with English fallback.
-- ➖ Add reversible language selector; browser-language detection is only a suggestion.
-- ➖ Localize Bob messages, errors, Replay, reports, help, dates, numbers, and supported display units without altering raw values or identifiers.
-- ➖ Commit static translations; review automotive/safety language with qualified speakers; no paid runtime translation.
-- ➖ Test missing keys, placeholders, language switching, offline use, print/export, long strings, corrupted bundle fallback, and English fallback.
-- ➖ Review language-selection evidence before choosing the initial languages.
+- ✅ Chosen from Cloudflare visitor data (US, France, Singapore, China, Germany, Japan…): French, German, Spanish, Japanese, Simplified Chinese, plus English. Traditional Chinese, Hindi and others are not supported yet.
+- ✅ Stable keys and versioned bundles: 953 keys in `data/i18n/en.json` (built from `scripts/i18n-src/*.json` by `node scripts/build-i18n.mjs`), one bundle per language, English fallback for any missing key or a corrupt/missing bundle.
+- ✅ Top-bar language selector, choice saved in this browser, same URLs for every language. Browser language only triggers a one-time, dismissible suggestion (never an automatic switch). Switching does not reload, so a connection is not dropped.
+- ✅ Localized: top bar, footer, Scanner, Bob, Live data, gauge labels (`pid.*`), Replay, detectors, notes, session report, errors, simulator and report pages, dates and numbers, Bob's spoken voice (when the browser has one).
+- ✅ Bob's 66 hand-written code explanations are translated per language (`data/i18n/codes.<lang>.json`) and marked as translated. The generic code database (OBDex), static `/codes` pages, guide, tested adapters, changelog and contact stay English by design.
+- ✅ Separate display units setting (imperial default / metric: mph→km/h, °F→°C). Display only: CSV, `.wobd` and exports keep the recorded units.
+- ✅ Every non-English language is labelled "· AI" with a footer notice that it was machine translated and not yet reviewed by a native speaker.
+- ✅ Tests: `test-i18n.mjs` (engine, fallback, key/placeholder/tag/plural parity per language, page and script keys), `test-units.mjs`, `test-pid-labels.mjs`, plus metric cases in the Replay and session-report tests. New files are in `APP_SHELL`.
+- ➖ Native-speaker review of automotive and safety wording is still needed (all five languages). Until then the "AI" label stays.
+- ➖ Browser-verified in the integrated browser only: language switching on Scanner and Replay, selectors on a phone width. Not verified: every screen in every language for text overflow, the print dialog in other languages, voice output, Safari/Firefox.
+- ➖ A few strings still show English names of controls from other pages (for example "Start Recording" inside a Replay hint).
 
 ## F10 — Module-Aware Reporting and Vehicle Validation
 

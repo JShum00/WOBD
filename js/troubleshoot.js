@@ -2,6 +2,7 @@
 // Failures are told apart by where the conversation stopped, since "the adapter
 // is silent", "the car is silent", and "the bus is unhappy" need different fixes.
 import { PROTOCOLS } from './obd.js';
+import { t } from './i18n.js';
 
 export const CATEGORIES = ['adapter', 'adapter-timeout', 'car-silent', 'no-data', 'bus-error', 'unreadable', 'adapter-command', 'unknown'];
 
@@ -20,15 +21,15 @@ export function categorize(err) {
   return 'unknown';
 }
 
-const MESSAGES = {
-  adapter: "I can't find your adapter. Make sure it's plugged in all the way, then try again.",
-  'adapter-timeout': "Your adapter stopped answering partway through. Unplug it, plug it back in, and click Connect again.",
-  'car-silent': "Your adapter's working, but the car isn't answering. Make sure the key is in the On position, then try again.",
-  'no-data': "Your adapter's working, but the car had no answer for that request. It may not support it, or the ignition may be off.",
-  'bus-error': "Your adapter reported a communication error on the car's data line. This often means the wrong protocol or a loose connection.",
-  unreadable: "The car answered, but I couldn't make sense of the reply. Your adapter or car may be sending something unusual.",
-  'adapter-command': "Your adapter didn't understand a command. It may be an unusual clone. Unplug it, plug it back in, and try again.",
-  unknown: 'Something went wrong talking to your adapter. Try unplugging it and plugging it back in.',
+const MESSAGE_KEYS = {
+  adapter: 'app.trouble.adapter',
+  'adapter-timeout': 'app.trouble.adapterTimeout',
+  'car-silent': 'app.trouble.carSilent',
+  'no-data': 'app.trouble.noData',
+  'bus-error': 'app.trouble.busError',
+  unreadable: 'app.trouble.unreadable',
+  'adapter-command': 'app.trouble.adapterCommand',
+  unknown: 'app.trouble.unknown',
 };
 
 const CAR_CATEGORIES = new Set(['car-silent', 'no-data', 'bus-error']);
@@ -46,17 +47,17 @@ export function diagnoseConnection(err, { protocol = null, car = {} } = {}) {
   const category = categorize(err);
   const forced = protocol != null && protocol !== '' && protocol !== '0';
   const carFailed = CAR_CATEGORIES.has(category) || category === 'unreadable';
-  const parts = [MESSAGES[category]];
+  const parts = [t(MESSAGE_KEYS[category])];
 
   if (forced && carFailed) {
     const name = PROTOCOLS[String(protocol).toUpperCase()] ?? `protocol ${protocol}`;
-    parts.push(`You forced ${name}. Uncheck "Override automatic protocol selection" and let the adapter choose before trying anything else.`);
+    parts.push(t('app.trouble.forcedProtocol', { name }));
   }
 
   const hasCar = Boolean(car.year || car.make || car.model);
   const canSearch = hasCar && carFailed;
   if (canSearch) {
-    parts.push("Still stuck? I can open a search for your car's protocol. Treat what you find as a hint, not a verdict.");
+    parts.push(t('app.trouble.searchHint'));
   }
 
   return {

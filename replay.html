@@ -3,15 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Replay a Drive · WOBD</title>
-  <meta name="description" content="Replay a WOBD live data recording with gauges and graphs. Your file stays in your browser.">
+  <title data-i18n="replay.html.title">Replay a Drive · WOBD</title>
+  <meta name="description" content="Replay a WOBD live data recording with gauges and graphs. Your file stays in your browser." data-i18n-attr="content:replay.html.description">
   <link rel="icon" href="Assets/favicon.png" type="image/png">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="img/icons/apple-touch-icon.png">
   <link rel="canonical" href="https://wobd.app/replay">
   <meta name="theme-color" content="#1F3F8F">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/print.css" media="print">
   <script src="js/theme.js"></script>
+  <script type="module" src="js/i18n-boot.js"></script>
   <script type="module" src="js/replay.js"></script>
   <script src="js/pwa.js" defer></script>
   <script src="js/site-nav.js" defer></script>
@@ -21,15 +23,15 @@
   <header class="site-header">
     <a class="logo" href="./"><img class="logo-image" src="Assets/header-logo.png" alt="">WOBD</a>
     <div class="header-right">
-      <nav class="site-nav" aria-label="Main navigation">
-        <a class="header-link" href="./" data-nav="scanner">Scanner</a>
-        <a class="header-link" href="codes.html" data-nav="codes">Code Search</a>
-        <a class="header-link" href="replay.html" data-nav="replay">Replay</a>
-        <a class="header-link" href="./#demos" data-nav="demos">Demos</a>
-        <a class="header-link" href="guide.html" data-nav="guide">How to Use</a>
-        <a class="header-link" href="tested-adapters.html" data-nav="adapters">Tested Adapters</a>
+      <nav class="site-nav" aria-label="Main navigation" data-i18n-attr="aria-label:nav.main">
+        <a class="header-link" href="./" data-nav="scanner" data-i18n="nav.scanner">Scanner</a>
+        <a class="header-link" href="codes.html" data-nav="codes" data-i18n="nav.codes">Code Search</a>
+        <a class="header-link" href="replay.html" data-nav="replay" data-i18n="nav.replay">Replay</a>
+        <a class="header-link" href="./#demos" data-nav="demos" data-i18n="nav.demos">Demos</a>
+        <a class="header-link" href="guide.html" data-nav="guide" data-i18n="nav.guide">How to Use</a>
+        <a class="header-link" href="tested-adapters.html" data-nav="adapters" data-i18n="nav.adapters">Tested Adapters</a>
       </nav>
-      <button id="theme-btn" type="button" class="theme-btn" aria-pressed="false" aria-label="Dark mode">
+      <button id="theme-btn" type="button" class="theme-btn" aria-pressed="false" aria-label="Dark mode" data-i18n-attr="aria-label:nav.theme">
         <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="currentColor"/></svg>
         <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></g></svg>
       </button>
@@ -37,20 +39,20 @@
   </header>
 
   <main class="guide replay">
-    <h1>Replay a Drive</h1>
-    <p class="lede">Watch a WOBD live data recording play back on the same gauges, with graphs that build up as it goes.</p>
+    <h1 data-i18n="replay.html.heading">Replay a Drive</h1>
+    <p class="lede" data-i18n="replay.html.lede">Watch a WOBD live data recording play back on the same gauges, with graphs that build up as it goes.</p>
 
     <section id="replay-load" class="replay-load" aria-labelledby="replay-load-title">
-      <h2 id="replay-load-title" class="sr-only">Choose a recording</h2>
+      <h2 id="replay-load-title" class="sr-only" data-i18n="replay.html.chooseRecording">Choose a recording</h2>
       <div class="replay-load-actions">
         <label class="btn btn-primary replay-file">
-          Choose a CSV file
-          <input id="replay-file" type="file" accept=".csv,text/csv">
+          <span data-i18n="replay.html.chooseRecording">Choose a recording</span>
+          <input id="replay-file" type="file" accept=".csv,.wobd,text/csv">
         </label>
-        <button id="replay-sample" type="button" class="btn">Try the PT Cruiser drive</button>
+        <button id="replay-sample" type="button" class="btn" data-i18n="replay.html.trySample">Try the PT Cruiser drive</button>
       </div>
-      <p class="replay-load-note">Or drop a CSV anywhere on this page. Your file is read right here in your browser. Nothing is uploaded.</p>
-      <p class="replay-load-note">Make one with <strong>Start Recording</strong> on WOBD's <a href="./">Live data</a> tab.</p>
+      <p class="replay-load-note" data-i18n="replay.html.dropFile">Or drop a CSV or .wobd file anywhere on this page. Your file is read right here in your browser. Nothing is uploaded.</p>
+      <p class="replay-load-note" data-i18n-rich="replay.html.makeRecording">Make one with <strong>Start Recording</strong> on WOBD's <a href="./">Live data</a> tab.</p>
       <p id="replay-message" class="adapter-message" role="status" aria-live="polite" hidden></p>
     </section>
 
@@ -58,15 +60,16 @@
       <p id="replay-summary" class="replay-summary"></p>
       <p id="replay-unknown" class="replay-load-note" hidden></p>
 
-      <div class="replay-controls" role="group" aria-label="Playback">
-        <button id="replay-play" type="button" class="btn btn-primary replay-play" aria-label="Play">
+      <div class="replay-controls" role="group" aria-label="Playback" data-i18n-attr="aria-label:replay.html.playback">
+        <button id="replay-play" type="button" class="btn btn-primary replay-play" aria-label="Play" data-i18n-attr="aria-label:replay.play.play">
           <svg class="icon-play" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
           <svg class="icon-pause" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor"/></svg>
         </button>
-        <input id="replay-scrub" class="replay-scrub" type="range" min="0" max="0" step="100" value="0" aria-label="Position in the recording">
+        <input id="replay-scrub" class="replay-scrub" type="range" min="0" max="0" step="100" value="0" aria-label="Position in the recording" data-i18n-attr="aria-label:replay.html.position">
         <span id="replay-time" class="replay-time">0:00 / 0:00</span>
+        <span id="replay-clock" class="replay-clock"></span>
         <label class="replay-speed">
-          <span class="sr-only">Playback speed</span>
+          <span class="sr-only" data-i18n="replay.html.playbackSpeed">Playback speed</span>
           <select id="replay-speed">
             <option value="1">1×</option>
             <option value="2">2×</option>
@@ -77,23 +80,98 @@
         </label>
       </div>
 
+      <section class="replay-timeline" aria-label="Timeline" data-i18n-attr="aria-label:replay.html.timeline">
+        <div class="replay-timeline-bar" role="group" aria-label="Zoom" data-i18n-attr="aria-label:replay.html.zoom">
+          <button id="zoom-out" type="button" class="btn" aria-label="Zoom out" data-i18n-attr="aria-label:replay.html.zoomOut">−</button>
+          <button id="zoom-in" type="button" class="btn" aria-label="Zoom in" data-i18n-attr="aria-label:replay.html.zoomIn">+</button>
+          <button id="zoom-reset" type="button" class="btn" data-i18n="replay.html.wholeDrive">Whole drive</button>
+          <span id="replay-window-label" class="replay-window-label"></span>
+        </div>
+        <div id="replay-overview" class="replay-overview" aria-hidden="true"></div>
+        <label class="replay-pan"><span class="sr-only" data-i18n="replay.html.moveRange">Move the visible range</span>
+          <input id="replay-pan" type="range" min="0" max="0" step="100" value="0" disabled>
+        </label>
+        <p id="replay-gaps" class="replay-load-note" hidden></p>
+      </section>
+
+      <details id="replay-quality" class="replay-details">
+        <summary id="replay-quality-summary" data-i18n="replay.html.recordingQuality">Recording quality</summary>
+        <ul id="replay-quality-list"></ul>
+      </details>
+      <details class="replay-details">
+        <summary><span data-i18n="replay.html.readingAge">How old is each reading?</span> <span class="replay-hint" data-i18n="replay.html.atPlayhead">(at the playhead)</span></summary>
+        <table class="replay-ages"><thead><tr><th data-i18n="replay.html.reading">Reading</th><th data-i18n="replay.html.lastSample">Last sample</th><th data-i18n="replay.html.age">Age</th></tr></thead><tbody id="replay-ages"></tbody></table>
+      </details>
+
       <div class="replay-body">
-        <section class="replay-gauges" aria-label="Gauges at this point in the drive">
+        <section class="replay-gauges" aria-label="Gauges at this point in the drive" data-i18n-attr="aria-label:replay.html.gauges">
           <div id="gauges" class="gauges"></div>
         </section>
         <section class="replay-charts" aria-labelledby="replay-charts-title">
-          <h2 id="replay-charts-title" class="replay-charts-title">Graphs <span>· hover to read a value, click to jump there</span></h2>
+          <h2 id="replay-charts-title" class="replay-charts-title"><span data-i18n="replay.html.graphs">Graphs</span> <span data-i18n="replay.html.graphHint">· hover to read a value, click to jump there</span></h2>
           <div id="replay-strips" class="replay-strips"></div>
           <p id="replay-chart-summary" class="sr-only"></p>
         </section>
       </div>
+      <section class="replay-convert" aria-labelledby="replay-convert-title">
+        <h2 id="replay-convert-title" class="replay-charts-title"><span data-i18n="replay.html.saveWobd">Save as .wobd</span> <span data-i18n="replay.html.compactNotes">· one compact file with your notes</span></h2>
+        <p class="replay-load-note" data-i18n="replay.html.wobdDescription">A .wobd file is a smaller, checked copy of this recording that can carry your notes. Your CSV is never changed or deleted.</p>
+        <label class="event-toggle"><input id="wobd-source" type="checkbox" checked> <span data-i18n="replay.html.includeCsv">Include the original CSV file inside (recommended)</span></label>
+        <div class="event-actions"><button id="wobd-save" type="button" class="btn" data-i18n="replay.html.saveWobd">Save as .wobd</button></div>
+        <p id="wobd-message" class="replay-load-note" hidden></p>
+        <details id="wobd-report" hidden><summary data-i18n="replay.html.whatKept">What was kept</summary><ul id="wobd-report-list"></ul></details>
+      </section>
+
+      <section class="replay-events" aria-labelledby="replay-events-title">
+        <h2 id="replay-events-title" class="replay-charts-title"><span data-i18n="replay.html.detectedPatterns">Detected patterns</span> <span data-i18n="replay.html.patternsSubtitle">· found automatically, separate from your notes</span></h2>
+        <p class="replay-load-note" data-i18n="replay.html.patternDescription">These are patterns worth a look, not diagnoses. WOBD checks the recording against fixed, conservative rules and can be wrong. Dismissing one hides it here but keeps the data.</p>
+        <label class="event-toggle"><input id="event-routine" type="checkbox"> <span data-i18n="replay.html.showRoutine">Also show routine events (normal open/closed loop changes)</span></label>
+        <ul id="event-list" class="event-list"></ul>
+        <p id="event-empty" class="replay-load-note" hidden></p>
+      </section>
+
+      <section class="replay-notes" aria-labelledby="replay-notes-title">
+        <h2 id="replay-notes-title" class="replay-charts-title"><span data-i18n="replay.html.notes">Notes</span> <span data-i18n="replay.html.notesSubtitle">· your own marks on this drive. The recording itself is never changed.</span></h2>
+        <form id="note-form" class="note-form">
+          <label><span data-i18n="replay.html.whatHappened">What happened</span>
+            <select id="note-type"></select>
+          </label>
+          <label id="note-label-wrap" hidden><span data-i18n="replay.html.label">Label</span>
+            <input id="note-label" type="text" maxlength="60">
+          </label>
+          <label class="note-comment"><span data-i18n="replay.html.commentOptional">Comment (optional)</span>
+            <input id="note-comment" type="text" maxlength="500">
+          </label>
+          <button type="submit" class="btn btn-primary"><span data-i18n="replay.html.addNoteAt">Add note at</span> <span id="note-at">0:00</span></button>
+        </form>
+        <p id="note-message" class="replay-load-note" role="status" aria-live="polite" hidden></p>
+        <ul id="note-list" class="note-list"></ul>
+        <p id="note-empty" class="replay-load-note" data-i18n="replay.html.noNotesYet">No notes yet. Pause where something happened, then add one.</p>
+        <p id="note-storage" class="replay-load-note"></p>
+        <div class="note-actions">
+          <button id="note-export" type="button" class="btn" data-i18n="replay.html.exportNotes">Export notes</button>
+          <label class="btn note-import"><span data-i18n="replay.html.importNotes">Import notes</span><input id="note-import" type="file" accept=".json,application/json"></label>
+        </div>
+      </section>
+      <section class="replay-session-report" aria-labelledby="replay-sr-title">
+        <h2 id="replay-sr-title" class="replay-charts-title"><span data-i18n="replay.html.sessionReport">Session report</span> <span data-i18n="replay.html.printPdf">· print or save as PDF</span></h2>
+        <p class="replay-load-note" data-i18n="replay.html.reportDescription">A multi-page report of this drive: summary numbers, graphs, every detected pattern, and the notes you tick under Notes. It never includes the VIN or any location. Nothing is uploaded.</p>
+        <label class="sr-vehicle"><span data-i18n="replay.html.vehicleOptional">Vehicle (optional, printed as you type it)</span>
+          <input id="sr-vehicle" type="text" maxlength="80" placeholder="e.g. 2010 Toyota Highlander" data-i18n-attr="placeholder:replay.html.vehiclePlaceholder">
+        </label>
+        <div class="event-actions"><button id="sr-print" type="button" class="btn btn-primary" data-i18n="replay.html.printReport">Print session report</button></div>
+        <p id="sr-message" class="replay-load-note" role="status" aria-live="polite" hidden></p>
+      </section>
+
       <div id="replay-tooltip" class="replay-tooltip" hidden></div>
     </div>
   </main>
 
+  <section id="session-report" class="report session-report" aria-hidden="true"></section>
+
   <footer class="site-footer">
-    <p>WOBD gives general information, not a professional diagnosis. Always confirm a problem before replacing parts.</p>
-    <p>WOBD is free. If it helped you out, you can <a href="https://buymeacoffee.com/jShumway00" target="_blank" rel="noopener noreferrer">buy me a coffee ☕</a></p>
+    <p data-i18n="footer.disclaimer">WOBD gives general information, not a professional diagnosis. Always confirm a problem before replacing parts.</p>
+    <p data-i18n-rich="footer.free">WOBD is free. If it helped you out, you can <a href="https://buymeacoffee.com/jShumway00" target="_blank" rel="noopener noreferrer">buy me a coffee ☕</a></p>
   </footer>
 </body>
 </html>

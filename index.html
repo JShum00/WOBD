@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>WOBD · Free car diagnostics in your browser</title>
+  <title data-i18n="app.html.pageTitle">WOBD · Free car diagnostics in your browser</title>
   <meta name="description" content="Plug a USB OBD-II adapter into your laptop or Chromebook and read your car's trouble codes in plain English. Free, nothing to install.">
   <link rel="canonical" href="https://wobd.app/">
   <link rel="icon" href="Assets/favicon.png" type="image/png">
@@ -13,103 +13,105 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/print.css" media="print">
   <script src="js/theme.js"></script>
+  <script type="module" src="js/i18n-boot.js"></script>
   <script type="module" src="js/app.js"></script>
   <script src="js/pwa.js" defer></script>
   <script src="js/site-nav.js" defer></script>
   <script src="js/version.js" defer></script>
   <script src="js/banner.js" defer></script>
-  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","name":"WOBD","url":"https://wobd.app/","description":"Free in-browser OBD-II scanner that reads your car's trouble codes and live data in plain English using a USB ELM327-compatible adapter.","applicationCategory":"UtilitiesApplication","operatingSystem":"Any (Chrome, Edge, or Opera on a laptop or Chromebook)","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is WOBD?","acceptedAnswer":{"@type":"Answer","text":"WOBD is a free OBD-II scanner that runs in your browser. It reads your car's trouble codes and live data and explains them in plain English."}},{"@type":"Question","name":"What do I need to use WOBD?","acceptedAnswer":{"@type":"Answer","text":"A car with OBD-II (US model year 1996 or newer), a USB ELM327-compatible adapter, and a laptop or Chromebook running Chrome, Edge, or Opera."}},{"@type":"Question","name":"Does WOBD work on a phone?","acceptedAnswer":{"@type":"Answer","text":"No. WOBD uses Web Serial, which phones and tablets don't support. Use a laptop or Chromebook."}},{"@type":"Question","name":"Is my data private?","acceptedAnswer":{"@type":"Answer","text":"Yes. Scan data stays in your browser. Only a search you choose to open leaves the site."}},{"@type":"Question","name":"Can I look up a code without an adapter?","acceptedAnswer":{"@type":"Answer","text":"Yes. Code Search explains trouble codes offline, with no adapter or car needed."}}]}]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","name":"WOBD","url":"https://wobd.app/","description":"Free in-browser OBD-II scanner that reads your car's trouble codes and live data in plain English using a USB ELM327-compatible adapter.","applicationCategory":"UtilitiesApplication","operatingSystem":"Any (Chrome, Edge, or Opera on a laptop or Chromebook)","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is WOBD?","acceptedAnswer":{"@type":"Answer","text":"WOBD is a free OBD-II scanner that runs in your browser. It reads your car's trouble codes and live data and explains them in plain English."}},{"@type":"Question","name":"What do I need to use WOBD?","acceptedAnswer":{"@type":"Answer","text":"A car with OBD-II (US model year 1996 or newer), a USB ELM327-compatible adapter, and a laptop or Chromebook running Chrome, Edge, or Opera."}},{"@type":"Question","name":"Does WOBD work on a phone?","acceptedAnswer":{"@type":"Answer","text":"No. WOBD uses Web Serial, which phones and tablets don't support. Use a laptop or Chromebook."}},{"@type":"Question","name":"Is my data private?","acceptedAnswer":{"@type":"Answer","text":"Yes. Scan data stays in your browser. Only a search you choose to open, or a VIN lookup you agree to, leaves the site."}},{"@type":"Question","name":"Can I look up a code without an adapter?","acceptedAnswer":{"@type":"Answer","text":"Yes. Code Search explains trouble codes offline, with no adapter or car needed."}}]}]}</script>
 </head>
 <body>
   <header class="site-header">
     <a class="logo" href="./"><img class="logo-image" src="Assets/header-logo.png" alt="">WOBD</a>
 
-    <form id="car-form" class="car-form" aria-label="Your car" onsubmit="return false">
+    <form id="car-form" class="car-form" aria-label="Your car" data-i18n-attr="aria-label:app.html.yourCar" onsubmit="return false">
       <div id="car-fields" class="car-form">
-        <label class="sr-only" for="car-year">Year</label>
-        <select id="car-year"><option value="">Year</option></select>
-        <label class="sr-only" for="car-make">Make</label>
-        <select id="car-make"><option value="">Make</option></select>
-        <label class="sr-only" for="car-make-other">Make (other)</label>
-        <input id="car-make-other" type="text" placeholder="Make" autocomplete="off" hidden>
-        <label class="sr-only" for="car-model">Model</label>
-        <select id="car-model" disabled><option value="">Model</option></select>
-        <label class="sr-only" for="car-model-other">Model (other)</label>
-        <input id="car-model-other" type="text" placeholder="Model" autocomplete="off" hidden>
-        <button id="car-skip" type="button" class="link-button">Skip</button>
+        <label class="sr-only" for="car-year" data-i18n="app.html.year">Year</label>
+        <select id="car-year"><option value="" data-i18n="app.html.year">Year</option></select>
+        <label class="sr-only" for="car-make" data-i18n="app.html.make">Make</label>
+        <select id="car-make"><option value="" data-i18n="app.html.make">Make</option></select>
+        <label class="sr-only" for="car-make-other" data-i18n="app.html.makeOther">Make (other)</label>
+        <input id="car-make-other" type="text" placeholder="Make" data-i18n-attr="placeholder:app.html.make" autocomplete="off" hidden>
+        <label class="sr-only" for="car-model" data-i18n="app.html.model">Model</label>
+        <select id="car-model" disabled><option value="" data-i18n="app.html.model">Model</option></select>
+        <label class="sr-only" for="car-model-other" data-i18n="app.html.modelOther">Model (other)</label>
+        <input id="car-model-other" type="text" placeholder="Model" data-i18n-attr="placeholder:app.html.model" autocomplete="off" hidden>
+        <button id="car-forget" type="button" class="link-button" hidden data-i18n="app.html.forgetCar">Forget saved car</button>
+        <button id="car-skip" type="button" class="link-button" data-i18n="app.html.skip">Skip</button>
       </div>
-      <button id="car-add" type="button" class="link-button" hidden>Add your car</button>
+      <button id="car-add" type="button" class="link-button" hidden data-i18n="app.html.addCar">Add your car</button>
     </form>
 
     <div class="header-right">
-      <span id="demo-badge" class="demo-badge" hidden>Demo</span>
-      <nav class="site-nav" aria-label="Main navigation">
-        <a class="header-link" href="./" data-nav="scanner">Scanner</a>
-        <a class="header-link" href="codes.html" data-nav="codes">Code Search</a>
-        <a class="header-link" href="replay.html" data-nav="replay">Replay</a>
-        <a class="header-link" href="./#demos" data-nav="demos">Demos</a>
-        <a class="header-link" href="guide.html" data-nav="guide">How to Use</a>
-        <a class="header-link" href="tested-adapters.html" data-nav="adapters">Tested Adapters</a>
+      <span id="demo-badge" class="demo-badge" hidden data-i18n="app.html.demo">Demo</span>
+      <nav class="site-nav" aria-label="Main navigation" data-i18n-attr="aria-label:nav.main">
+        <a class="header-link" href="./" data-nav="scanner" data-i18n="nav.scanner">Scanner</a>
+        <a class="header-link" href="codes.html" data-nav="codes" data-i18n="nav.codes">Code Search</a>
+        <a class="header-link" href="replay.html" data-nav="replay" data-i18n="nav.replay">Replay</a>
+        <a class="header-link" href="./#demos" data-nav="demos" data-i18n="nav.demos">Demos</a>
+        <a class="header-link" href="guide.html" data-nav="guide" data-i18n="nav.guide">How to Use</a>
+        <a class="header-link" href="tested-adapters.html" data-nav="adapters" data-i18n="nav.adapters">Tested Adapters</a>
       </nav>
-      <button id="theme-btn" type="button" class="theme-btn" aria-pressed="false" aria-label="Dark mode">
+      <button id="theme-btn" type="button" class="theme-btn" aria-pressed="false" aria-label="Dark mode" data-i18n-attr="aria-label:nav.theme">
         <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="currentColor"/></svg>
         <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></g></svg>
       </button>
-      <button id="connect-btn" type="button" class="btn btn-light">Connect</button>
+      <button id="connect-btn" type="button" class="btn btn-light" data-i18n="app.html.connect">Connect</button>
     </div>
   </header>
 
   <div id="dev-banner" class="dev-banner" role="note">
-    <p>
+    <p data-i18n-rich="app.html.devBanner">
       <strong>Hey there, we're rolling out an update!</strong>
       If you find an issue, please <a href="contact.html">let us know through our contact form</a>.
       WOBD is in active testing and development, so results aren't guaranteed yet.
     </p>
-    <button id="dev-banner-close" type="button" class="dev-banner-close" aria-label="Dismiss this message">✕</button>
+    <button id="dev-banner-close" type="button" class="dev-banner-close" aria-label="Dismiss this message" data-i18n-attr="aria-label:app.html.dismissMessage">✕</button>
   </div>
 
   <div id="browser-alert" class="browser-alert" role="alert" hidden>
-    <p><strong id="browser-alert-title">This browser can't connect to a car adapter.</strong>
+    <p><strong id="browser-alert-title" data-i18n="app.browser.defaultReason">This browser can't connect to a car adapter.</strong>
       <span id="browser-alert-text"></span></p>
   </div>
 
   <main id="app" class="layout">
-    <section class="panel" aria-label="Diagnostics">
-      <h1 class="scanner-title">Scanner</h1>
+    <section class="panel" aria-label="Diagnostics" data-i18n-attr="aria-label:app.html.diagnostics">
+      <h1 class="scanner-title" data-i18n="app.html.scanner">Scanner</h1>
       <div class="tabs" role="tablist">
-        <button id="tab-scan" class="tab" role="tab" data-tab="scan" aria-selected="true" aria-controls="panel-scan">Scan results</button>
-        <button id="tab-live" class="tab" role="tab" data-tab="live" aria-selected="false" aria-controls="panel-live" tabindex="-1">Live data</button>
+        <button id="tab-scan" class="tab" role="tab" data-tab="scan" aria-selected="true" aria-controls="panel-scan" data-i18n="app.html.scanResults">Scan results</button>
+        <button id="tab-live" class="tab" role="tab" data-tab="live" aria-selected="false" aria-controls="panel-live" tabindex="-1" data-i18n="app.html.liveData">Live data</button>
       </div>
 
       <div id="panel-scan" class="tab-panel" role="tabpanel" aria-labelledby="tab-scan">
         <div class="toolbar">
-          <p id="conn-status" class="status" role="status">Not connected</p>
-          <button id="scan-btn" type="button" class="btn btn-primary" disabled>Scan</button>
+          <p id="conn-status" class="status" role="status" data-i18n="app.conn.notConnected">Not connected</p>
+          <button id="scan-btn" type="button" class="btn btn-primary" disabled data-i18n="app.html.scan">Scan</button>
         </div>
         <fieldset id="protocol-options" class="protocol-options">
-          <legend>Connection options</legend>
-          <label><input id="protocol-override" type="checkbox"> Override automatic protocol selection</label>
-          <label for="protocol-select">Protocol</label>
+          <legend data-i18n="app.html.connectionOptions">Connection options</legend>
+          <label><input id="protocol-override" type="checkbox"> <span data-i18n="app.html.overrideProtocol">Override automatic protocol selection</span></label>
+          <label for="protocol-select" data-i18n="app.html.protocol">Protocol</label>
           <select id="protocol-select" disabled aria-describedby="protocol-help">
-            <option value="">Choose a protocol</option>
+            <option value="" data-i18n="app.html.chooseProtocol">Choose a protocol</option>
           </select>
-          <span id="protocol-help" class="hint">Leave unchecked to let the adapter detect the protocol.</span>
+          <span id="protocol-help" class="hint" data-i18n="app.html.protocolHelp">Leave unchecked to let the adapter detect the protocol.</span>
         </fieldset>
         <p id="scan-summary" class="scan-summary" hidden></p>
 
-        <div id="module-tabs" class="module-tabs" role="tablist" aria-label="Modules that responded" hidden></div>
+        <div id="module-tabs" class="module-tabs" role="tablist" aria-label="Modules that responded" data-i18n-attr="aria-label:app.html.modulesResponded" hidden></div>
         <p id="module-detail" class="scan-summary" hidden></p>
 
         <table id="codes-table" class="codes-table" hidden>
           <thead>
-            <tr><th scope="col">Code</th><th scope="col">Description</th><th scope="col" class="col-urgency">Urgency</th><th scope="col">Status / ECU</th></tr>
+            <tr><th scope="col" data-i18n="app.html.code">Code</th><th scope="col" data-i18n="app.html.description">Description</th><th scope="col" class="col-urgency" data-i18n="app.html.urgency">Urgency</th><th scope="col" data-i18n="app.html.statusEcu">Status / ECU</th></tr>
           </thead>
           <tbody id="codes-body"></tbody>
         </table>
-        <p id="codes-hint" class="hint" hidden>Click a code link to open Bob.</p>
-        <p id="codes-empty" class="empty" hidden>Click Scan to read your car's trouble codes.</p>
+        <p id="codes-hint" class="hint" hidden data-i18n="app.html.codeHint">Click a code link to open Bob.</p>
+        <p id="codes-empty" class="empty" hidden data-i18n="app.html.codesEmpty">Click Scan to read your car's trouble codes.</p>
 
-        <section id="welcome" class="welcome" aria-label="Getting started">
+        <section id="welcome" class="welcome" aria-label="Getting started" data-i18n-attr="aria-label:app.html.gettingStarted">
           <div class="welcome-art" aria-hidden="true">
             <svg viewBox="0 0 160 90">
               <!-- OBD-II plug, cable, USB plug -->
@@ -125,91 +127,100 @@
           </div>
           <div>
             <div id="welcome-real">
-              <h2>You need a USB OBD-II adapter to use WOBD</h2>
-              <p>Plug a <strong>USB ELM327-compatible OBD-II cable</strong> into the port under your dashboard and into this computer, then click Connect. They're sold at auto parts stores and online. <a href="guide.html#adapter">What to buy</a></p>
-              <p>Or view one of the demos below, with a pretend car:</p>
+              <h2 data-i18n="app.html.welcomeRealTitle">You need a USB OBD-II adapter to use WOBD</h2>
+              <p data-i18n-rich="app.html.welcomeRealText">Plug a <strong>USB ELM327-compatible OBD-II cable</strong> into the port under your dashboard and into this computer, then click Connect. They're sold at auto parts stores and online. <a href="guide.html#adapter">What to buy</a></p>
+              <p data-i18n="app.html.welcomeDemoPrompt">Or view one of the demos below, with a pretend car:</p>
             </div>
             <div id="welcome-demo" hidden>
-              <h2>You're viewing a demo</h2>
-              <p>A pretend car is hooked up. Click <strong>Connect</strong> to start, or switch demos. <a href="./">Exit demo</a></p>
+              <h2 data-i18n="app.html.welcomeDemoTitle">You're viewing a demo</h2>
+              <p data-i18n-rich="app.html.welcomeDemoText">A pretend car is hooked up. Click <strong>Connect</strong> to start, or switch demos. <a href="./">Exit demo</a></p>
             </div>
           </div>
         </section>
 
-        <nav class="quick-links" aria-label="Explore WOBD">
-          <a class="quick-link" href="replay.html">Replay a recording</a>
-          <a class="quick-link" href="./#demos">Explore demos</a>
-          <a class="quick-link" href="codes.html">Look up a code</a>
+        <section id="saved-recordings" class="saved-recordings" aria-labelledby="saved-title" hidden>
+          <h2 id="saved-title" data-i18n="app.html.savedTitle">Recordings saved in this browser</h2>
+          <p id="saved-note" class="saved-note"></p>
+          <ul id="saved-list" class="saved-list"></ul>
+        </section>
+
+        <nav class="quick-links" aria-label="Explore WOBD" data-i18n-attr="aria-label:app.html.explore">
+          <a class="quick-link" href="replay.html" data-i18n="app.html.replayRecording">Replay a recording</a>
+          <a class="quick-link" href="./#demos" data-i18n="app.html.exploreDemos">Explore demos</a>
+          <a class="quick-link" href="codes.html" data-i18n="app.html.lookupCode">Look up a code</a>
         </nav>
 
         <section id="demos" class="demos" aria-labelledby="demos-title">
-          <h2 id="demos-title">Try a demo</h2>
-          <p class="demos-lede">Explore WOBD with a pretend car. No adapter needed.</p>
+          <h2 id="demos-title" data-i18n="app.html.tryDemo">Try a demo</h2>
+          <p class="demos-lede" data-i18n="app.html.demosIntro">Explore WOBD with a pretend car. No adapter needed.</p>
           <ul class="demo-list">
-            <li><a href="?demo" data-demo="can"><span class="demo-title">Newer car with trouble codes</span><span class="demo-category">Trouble Codes · CAN</span><small>A misfire, a lean code, and an EVAP leak</small></a></li>
-            <li><a href="?demo=pending" data-demo="pending"><span class="demo-title">Pending and permanent codes</span><span class="demo-category">Trouble Codes</span><small>See how DTC status changes what a scan reports</small></a></li>
-            <li><a href="?demo=twomodules" data-demo="twomodules"><span class="demo-title">Two modules</span><span class="demo-category">Modules</span><small>See results split into tabs for each module</small></a></li>
-            <li><a href="?demo=iso" data-demo="iso"><span class="demo-title">Older car, like a 2001 PT Cruiser</span><span class="demo-category">Protocols · J1850 VPW</span><small>Includes a brand-specific code example</small></a></li>
-            <li><a href="?demo=clear" data-demo="clear"><span class="demo-title">Healthy car</span><span class="demo-category">Getting Started</span><small>See a scan with no reported trouble codes</small></a></li>
-            <li><a href="simulator.html"><span class="demo-title">Any year, make, and model</span><span class="demo-category">Simulator</span><small>Choose a vehicle and explore its simulated protocol</small></a></li>
-            <li><a href="?demo=drive" data-demo="drive"><span class="demo-title">A short drive</span><span class="demo-category">Live Data</span><small>Try a simulated idle, drive, stop, and recording</small></a></li>
+            <li><a href="?demo" data-demo="can"><span class="demo-title" data-i18n="app.demo.newerTitle">Newer car with trouble codes</span><span class="demo-category" data-i18n="app.demo.category.troubleCan">Trouble Codes · CAN</span><small data-i18n="app.demo.newerDescription">A misfire, a lean code, and an EVAP leak</small></a></li>
+            <li><a href="?demo=pending" data-demo="pending"><span class="demo-title" data-i18n="app.demo.pendingTitle">Pending and permanent codes</span><span class="demo-category" data-i18n="app.demo.category.trouble">Trouble Codes</span><small data-i18n="app.demo.pendingDescription">See how DTC status changes what a scan reports</small></a></li>
+            <li><a href="?demo=twomodules" data-demo="twomodules"><span class="demo-title" data-i18n="app.demo.modulesTitle">Two modules</span><span class="demo-category" data-i18n="app.demo.category.modules">Modules</span><small data-i18n="app.demo.modulesDescription">See results split into tabs for each module</small></a></li>
+            <li><a href="?demo=iso" data-demo="iso"><span class="demo-title" data-i18n="app.demo.olderTitle">Older car, like a 2001 PT Cruiser</span><span class="demo-category" data-i18n="app.demo.category.protocols">Protocols · J1850 VPW</span><small data-i18n="app.demo.olderDescription">Includes a brand-specific code example</small></a></li>
+            <li><a href="?demo=clear" data-demo="clear"><span class="demo-title" data-i18n="app.demo.healthyTitle">Healthy car</span><span class="demo-category" data-i18n="app.demo.category.gettingStarted">Getting Started</span><small data-i18n="app.demo.healthyDescription">See a scan with no reported trouble codes</small></a></li>
+            <li><a href="simulator.html"><span class="demo-title" data-i18n="app.demo.simulatorTitle">Any year, make, and model</span><span class="demo-category" data-i18n="app.demo.category.simulator">Simulator</span><small data-i18n="app.demo.simulatorDescription">Choose a vehicle and explore its simulated protocol</small></a></li>
+            <li><a href="?demo=drive" data-demo="drive"><span class="demo-title" data-i18n="app.demo.driveTitle">A short drive</span><span class="demo-category" data-i18n="app.demo.category.liveData">Live Data</span><small data-i18n="app.demo.driveDescription">Try a simulated idle, drive, stop, and recording</small></a></li>
           </ul>
         </section>
 
         <div class="actions">
-          <button id="print-btn" type="button" class="btn" disabled>Print report</button>
-          <button id="clear-btn" type="button" class="btn" disabled>Clear codes</button>
+          <button id="print-btn" type="button" class="btn" disabled data-i18n="app.html.printReport">Print report</button>
+          <label id="print-vin-wrap" class="print-vin" hidden><input id="print-vin" type="checkbox"> <span data-i18n="app.html.unhideVin">Unhide VIN in the printed report</span></label>
+          <button id="clear-btn" type="button" class="btn" disabled data-i18n="app.html.clearCodes">Clear codes</button>
         </div>
 
-        <section id="conn-info" class="conn-info" aria-label="Adapter connection" hidden>
+        <section id="conn-info" class="conn-info" aria-label="Adapter connection" data-i18n-attr="aria-label:app.conn.adapterConnection" hidden>
           <dl id="conn-info-basic" class="info-list"></dl>
           <p id="conn-info-note" class="info-note" hidden></p>
-          <button id="conn-info-toggle" type="button" class="link-button" aria-expanded="false" aria-controls="conn-info-more">More info</button>
+          <button id="conn-info-toggle" type="button" class="link-button" aria-expanded="false" aria-controls="conn-info-more" data-i18n="app.conn.moreInfo">More info</button>
           <div id="conn-info-more" hidden>
-            <h3>Adapter</h3>
+            <h3 data-i18n="app.conn.adapter">Adapter</h3>
             <dl id="conn-info-adapter" class="info-list"></dl>
-            <h3>Advanced</h3>
+            <h3 data-i18n="app.conn.advanced">Advanced</h3>
             <dl id="conn-info-advanced" class="info-list"></dl>
           </div>
         </section>
 
         <details id="traffic" class="traffic" hidden>
-          <summary>Adapter traffic</summary>
-          <p class="traffic-note">Every command WOBD sends (→) and everything the adapter says back (←), for finding where a connection stops answering. Copying adds the WOBD version, browser, and baud rate.</p>
+          <summary data-i18n="app.html.traffic">Adapter traffic</summary>
+          <p class="traffic-note" data-i18n="app.html.trafficNote">Every command WOBD sends (→) and everything the adapter says back (←), for finding where a connection stops answering. Copying adds the WOBD version, browser, and baud rate.</p>
           <div class="traffic-actions">
-            <button id="traffic-copy" type="button" class="btn">Copy</button>
-            <button id="traffic-clear" type="button" class="btn">Clear</button>
-            <label><input id="traffic-mask" type="checkbox" checked> Hide the VIN when copying</label>
+            <button id="traffic-copy" type="button" class="btn" data-i18n="app.html.copy">Copy</button>
+            <button id="traffic-clear" type="button" class="btn" data-i18n="app.html.clear">Clear</button>
+            <label><input id="traffic-mask" type="checkbox" checked> <span data-i18n="app.html.hideVin">Hide the VIN when copying</span></label>
           </div>
-          <pre id="traffic-log" class="traffic-log" tabindex="0" aria-label="Adapter traffic"></pre>
+          <pre id="traffic-log" class="traffic-log" tabindex="0" aria-label="Adapter traffic" data-i18n-attr="aria-label:app.html.traffic"></pre>
         </details>
       </div>
 
       <div id="panel-live" class="tab-panel" role="tabpanel" aria-labelledby="tab-live" hidden>
-        <p class="safety-note"><strong>Parked or passenger only.</strong> Don't watch live data while you're driving.</p>
-        <section id="gauge-picker" class="gauge-picker" aria-label="Pick your gauges" hidden></section>
+        <p class="safety-note"><strong data-i18n="app.html.parkedOnly">Parked or passenger only.</strong> <span data-i18n="app.html.drivingWarning">Don't watch live data while you're driving.</span></p>
+        <section id="gauge-picker" class="gauge-picker" aria-label="Pick your gauges" data-i18n-attr="aria-label:app.picker.title" hidden></section>
         <div id="live-dashboard">
           <div class="record-bar">
-            <button id="record-btn" type="button" class="btn btn-danger" disabled><span aria-hidden="true">●</span> Start Recording</button>
-            <button id="gauges-btn" type="button" class="btn" disabled>Change gauges</button>
-            <label id="record-raw-label" class="record-raw" hidden><input id="record-raw" type="checkbox"> Record undecoded parameters (raw) <span id="record-raw-hint" class="record-raw-hint" hidden>· locked while recording; applies to the next recording</span></label>
-            <p class="record-hint">Logs these readings to a CSV you can graph later. The screen locks until you stop. Saved a drive? <a href="replay.html">Replay it</a>.</p>
+            <button id="record-btn" type="button" class="btn btn-danger" disabled><span aria-hidden="true">●</span> <span data-i18n="app.html.startRecording">Start Recording</span></button>
+            <button id="gauges-btn" type="button" class="btn" disabled data-i18n="app.html.changeGauges">Change gauges</button>
+            <label id="record-raw-label" class="record-raw" hidden><input id="record-raw" type="checkbox"> <span data-i18n="app.html.recordRaw">Record undecoded parameters (raw)</span> <span id="record-raw-hint" class="record-raw-hint" hidden data-i18n="app.html.rawLocked">· locked while recording; applies to the next recording</span></label>
+            <label class="record-raw"><input id="record-backup" type="checkbox"> <span data-i18n="app.html.keepBackup">Keep a backup copy in this browser while recording</span> <span class="record-raw-hint" data-i18n="app.html.backupHint">· lets you recover the drive if the tab closes or the computer restarts</span></label>
+            <p id="backup-status" class="backup-status" role="status" hidden></p>
+            <p class="record-hint" data-i18n-rich="app.html.recordHintRich">Logs these readings to a CSV you can graph later. The screen locks until you stop. Saved a drive? <a href="replay.html">Replay it</a>.</p>
           </div>
           <div id="gauges" class="gauges"></div>
           <details class="live-catalog">
-            <summary>Parameter values and status</summary>
+            <summary data-i18n="app.html.parameterValues">Parameter values and status</summary>
             <div id="live-catalog-table"></div>
           </details>
         </div>
       </div>
     </section>
 
-    <aside class="bob-panel" aria-label="Bob the mechanic">
+    <aside class="bob-panel" aria-label="Bob the mechanic" data-i18n-attr="aria-label:app.html.bobLabel">
       <div id="bob-slot" class="bubble-slot"></div>
       <div class="bob-figure"><img src="img/bob.png" alt="Bob the mechanic"></div>
       <div class="bob-name-row">
         <p class="bob-name">Bob</p>
-        <button id="voice-btn" type="button" class="voice-btn" aria-pressed="false" title="Have Bob read his speech bubble aloud" hidden>
+        <button id="voice-btn" type="button" class="voice-btn" aria-pressed="false" title="Have Bob read his speech bubble aloud" data-i18n-attr="title:app.html.voiceTitle" hidden>
           <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
             <path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/>
             <g class="voice-on" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
@@ -219,7 +230,7 @@
               <path d="M16 9l5 6M21 9l-5 6"/>
             </g>
           </svg>
-          <span>Voice</span>
+          <span data-i18n="app.html.voice">Voice</span>
         </button>
       </div>
       <div id="bob-live" class="sr-only" aria-live="polite"></div>
@@ -227,58 +238,85 @@
   </main>
 
   <section class="guide home-info" aria-labelledby="about-wobd">
-    <h2 id="about-wobd">Free OBD-II scanner in your browser</h2>
-    <p>WOBD reads your car's check engine light codes and live data through a USB OBD-II adapter and explains them in plain English: how urgent each code is, what usually causes it, and what to tell your mechanic. There's nothing to install and it's free. Not sure what a code means? Try <a href="codes">Code Search</a> or the <a href="guide">how-to guide</a>.</p>
-    <h3>Frequently asked questions</h3>
-    <details><summary>What do I need to use WOBD?</summary><p>A car with OBD-II (US model year 1996 or newer), a USB ELM327-compatible adapter, and a laptop or Chromebook running Chrome, Edge, or Opera.</p></details>
-    <details><summary>Does WOBD work on a phone?</summary><p>No. WOBD uses Web Serial, which phones and tablets don't support. Use a laptop or Chromebook.</p></details>
-    <details><summary>Is my data private?</summary><p>Yes. Scan data stays in your browser. Only a search you choose to open leaves the site.</p></details>
-    <details><summary>Can I look up a code without an adapter?</summary><p>Yes. <a href="codes">Code Search</a> explains trouble codes offline, with no adapter or car needed.</p></details>
-    <details><summary>What is WOBD?</summary><p>WOBD is a free OBD-II scanner that runs in your browser. It gives general information, not a professional diagnosis, so always confirm a problem before replacing parts.</p></details>
+    <h2 id="about-wobd" data-i18n="app.about.title">Free OBD-II scanner in your browser</h2>
+    <p data-i18n-rich="app.about.intro">WOBD reads your car's check engine light codes and live data through a USB OBD-II adapter and explains them in plain English: how urgent each code is, what usually causes it, and what to tell your mechanic. There's nothing to install and it's free. Not sure what a code means? Try <a href="codes">Code Search</a> or the <a href="guide">how-to guide</a>.</p>
+    <h3 data-i18n="app.about.faqTitle">Frequently asked questions</h3>
+    <details><summary data-i18n="app.about.needsTitle">What do I need to use WOBD?</summary><p data-i18n="app.about.needsAnswer">A car with OBD-II (US model year 1996 or newer), a USB ELM327-compatible adapter, and a laptop or Chromebook running Chrome, Edge, or Opera.</p></details>
+    <details><summary data-i18n="app.about.phoneTitle">Does WOBD work on a phone?</summary><p data-i18n="app.about.phoneAnswer">No. WOBD uses Web Serial, which phones and tablets don't support. Use a laptop or Chromebook.</p></details>
+    <details><summary data-i18n="app.about.privacyTitle">Is my data private?</summary><p data-i18n="app.about.privacyAnswer">Yes. Scan data stays in your browser. Only a search you choose to open, or a VIN lookup you agree to, leaves the site.</p></details>
+    <details><summary data-i18n="app.about.offlineTitle">Can I look up a code without an adapter?</summary><p data-i18n-rich="app.about.offlineAnswer">Yes. <a href="codes">Code Search</a> explains trouble codes offline, with no adapter or car needed.</p></details>
+    <details><summary data-i18n="app.about.whatTitle">What is WOBD?</summary><p data-i18n="app.about.whatAnswer">WOBD is a free OBD-II scanner that runs in your browser. It gives general information, not a professional diagnosis, so always confirm a problem before replacing parts.</p></details>
   </section>
 
   <footer class="site-footer">
-    <p>WOBD gives general information, not a professional diagnosis. Always confirm a problem before replacing parts.</p>
-    <p>Free and open source. Your scan data never leaves this computer.</p>
-    <p>If WOBD helped you out, you can <a href="https://buymeacoffee.com/jShumway00" target="_blank" rel="noopener noreferrer">buy me a coffee ☕</a></p>
+    <p data-i18n="footer.disclaimer">WOBD gives general information, not a professional diagnosis. Always confirm a problem before replacing parts.</p>
+    <p data-i18n="app.about.footerPrivacy">Free and open source. Your scan data never leaves this computer.</p>
+    <p><span data-i18n="app.about.coffeeLead">If WOBD helped you out, you can</span> <a href="https://buymeacoffee.com/jShumway00" target="_blank" rel="noopener noreferrer" data-i18n="app.about.coffeeLink">buy me a coffee ☕</a></p>
   </footer>
 
   <section id="report" class="report" aria-hidden="true"></section>
 
   <dialog id="clear-dialog" aria-labelledby="clear-title">
     <form method="dialog">
-      <h2 id="clear-title">Clear trouble codes?</h2>
+      <h2 id="clear-title" data-i18n="app.html.clearDialogTitle">Clear trouble codes?</h2>
       <div class="dialog-bob">
         <div class="bob-figure"><img src="img/bob.png" alt=""></div>
         <div>
-          <p>This turns off the check engine light, but it also resets your car's emissions readiness monitors.</p>
-          <p><strong>If you're going for an emissions inspection soon, don't clear.</strong> The car has to drive for a while before it's ready again, and it can fail until then.</p>
+          <p data-i18n="app.html.clearWarning">This turns off the check engine light, but it also resets your car's emissions readiness monitors.</p>
+          <p><strong data-i18n="app.html.emissionsWarning">If you're going for an emissions inspection soon, don't clear.</strong> <span data-i18n="app.html.emissionsExplain">The car has to drive for a while before it's ready again, and it can fail until then.</span></p>
         </div>
       </div>
       <label class="check-row">
         <input id="clear-ready" type="checkbox">
-        <span>The ignition is on and the engine is off.</span>
+        <span data-i18n="app.html.ignitionConfirm">The ignition is on and the engine is off.</span>
       </label>
       <div class="dialog-actions">
-        <button type="submit" value="cancel" class="btn">Cancel</button>
-        <button id="clear-confirm" type="submit" value="clear" class="btn btn-danger" disabled>Clear codes</button>
+        <button type="submit" value="cancel" class="btn" data-i18n="app.ui.cancel">Cancel</button>
+        <button id="clear-confirm" type="submit" value="clear" class="btn btn-danger" disabled data-i18n="app.html.clearCodes">Clear codes</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="vin-dialog" aria-labelledby="vin-title">
+    <form method="dialog">
+      <h2 id="vin-title" data-i18n="app.html.vinDialogTitle">Look up your car from its VIN?</h2>
+      <p data-i18n="app.html.vinLookupExplain">Your car reported its VIN. WOBD can send it to NHTSA's free public VIN decoder (vpic.nhtsa.dot.gov) to fill in your year, make, and model.</p>
+      <p data-i18n="app.html.vinPrivacy">The VIN leaves your device for this lookup. WOBD doesn't save it. If you'd rather not, pick your car from the lists instead.</p>
+      <div class="dialog-actions">
+        <button type="submit" value="cancel" class="btn" data-i18n="app.html.notNow">Not now</button>
+        <button type="submit" value="lookup" class="btn btn-primary" data-i18n="app.html.lookup">Look it up</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="vin-match-dialog" aria-labelledby="vin-match-title">
+    <form method="dialog">
+      <h2 id="vin-match-title" data-i18n="app.html.vinMatchTitle">Is this your car?</h2>
+      <p id="vin-match-car" class="vin-match-car"></p>
+      <label class="check-row">
+        <input id="vin-remember" type="checkbox">
+        <span data-i18n="app.html.rememberCar">Remember this car in this browser (year, make, and model only; not the VIN)</span>
+      </label>
+      <div class="dialog-actions">
+        <button type="submit" value="change" class="btn" data-i18n="app.html.pickCar">No, I'll pick it</button>
+        <button type="submit" value="yes" class="btn btn-primary" data-i18n="app.html.confirmCar">Yes, that's my car</button>
       </div>
     </form>
   </dialog>
 
   <dialog id="raw-dialog" aria-labelledby="raw-title">
     <form method="dialog">
-      <h2 id="raw-title">Record undecoded parameters</h2>
-      <p>WOBD can save raw responses from parameters it cannot currently interpret.</p>
-      <p>Some parameters may have known names, while others may be unidentified. Their values and units cannot be reliably displayed until an appropriate decoder is available.</p>
-      <p>Recording additional parameters may slightly reduce live-data refresh rates.</p>
+      <h2 id="raw-title" data-i18n="app.html.rawDialogTitle">Record undecoded parameters</h2>
+      <p data-i18n="app.html.rawExplain">WOBD can save raw responses from parameters it cannot currently interpret.</p>
+      <p data-i18n="app.html.rawDetails">Some parameters may have known names, while others may be unidentified. Their values and units cannot be reliably displayed until an appropriate decoder is available.</p>
+      <p data-i18n="app.html.rawRefreshWarning">Recording additional parameters may slightly reduce live-data refresh rates.</p>
       <label class="check-row">
         <input id="raw-ack" type="checkbox">
-        <span>I understand that these raw readings may not be immediately usable.</span>
+        <span data-i18n="app.html.rawAcknowledge">I understand that these raw readings may not be immediately usable.</span>
       </label>
       <div class="dialog-actions">
-        <button type="submit" value="cancel" class="btn">Cancel</button>
-        <button id="raw-confirm" type="submit" value="enable" class="btn btn-primary" disabled>Enable recording</button>
+        <button type="submit" value="cancel" class="btn" data-i18n="app.ui.cancel">Cancel</button>
+        <button id="raw-confirm" type="submit" value="enable" class="btn btn-primary" disabled data-i18n="app.html.enableRecording">Enable recording</button>
       </div>
     </form>
   </dialog>
@@ -287,16 +325,16 @@
     <div class="record-lock-inner">
       <div class="record-bob"><img src="img/bob.png" alt=""></div>
       <div class="record-copy">
-        <h2 id="record-title">EYES ON THE ROAD.</h2>
-        <p id="record-text" class="record-text">Recording in progress. Pull over and stop to unlock.</p>
+        <h2 id="record-title" data-i18n="app.lock.eyesOnRoad">EYES ON THE ROAD.</h2>
+        <p id="record-text" class="record-text" data-i18n="app.lock.recordingLocked">Recording in progress. Pull over and stop to unlock.</p>
         <p class="record-status"><span class="record-dot" aria-hidden="true">●</span> REC <span id="record-elapsed">0:00</span></p>
         <div id="record-unlock" class="record-unlock" hidden>
-          <button id="record-unlock-btn" type="button" class="btn btn-light">Unlock</button>
-          <p id="record-note" class="record-note" hidden>Driving detection isn't available on this car, so I can't tell when you've stopped. Only unlock once you're parked.</p>
+          <button id="record-unlock-btn" type="button" class="btn btn-light" data-i18n="app.lock.unlock">Unlock</button>
+          <p id="record-note" class="record-note" hidden data-i18n="app.lock.detectionUnavailable">Driving detection isn't available on this car, so I can't tell when you've stopped. Only unlock once you're parked.</p>
         </div>
         <div id="record-choose" class="record-choose" hidden>
-          <button id="record-save" type="button" class="btn btn-danger">Stop &amp; Save CSV</button>
-          <button id="record-keep" type="button" class="btn btn-light">Keep Recording</button>
+          <button id="record-save" type="button" class="btn btn-danger" data-i18n-rich="app.lock.stopSaveHtml">Stop &amp; Save CSV</button>
+          <button id="record-keep" type="button" class="btn btn-light" data-i18n="app.lock.keepRecording">Keep Recording</button>
         </div>
       </div>
     </div>

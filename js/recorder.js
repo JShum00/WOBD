@@ -2,7 +2,7 @@
 // decides when the driving lock may offer to unlock. No DOM here, and every
 // method takes the time as `now` (ms), so scripts/test-recorder.mjs can replay
 // a drive without a car or a browser.
-import { versionComment } from './version-info.js';
+import { wobdVersion } from './version-info.js';
 import { pidLabel } from './obd.js';
 
 export const DRIVING_SPEED_MPH = 5;        // faster than this counts as driving
@@ -35,28 +35,42 @@ export class Recording {
   // kept with its raw bytes (hex) and an empty value, so it can be decoded later. ecu is the
   // responding ECU's id when the adapter reported one.
   add(def, value, now, raw = null, ecu = null) {
-    if (isValid(value) || raw) this.rows.push({ at: now, def, value: isValid(value) ? value : null, raw, ecu });
+    if (!isValid(value) && !raw) return null;
+    const row = { at: now, def, value: isValid(value) ? value : null, raw, ecu };
+    this.rows.push(row);
+    return row;
+  }
+
+  // [at, pid, name, value, unit, raw, mode, ecu]: the plain, JSON-safe form of a row,
+  // used by the browser backup (js/flight-store.js) and to rebuild the same CSV later.
+  static store(row) {
+    const { at, def, value, raw, ecu } = row;
+    return [
+      at,
+      pidLabel(def),
+      def.label ?? 'Unnamed parameter',
+      value === null ? '' : typeof value === 'number' ? value.toFixed(def.digits ?? 2) : value,
+      def.unit ?? '',
+      raw ?? '',
+      def.pid === undefined ? '' : '01',
+      ecu ?? '',
+    ];
+  }
+
+  // Same text for a live Recording and for rows read back from the backup.
+  static csvFromStored({ startedAt, protocol, baud, version }, stored) {
+    const lines = [['timestamp', 'elapsed_ms', 'pid', 'name', 'value', 'unit', 'protocol', 'baud', 'raw', 'mode', 'ecu']];
+    for (const [at, pid, name, value, unit, raw, mode, ecu] of stored) {
+      lines.push([new Date(at).toISOString(), at - startedAt, pid, name, value, unit, protocol, baud, raw, mode, ecu]);
+    }
+    return `${version ? `# WOBD v${version}\r\n` : ''}${lines.map((line) => line.map(csvField).join(',')).join('\r\n')}\r\n`;
   }
 
   toCsv() {
-    const lines = [['timestamp', 'elapsed_ms', 'pid', 'name', 'value', 'unit', 'protocol', 'baud', 'raw', 'mode', 'ecu']];
-    for (const { at, def, value, raw, ecu } of this.rows) {
-      lines.push([
-        new Date(at).toISOString(),
-        at - this.startedAt,
-        pidLabel(def),
-        def.label ?? 'Unnamed parameter',
-        value === null ? '' : typeof value === 'number' ? value.toFixed(def.digits ?? 2) : value,
-        def.unit ?? '',
-        this.protocol,
-        this.baud,
-        raw ?? '',
-        def.pid === undefined ? '' : '01',
-        ecu ?? '',
-      ]);
-    }
-    const stamp = versionComment();
-    return `${stamp ? `${stamp}\r\n` : ''}${lines.map((line) => line.map(csvField).join(',')).join('\r\n')}\r\n`;
+    return Recording.csvFromStored(
+      { startedAt: this.startedAt, protocol: this.protocol, baud: this.baud, version: wobdVersion() },
+      this.rows.map(Recording.store),
+    );
   }
 
   // wobd-recording-YYYY-MM-DD-HHMMSS.csv, in local time, from when recording started.

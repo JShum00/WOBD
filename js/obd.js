@@ -1,6 +1,8 @@
 // OBD-II requests and decoders. Replies are expected with echo, spaces, and
 // headers off (see ELM327.configure).
 import { ElmError } from './elm327.js';
+import { inspectVin } from './vin.js';
+import { onLanguageChange, t } from './i18n.js';
 
 export const PROTOCOLS = {
   1: 'SAE J1850 PWM',
@@ -50,7 +52,7 @@ export const LIVE_PIDS = [
   { pid: 0x15, key: 'o2b1s2', label: 'O2 sensor, bank 1 sensor 2', unit: 'V', style: 'hbar', min: 0, max: 1.2, digits: 2,
     expectedBytes: 2, priority: 'medium', decode: ([a]) => a / 200 },
   { pid: 0x03, key: 'fuelsys', label: 'Fuel system', style: 'status', slow: true,
-    expectedBytes: 2, decode: ([a]) => FUEL_SYSTEM_STATUS[a] ?? null },
+    expectedBytes: 2, decode: ([a]) => FUEL_SYSTEM_STATUS[a]?.() ?? null },
   { pid: 0x0A, key: 'fuelpressure', label: 'Fuel pressure', unit: 'kPa', style: 'hbar', min: 0, max: 765, digits: 0,
     expectedBytes: 1, slow: true, decode: ([a]) => a * 3 },
   { pid: 0x21, key: 'mildistance', label: 'Distance with MIL on', unit: 'km', style: 'hbar', min: 0, max: 1000, digits: 0,
@@ -90,11 +92,11 @@ export const LIVE_PIDS = [
 
 // PID 03 reports one bit per state; only one is ever set per bank.
 const FUEL_SYSTEM_STATUS = {
-  0x01: 'Open loop · engine warming up',
-  0x02: 'Closed loop',
-  0x04: 'Open loop · load or coasting',
-  0x08: 'Open loop · system fault',
-  0x10: 'Closed loop · sensor fault',
+  0x01: () => t('pid.fuelSystem.openWarming'),
+  0x02: () => t('pid.fuelSystem.closed'),
+  0x04: () => t('pid.fuelSystem.openLoad'),
+  0x08: () => t('pid.fuelSystem.openFault'),
+  0x10: () => t('pid.fuelSystem.closedSensorFault'),
 };
 
 export const BATTERY = { key: 'battery', label: 'Battery', unit: 'V', style: 'hbar', min: 10, max: 15, digits: 1,
@@ -156,12 +158,120 @@ export const PID_NAMES = {
   0x5B: 'Hybrid battery remaining life', 0x5C: 'Engine oil temperature', 0x5E: 'Engine fuel rate',
 };
 
+const PID_NAME_TRANSLATIONS = new Map([
+  [0x01, () => t('pid.pid01')],
+  [0x02, () => t('pid.pid02')],
+  [0x08, () => t('pid.pid08')],
+  [0x09, () => t('pid.pid09')],
+  [0x0A, () => t('pid.pid0A')],
+  [0x12, () => t('pid.pid12')],
+  [0x13, () => t('pid.pid13')],
+  [0x16, () => t('pid.pid16')],
+  [0x17, () => t('pid.pid17')],
+  [0x18, () => t('pid.pid18')],
+  [0x19, () => t('pid.pid19')],
+  [0x1A, () => t('pid.pid1A')],
+  [0x1B, () => t('pid.pid1B')],
+  [0x1C, () => t('pid.pid1C')],
+  [0x1D, () => t('pid.pid1D')],
+  [0x1E, () => t('pid.pid1E')],
+  [0x1F, () => t('pid.pid1F')],
+  [0x21, () => t('pid.pid21')],
+  [0x22, () => t('pid.pid22')],
+  [0x23, () => t('pid.pid23')],
+  [0x24, () => t('pid.pid24')],
+  [0x25, () => t('pid.pid25')],
+  [0x26, () => t('pid.pid26')],
+  [0x27, () => t('pid.pid27')],
+  [0x28, () => t('pid.pid28')],
+  [0x29, () => t('pid.pid29')],
+  [0x2A, () => t('pid.pid2A')],
+  [0x2B, () => t('pid.pid2B')],
+  [0x34, () => t('pid.pid34')],
+  [0x35, () => t('pid.pid35')],
+  [0x36, () => t('pid.pid36')],
+  [0x37, () => t('pid.pid37')],
+  [0x38, () => t('pid.pid38')],
+  [0x39, () => t('pid.pid39')],
+  [0x3A, () => t('pid.pid3A')],
+  [0x3B, () => t('pid.pid3B')],
+  [0x53, () => t('pid.pid53')],
+  [0x2C, () => t('pid.pid2C')],
+  [0x2D, () => t('pid.pid2D')],
+  [0x2E, () => t('pid.pid2E')],
+  [0x2F, () => t('pid.pid2F')],
+  [0x30, () => t('pid.pid30')],
+  [0x31, () => t('pid.pid31')],
+  [0x32, () => t('pid.pid32')],
+  [0x33, () => t('pid.pid33')],
+  [0x3C, () => t('pid.pid3C')],
+  [0x3D, () => t('pid.pid3D')],
+  [0x3E, () => t('pid.pid3E')],
+  [0x3F, () => t('pid.pid3F')],
+  [0x41, () => t('pid.pid41')],
+  [0x42, () => t('pid.pid42')],
+  [0x43, () => t('pid.pid43')],
+  [0x44, () => t('pid.pid44')],
+  [0x45, () => t('pid.pid45')],
+  [0x46, () => t('pid.pid46')],
+  [0x47, () => t('pid.pid47')],
+  [0x49, () => t('pid.pid49')],
+  [0x4A, () => t('pid.pid4A')],
+  [0x4C, () => t('pid.pid4C')],
+  [0x4D, () => t('pid.pid4D')],
+  [0x4E, () => t('pid.pid4E')],
+  [0x51, () => t('pid.pid51')],
+  [0x52, () => t('pid.pid52')],
+  [0x5A, () => t('pid.pid5A')],
+  [0x5B, () => t('pid.pid5B')],
+  [0x5C, () => t('pid.pid5C')],
+  [0x5E, () => t('pid.pid5E')],
+]);
+
+
+
+const PID_LABEL_TRANSLATIONS = new Map([
+  [0x0C, () => t('pid.rpm')],
+  [0x0D, () => t('pid.speed')],
+  [0x11, () => t('pid.throttle')],
+  [0x04, () => t('pid.load')],
+  [0x06, () => t('pid.stft')],
+  [0x07, () => t('pid.ltft')],
+  [0x05, () => t('pid.coolant')],
+  [0x0F, () => t('pid.iat')],
+  [0x10, () => t('pid.maf')],
+  [0x0B, () => t('pid.map')],
+  [0x0E, () => t('pid.timing')],
+  [0x14, () => t('pid.o2b1s1')],
+  [0x15, () => t('pid.o2b1s2')],
+  [0x03, () => t('pid.fuelsys')],
+  [0x0A, () => t('pid.fuelpressure')],
+  [0x21, () => t('pid.mildistance')],
+  [0x23, () => t('pid.railpressure')],
+  [0x24, () => t('pid.wideband1v')],
+  [0x34, () => t('pid.wideband1c')],
+  [0x2F, () => t('pid.fuellevel')],
+  [0x31, () => t('pid.cleareddistance')],
+  [0x3C, () => t('pid.catalystb1s1')],
+  [0x3D, () => t('pid.catalystb2s1')],
+  [0x3E, () => t('pid.catalystb1s2')],
+  [0x3F, () => t('pid.catalystb2s2')],
+  [0x42, () => t('pid.modulevoltage')],
+  [0x44, () => t('pid.equivratio')],
+  [0x46, () => t('pid.ambienttemp')],
+  [0x53, () => t('pid.evapabsolute')],
+  [0x5C, () => t('pid.oiltemp')],
+  [0x1C, () => t('pid.obdstandard')],
+]);
+
+
 // Used for a supported PID WOBD has no name for. It may be standard, manufacturer-specific, or reserved.
-export const UNNAMED_PID = 'Unnamed parameter (not in WOBD yet)';
+export let UNNAMED_PID = t('pid.unnamed');
+onLanguageChange(() => { UNNAMED_PID = t('pid.unnamed'); });
 
 const NON_LIVE_DECODERS = [
   { pid: 0x1C, key: 'obdstandard', label: 'OBD standards compliance', expectedBytes: 1,
-    category: 'Diagnostic information', monitorable: false, decode: ([a]) => a },
+    get category() { return t('pid.category.diagnostic'); }, monitorable: false, decode: ([a]) => a },
 ];
 
 export const MODE01_DECODERS = new Map([
@@ -170,24 +280,24 @@ export const MODE01_DECODERS = new Map([
 ]);
 
 const PID_CATEGORIES = new Map([
-  [0x03, 'Fuel and air management'], [0x04, 'Engine performance'], [0x05, 'Temperature'],
-  [0x06, 'Fuel and air management'], [0x07, 'Fuel and air management'], [0x0A, 'Fuel and air management'],
-  [0x0B, 'Fuel and air management'], [0x0C, 'Engine performance'], [0x0D, 'Vehicle speed and distance'],
-  [0x0E, 'Ignition and timing'], [0x0F, 'Temperature'], [0x10, 'Fuel and air management'],
-  [0x11, 'Engine performance'], [0x14, 'Oxygen sensors'], [0x15, 'Oxygen sensors'],
-  [0x1C, 'Diagnostic information'], [0x21, 'Vehicle speed and distance'],
-  [0x23, 'Fuel and air management'], [0x24, 'Oxygen sensors'], [0x34, 'Oxygen sensors'], [0x53, 'Emissions'], [0x2F, 'Fuel and air management'], [0x31, 'Vehicle speed and distance'],
-  [0x3C, 'Emissions'], [0x3D, 'Emissions'], [0x3E, 'Emissions'], [0x3F, 'Emissions'],
-  [0x42, 'Electrical system'], [0x44, 'Fuel and air management'], [0x46, 'Temperature'], [0x5C, 'Temperature'],
+  [0x03, () => t('pid.category.fuelAir')], [0x04, () => t('pid.category.engine')], [0x05, () => t('pid.category.temperature')],
+  [0x06, () => t('pid.category.fuelAir')], [0x07, () => t('pid.category.fuelAir')], [0x0A, () => t('pid.category.fuelAir')],
+  [0x0B, () => t('pid.category.fuelAir')], [0x0C, () => t('pid.category.engine')], [0x0D, () => t('pid.category.speedDistance')],
+  [0x0E, () => t('pid.category.ignition')], [0x0F, () => t('pid.category.temperature')], [0x10, () => t('pid.category.fuelAir')],
+  [0x11, () => t('pid.category.engine')], [0x14, () => t('pid.category.oxygen')], [0x15, () => t('pid.category.oxygen')],
+  [0x1C, () => t('pid.category.diagnostic')], [0x21, () => t('pid.category.speedDistance')],
+  [0x23, () => t('pid.category.fuelAir')], [0x24, () => t('pid.category.oxygen')], [0x34, () => t('pid.category.oxygen')], [0x53, () => t('pid.category.emissions')], [0x2F, () => t('pid.category.fuelAir')], [0x31, () => t('pid.category.speedDistance')],
+  [0x3C, () => t('pid.category.emissions')], [0x3D, () => t('pid.category.emissions')], [0x3E, () => t('pid.category.emissions')], [0x3F, () => t('pid.category.emissions')],
+  [0x42, () => t('pid.category.electrical')], [0x44, () => t('pid.category.fuelAir')], [0x46, () => t('pid.category.temperature')], [0x5C, () => t('pid.category.temperature')],
 ]);
 
 const PID_DESCRIPTIONS = new Map([
-  [0x2F, 'Fuel tank level as a percentage of capacity, reported by the car. It is not fuel consumption or remaining range.'],
-  [0x1C, 'Identifies the OBD standard the vehicle reports complying with.'],
-  [0x21, 'Distance traveled while the malfunction indicator lamp was on.'],
-  [0x31, 'Distance traveled since diagnostic trouble codes were cleared.'],
-  [0x42, 'Voltage reported by the control module; distinct from adapter voltage.'],
-  [0x23, 'Fuel rail pressure reported by the control module.'],
+  [0x2F, () => t('pid.description.fuelLevel')],
+  [0x1C, () => t('pid.description.obdStandard')],
+  [0x21, () => t('pid.description.milDistance')],
+  [0x31, () => t('pid.description.clearedDistance')],
+  [0x42, () => t('pid.description.moduleVoltage')],
+  [0x23, () => t('pid.description.railPressure')],
 ]);
 
 export function buildPidCatalog(supported, ecus = []) {
@@ -200,12 +310,12 @@ export function buildPidCatalog(supported, ecus = []) {
   }
   return [...supported].sort((a, b) => a - b).map((pid) => {
     const def = MODE01_DECODERS.get(pid);
-    const name = def?.label ?? PID_NAMES[pid] ?? UNNAMED_PID;
+    const name = PID_LABEL_TRANSLATIONS.get(pid)?.() ?? PID_NAME_TRANSLATIONS.get(pid)?.() ?? UNNAMED_PID;
     return {
       pid,
       name,
-      description: PID_DESCRIPTIONS.get(pid) ?? name,
-      category: def?.category ?? PID_CATEGORIES.get(pid) ?? 'Supported but undecoded',
+      description: PID_DESCRIPTIONS.get(pid)?.() ?? name,
+      category: def?.category ?? PID_CATEGORIES.get(pid)?.() ?? t('pid.category.undecoded'),
       unit: def?.unit ?? null,
       expectedBytes: def?.expectedBytes ?? null,
       decoderAvailable: Boolean(def),
@@ -213,8 +323,8 @@ export function buildPidCatalog(supported, ecus = []) {
       priority: def?.priority ?? (def?.slow ? 'low' : 'medium'),
       ecuSources: sources.get(pid) ?? [],
       decoder: def ?? null,
-      availability: !def ? 'Supported · decoder unavailable'
-        : def.monitorable === false || !def.style ? 'Decoded · not a live reading' : 'Not selected',
+      availability: !def ? t('pid.availability.decoderUnavailable')
+        : def.monitorable === false || !def.style ? t('pid.availability.notLive') : t('pid.availability.notSelected'),
       lastSuccessfulReading: null,
       lastUpdatedAt: null,
     };
@@ -388,27 +498,23 @@ export function decodeStatus(messages) {
 // the standard doesn't require them, so the result is only a hint (confidence
 // 'inferred'); anything else falls back to the raw address as 'unknown'.
 const MODULE_HINTS = {
-  '7E8': 'Engine (ECM)', '7E9': 'Transmission (TCM)',
-  '10': 'Engine (ECM)', '18': 'Transmission (TCM)',
+  '7E8': 'pid.ecu.engine', '7E9': 'pid.ecu.transmission',
+  '10': 'pid.ecu.engine', '18': 'pid.ecu.transmission',
 };
 
 export function ecuIdentity(source) {
-  if (!source) return { source: null, name: 'Vehicle', confidence: 'unknown' };
+  if (!source) return { source: null, name: t('pid.ecu.vehicle'), confidence: 'unknown' };
   const key = source.startsWith('7E') ? source : source.slice(-2);
   const name = MODULE_HINTS[key];
   return name
-    ? { source, name, confidence: 'inferred' }
-    : { source, name: `Module ${key}`, confidence: 'unknown' };
+    ? { source, name: t(name), confidence: 'inferred' }
+    : { source, name: t('pid.ecu.module', { key }), confidence: 'unknown' };
 }
 
 // Mode 09 PID 02. CAN sends one long message; older protocols send five
 // numbered messages of four bytes each.
 export function decodeVin(messages) {
-  const parts = messages.filter((m) => m[0] === 0x49 && m[1] === 0x02);
-  if (!parts.length) return null;
-  const bytes = parts.sort((a, b) => a[2] - b[2]).flatMap((m) => m.slice(3));
-  const vin = String.fromCharCode(...bytes).replace(/[^A-HJ-NPR-Z0-9]/g, '');
-  return vin.length >= 17 ? vin.slice(-17) : null;
+  return inspectVin(messages).vin;
 }
 
 // ---------- Requests ----------
@@ -444,6 +550,13 @@ export async function readSupportedPids(elm, { headers = false } = {}) {
   }
 }
 
+// The adapter said the bus itself failed (a forced protocol the car doesn't speak gives CAN ERROR).
+// Retrying or asking more questions can't help, so connecting stops there. BUS BUSY and BUFFER FULL
+// are left out because they can pass.
+function isDefinitiveBusError(err) {
+  return err.code === 'BUS_ERROR' && /^(CAN ERROR|BUS ERROR|FB ERROR)/.test(err.reply ?? '');
+}
+
 async function discoverSupportedPids(elm) {
   const pids = new Set();
   const replies = [];
@@ -453,7 +566,7 @@ async function discoverSupportedPids(elm) {
     try {
       lines = await elm.send(`01${hex2(base)}`, base === 0 ? 20000 : undefined);
     } catch (err) {
-      if (base === 0 && err.code === 'UNABLE_TO_CONNECT') throw err;
+      if (base === 0 && (err.code === 'UNABLE_TO_CONNECT' || isDefinitiveBusError(err))) throw err;
       if (base === 0) return null;
       break;  // a later page failing just ends the chain
     }
@@ -546,7 +659,7 @@ export function readScan(elm, isCan) {
 async function queryDtcServices(elm, isCan) {
   const services = [];
   for (const service of [0x03, 0x07, 0x0A]) {
-    const label = { 0x03: 'Stored', 0x07: 'Pending', 0x0A: 'Permanent' }[service];
+    const label = { 0x03: t('pid.dtc.stored'), 0x07: t('pid.dtc.pending'), 0x0A: t('pid.dtc.permanent') }[service];
     let lines;
     try {
       lines = await elm.send(hex2(service), 8000);
@@ -573,10 +686,15 @@ async function queryDtcServices(elm, isCan) {
 
 // Many pre-2005 cars don't report a VIN, so this returns null rather than failing.
 export async function readVin(elm) {
+  return (await readVinInfo(elm)).vin;
+}
+
+// Same request, with why there is no VIN: { status: 'ok' | 'none' | 'malformed' | 'conflict', vin }.
+export async function readVinInfo(elm) {
   try {
-    return decodeVin(toMessages(await elm.send('0902', 8000)));
+    return inspectVin(toMessages(await elm.send('0902', 8000)));
   } catch (err) {
-    if (err.code === 'NO_DATA' || err.code === 'COMMAND_ERROR') return null;
+    if (err.code === 'NO_DATA' || err.code === 'COMMAND_ERROR') return { status: 'none', vin: null };
     throw err;
   }
 }
@@ -613,18 +731,16 @@ export const bytesToHex = (bytes) => bytes.map(hex2).join('');
 // the same for every make and model.
 export const FAILURE_REASONS = {
   'no-response': {
-    short: 'No response',
-    text: "The car didn't answer this request. It may not support it right now (some readings only answer with the engine running), or the adapter timed out.",
+    get short() { return t('pid.failure.noResponseShort'); },
+    get text() { return t('pid.failure.noResponse'); },
   },
   malformed: {
-    short: 'Unexpected reply',
-    text: 'The car answered, but the bytes were not the length or shape WOBD expects for this parameter. '
-      + 'The raw bytes are kept in recordings so they can be decoded later.',
+    get short() { return t('pid.failure.malformedShort'); },
+    get text() { return t('pid.failure.malformed'); },
   },
   invalid: {
-    short: 'Invalid value',
-    text: 'The car answered, but the bytes did not decode to a usable number. '
-      + 'The raw bytes are kept in recordings so they can be decoded later.',
+    get short() { return t('pid.failure.invalidShort'); },
+    get text() { return t('pid.failure.invalid'); },
   },
 };
 

@@ -1,6 +1,8 @@
+import './i18n-boot.js';
 // Offline trouble-code search: Bob answers a typed code from the bundled lists.
 import { h } from './dom.js';
-import { Bob, loadCodeBook, loadGenericCodes, lookup, isManufacturerCode, describeCategory, searchUrl } from './bob.js';
+import { Bob, loadCodeBook, reloadCodeBook, loadGenericCodes, lookup, isManufacturerCode, describeCategory, searchUrl } from './bob.js';
+import { onLanguageChange, t } from './i18n.js';
 import { initCarForm, getCar } from './ui.js';
 
 const $ = (id) => document.getElementById(id);
@@ -16,7 +18,7 @@ function normalize(text) {
 
 const searchLink = (code) => h('p', {},
   h('a', { href: searchUrl(code, getCar()), target: '_blank', rel: 'noopener noreferrer', dataset: { searchCode: code } },
-    'Search Google for this code'));
+    t('bob.searchGoogle')));
 
 // Links already in Bob's bubble follow the car form as it changes.
 function refreshSearchLinks() {
@@ -34,7 +36,7 @@ function answer(input) {
     return bob.say({
       tone: 'unknown',
       mood: 'question',
-      text: "That doesn't look like a trouble code. Codes are a letter (P, C, B, or U) followed by four characters, like P0601.",
+      text: t('bob.codes.invalid'),
     });
   }
 
@@ -42,8 +44,8 @@ function answer(input) {
     return bob.say({
       tone: 'unknown',
       mood: 'question',
-      heading: heading(code, 'Manufacturer-specific code'),
-      text: `${code} is a manufacturer-specific code. Each car maker decides what it means, so the same number can mean different things on different brands. I won't give you a generic answer that could be wrong. Search with your car's year, make, and model to find the right one.`,
+      heading: heading(code, t('bob.title.manufacturer')),
+      text: t('bob.codes.manufacturerDetails', { code }),
       details: [searchLink(code)],
     });
   }
@@ -54,21 +56,23 @@ function answer(input) {
   return bob.say({
     tone: 'unknown',
     mood: 'question',
-    heading: heading(code, 'Not in my list'),
-    text: `${code} isn't in my offline list. ${describeCategory(code)}.`,
+    heading: heading(code, t('bob.codes.notListed')),
+    text: t('bob.codes.notListedDetails', { code, category: describeCategory(code) }),
     details: [searchLink(code)],
   });
 }
 
 function start() {
   const input = $('code-input');
+  let currentAnswer = '';
   const loaded = loadCodeBook();
   const ask = async (code) => {
     input.value = normalize(code);
+    currentAnswer = input.value;
     try {
       await loaded;
     } catch (err) {
-      return bob.say({ tone: 'high', mood: 'warning', text: `I couldn't load my code list. ${err.message}` });
+      return bob.say({ tone: 'high', mood: 'warning', text: t('bob.codes.loadFailure', { error: err.message }) });
     }
     await loadGenericCodes([input.value]);
     return answer(input.value);
@@ -80,6 +84,15 @@ function start() {
   });
   $('car-form').addEventListener('change', refreshSearchLinks);
   $('car-form').addEventListener('input', refreshSearchLinks);
+  onLanguageChange(async () => {
+    await reloadCodeBook();
+    if (currentAnswer) {
+      await loadGenericCodes([currentAnswer]);
+      answer(currentAnswer);
+    } else {
+      bob.say({ text: t('bob.codes.greeting') });
+    }
+  });
   for (const chip of document.querySelectorAll('.code-chip')) {
     chip.addEventListener('click', () => ask(chip.dataset.code));
   }
@@ -92,7 +105,7 @@ function start() {
 
   const fromLink = new URLSearchParams(location.search).get('code');
   if (fromLink) ask(fromLink);
-  else bob.say({ text: "Hi, I'm Bob! Type a trouble code like P0601 and I'll tell you what it means." });
+  else bob.say({ text: t('bob.codes.greeting') });
 }
 
 start();

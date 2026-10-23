@@ -57,3 +57,23 @@ body > *:not(.report) { display: none !important; }
   padding-top: 6pt;
   font-size: 9pt;
 }
+
+/* Session report (Replay) */
+.session-report h1, .session-report h2, .session-report h3 { break-after: avoid; }
+.session-report h2 { font-size: 14pt; margin: 14pt 0 6pt; border-bottom: 1px solid #000; }
+.session-report h2.sr-break { break-before: page; }
+.session-report h3 { font-size: 12pt; margin: 0 0 4pt; }
+.session-report .sr-disclaimer { border: 1.5px solid #000; padding: 6pt 8pt; margin: 0 0 10pt; font-weight: 700; }
+.session-report .sr-facts { display: grid; grid-template-columns: 11rem 1fr; gap: 3pt 10pt; margin: 0 0 8pt; }
+.session-report .sr-facts dt { font-weight: 700; }
+.session-report .sr-facts dd { margin: 0; }
+.session-report .sr-note { font-size: 9pt; margin: 0 0 6pt; }
+.session-report .sr-figure { margin: 0 0 8pt; break-inside: avoid; }
+.session-report .sr-figure figcaption { font-size: 10pt; font-weight: 700; }
+.session-report .sr-figure svg { width: 100%; height: auto; }
+.session-report .sr-event { break-inside: avoid; margin: 0 0 12pt; padding-top: 6pt; border-top: 1px solid #999; }
+.session-report table { font-size: 9pt; }
+.session-report tr { break-inside: avoid; }
+.session-report .sr-method { font-size: 10pt; padding-left: 14pt; }
+.session-report .sr-foot { position: fixed; bottom: 0; left: 0; right: 0; font-size: 8pt; border-top: 1px solid #999; padding-top: 3pt; background: #fff; }
+.session-report { padding-bottom: 14pt; }

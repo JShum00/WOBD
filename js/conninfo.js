@@ -1,16 +1,18 @@
 // The connection info panel: asks the adapter about itself and renders the answers.
 // Every query fails on its own, so one missing answer never blocks the rest.
 import { h } from './dom.js';
+import { t } from './i18n.js';
+import { formatNumber } from './i18n.js';
 import { PROTOCOLS, toMessages } from './obd.js';
 
 const QUERY_TIMEOUT = 3000;
 const LOW_BATTERY = 11.8;  // volts; engine-off batteries read about 12.4, running about 13.5+
 
 export const FRIENDLY = {
-  noAdapter: "I can't find your adapter. Make sure it's plugged in all the way, then try again.",
-  noCar: "Your adapter's working, but I'm not hearing back from the car. Make sure the key is in the On position.",
-  lowBattery: "Heads up — your battery's reading a little low, which can cause odd results.",
-  generic: 'Something went wrong talking to your adapter. Try unplugging it and plugging it back in.',
+  get noAdapter() { return t('app.conn.noAdapter'); },
+  get noCar() { return t('app.conn.noCar'); },
+  get lowBattery() { return t('app.conn.lowBattery'); },
+  get generic() { return t('app.conn.generic'); },
 };
 
 // Turns any error into plain language and keeps the details in the console.
@@ -77,7 +79,7 @@ function judgeAdapter(version) {
 // "115200 baud" for the rate SmartBauder connected at, or "baud unknown" when
 // detection didn't run or record one (the plain demos skip detection).
 export function baudLabel(baudRate) {
-  return Number.isInteger(baudRate) ? `${baudRate} baud` : 'baud unknown';
+  return Number.isInteger(baudRate) ? t('app.conn.baud', { rate: formatNumber(baudRate) }) : t('app.conn.baudUnknown');
 }
 
 export function isLowBattery(info) {
@@ -91,25 +93,25 @@ const $ = (id) => document.getElementById(id);
 function row(label, value) {
   return h('div', { class: 'info-row' },
     h('dt', {}, label),
-    h('dd', { class: value == null ? 'info-missing' : null }, value ?? 'Not available'));
+    h('dd', { class: value == null ? 'info-missing' : null }, value ?? t('app.conn.notAvailable')));
 }
 
 export function renderConnInfo(info, { baudRate = null } = {}) {
   const panel = $('conn-info');
   const status = info.carResponding === null ? null
-    : info.carResponding ? 'Connected, car is answering' : 'Adapter connected, car is not answering';
-  const protocol = `${info.protocolName ?? 'Protocol unknown'} · ${baudLabel(baudRate)}`;
+    : info.carResponding ? t('app.conn.carAnswering') : t('app.conn.carNotAnswering');
+  const protocol = `${info.protocolName ?? t('app.conn.protocolUnknown')} · ${baudLabel(baudRate)}`;
 
   $('conn-info-basic').replaceChildren(
-    row('Protocol', protocol),
-    row('Status', status),
-    row('Battery', info.volts == null ? null : `${info.volts.toFixed(1)} V`));
+    row(t('app.conn.protocol'), protocol),
+    row(t('app.conn.status'), status),
+    row(t('app.conn.battery'), info.volts == null ? null : `${formatNumber(info.volts, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} V`));
   $('conn-info-adapter').replaceChildren(
-    row('Adapter', info.version),
-    row('Genuine or clone', info.authenticity));
+    row(t('app.conn.adapter'), info.version),
+    row(t('app.conn.genuineOrClone'), info.authenticity === 'Probably a clone' ? t('app.conn.probablyClone') : info.authenticity === 'Unknown' ? t('app.conn.unknown') : info.authenticity));
   $('conn-info-advanced').replaceChildren(
-    row('Car computers that answered', info.ecuCount == null ? null : String(info.ecuCount)),
-    row('Protocol number', info.protocolNumber));
+    row(t('app.conn.ecusAnswered'), info.ecuCount == null ? null : formatNumber(info.ecuCount)),
+    row(t('app.conn.protocolNumber'), info.protocolNumber));
 
   const note = $('conn-info-note');
   note.textContent = info.carResponding === false ? FRIENDLY.noCar : isLowBattery(info) ? FRIENDLY.lowBattery : '';
@@ -121,7 +123,7 @@ export function hideConnInfo() {
   $('conn-info').hidden = true;
   $('conn-info-more').hidden = true;
   $('conn-info-toggle').setAttribute('aria-expanded', 'false');
-  $('conn-info-toggle').textContent = 'More info';
+  $('conn-info-toggle').textContent = t('app.conn.moreInfo');
 }
 
 export function initConnInfo() {
@@ -129,7 +131,7 @@ export function initConnInfo() {
   toggle.addEventListener('click', () => {
     const open = toggle.getAttribute('aria-expanded') !== 'true';
     toggle.setAttribute('aria-expanded', String(open));
-    toggle.textContent = open ? 'Less info' : 'More info';
+    toggle.textContent = open ? t('app.conn.lessInfo') : t('app.conn.moreInfo');
     $('conn-info-more').hidden = !open;
   });
 }

@@ -83,6 +83,25 @@ const cases = [
     assert.equal(rec.protocol, null);
     assert.equal(rec.baudRate, null);
   }],
+  ['fuel level round-trips at the first and last sample, keeping raw bytes for a malformed reply', () => {
+    const fuel = def('fuellevel');
+    const rec = new Recording(1000, { protocol: 'CAN 11-bit 500k', baudRate: 115200 });
+    rec.add(fuel, 0, 1000);
+    rec.add(fuel, 50.196, 61000);
+    rec.add(fuel, 100, 121000);
+    rec.add(fuel, null, 122000);
+    rec.add(fuel, null, 123000, '8080');
+    const back = parseRecording(rec.toCsv());
+    const series = find(back, 'fuellevel');
+    assert.deepEqual(series.times, [0, 60000, 120000]);
+    assert.deepEqual(series.values, [0, 50, 100]);
+    assert.equal(back.readingCount, 3);
+  }],
+  ['legacy 6-column CSV with fuel level still loads', () => {
+    const rec = parseRecording('timestamp,elapsed_ms,pid,name,value,unit\nx,10,0x2F,Fuel tank level,42,%\nx,20,0x0D,Speed,3,mph\n');
+    assert.deepEqual(find(rec, 'fuellevel').values, [42]);
+    assert.equal(rec.readingCount, 2);
+  }],
   ['"unknown" protocol and baud read as unknown', () => {
     const rec = parseRecording('timestamp,elapsed_ms,pid,name,value,unit,protocol,baud\n2026-10-02T21:30:05.250Z,250,0x0D,Speed,31,mph,unknown,unknown\n');
     assert.equal(rec.protocol, null);

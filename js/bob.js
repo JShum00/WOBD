@@ -1,45 +1,44 @@
 // Bob: looks up codes in the local code book and talks through a speech bubble.
 // Everything he says is scripted, so he works offline and never makes things up.
 import { h } from './dom.js';
+import { getLanguage, isMachineTranslated, t } from './i18n.js';
 
 export const URGENCY = {
-  low: { label: 'Low', says: "Safe to drive. Get it looked at when it's convenient." },
-  medium: { label: 'Medium', says: 'Drive gently and get it checked soon.' },
-  high: { label: 'High', says: "Pull over when it's safe. Driving on this could damage the engine." },
-  unknown: { label: 'Unknown', says: "I can't rate this one. If the car drives differently, get it checked." },
+  low: { get label() { return t('bob.urgency.low'); }, get says() { return t('bob.urgency.lowSays'); } },
+  medium: { get label() { return t('bob.urgency.medium'); }, get says() { return t('bob.urgency.mediumSays'); } },
+  high: { get label() { return t('bob.urgency.high'); }, get says() { return t('bob.urgency.highSays'); } },
+  unknown: { get label() { return t('bob.urgency.unknown'); }, get says() { return t('bob.urgency.unknownSays'); } },
 };
 
 export const DIFFICULTY = {
-  diy: 'Easy DIY',
-  moderate: "DIY if you're handy",
-  shop: 'Shop job',
+  get diy() { return t('bob.difficulty.diy'); },
+  get moderate() { return t('bob.difficulty.moderate'); },
+  get shop() { return t('bob.difficulty.shop'); },
 };
 
 const MOODS = { check: '✓', warning: '!', question: '?' };
 
 const SYSTEMS = {
-  P: 'engine or transmission',
-  C: 'chassis (brakes, steering, or suspension)',
-  B: 'body (airbags, seats, or lights)',
-  U: 'network (how the car’s computers talk to each other)',
+  P: () => t('bob.system.powertrain'),
+  C: () => t('bob.system.chassis'),
+  B: () => t('bob.system.body'),
+  U: () => t('bob.system.network'),
 };
 
 // Generic P0 groups, keyed by the third character.
 const P0_GROUPS = {
-  0: 'a fuel, air, or cam timing problem',
-  1: 'a fuel and air metering problem',
-  2: 'a fuel injector or fuel system problem',
-  3: 'an ignition or misfire problem',
-  4: 'an emissions control problem',
-  5: 'a speed, idle control, or electrical input problem',
-  6: 'an engine computer or output circuit problem',
-  7: 'a transmission problem',
-  8: 'a transmission problem',
-  9: 'a transmission problem',
-  A: 'a hybrid system problem',
+  0: () => t('bob.p0Group.0'), 1: () => t('bob.p0Group.1'),
+  2: () => t('bob.p0Group.2'), 3: () => t('bob.p0Group.3'),
+  4: () => t('bob.p0Group.4'), 5: () => t('bob.p0Group.5'),
+  6: () => t('bob.p0Group.6'), 7: () => t('bob.p0Group.7'),
+  8: () => t('bob.p0Group.8'), 9: () => t('bob.p0Group.9'),
+  A: () => t('bob.p0Group.A'),
 };
 
 let codeBook = {};
+let englishCodeBook = {};
+let translatedCodes = new Set();
+let activeCodeBookLanguage = 'en';
 let generic = {};  // definitions from data/generic/, filled in by loadGenericCodes()
 const genericLoads = new Map();
 const GENERIC_FAMILIES = new Set(['P0', 'P2', 'P3', 'U0', 'U3', 'B0', 'C0']);
@@ -47,8 +46,51 @@ const GENERIC_FAMILIES = new Set(['P0', 'P2', 'P3', 'U0', 'U3', 'B0', 'C0']);
 export async function loadCodeBook(url = 'data/codes.json') {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Couldn't load Bob's code book (${res.status}).`);
-  codeBook = await res.json();
+  const english = await res.json();
+  if (!english || typeof english !== 'object' || Array.isArray(english)) throw new Error('Bob’s code book is invalid.');
+  englishCodeBook = english;
+  codeBook = { ...englishCodeBook };
+  translatedCodes = new Set();
+  activeCodeBookLanguage = 'en';
+  await reloadCodeBook();
+  return codeBook;
 }
+
+export async function reloadCodeBook() {
+  if (!Object.keys(englishCodeBook).length) return;
+  codeBook = { ...englishCodeBook };
+  translatedCodes = new Set();
+  activeCodeBookLanguage = 'en';
+  const language = getLanguage();
+  if (language === 'en') return;
+  try {
+    const res = await fetch(`data/i18n/codes.${language}.json`);
+    if (!res.ok || language !== getLanguage()) return;
+    const data = await res.json();
+    if (language !== getLanguage()) return;
+    if (!data || typeof data !== 'object' || Array.isArray(data)) return;
+    const merged = new Set();
+    for (const [code, overlay] of Object.entries(data)) {
+      if (!codeBook[code] || !validCodeOverlay(overlay)) continue;
+      const { title, plain, causes, tellMechanic } = overlay;
+      codeBook[code] = { ...codeBook[code], title, plain, causes, tellMechanic };
+      merged.add(code);
+    }
+    translatedCodes = merged;
+    if (merged.size) activeCodeBookLanguage = language;
+  } catch {
+    translatedCodes = new Set();
+  }
+}
+
+function validCodeOverlay(entry) {
+  return entry && typeof entry === 'object' && !Array.isArray(entry)
+    && ['title', 'plain', 'tellMechanic'].every((key) => typeof entry[key] === 'string')
+    && Array.isArray(entry.causes) && entry.causes.every((cause) => typeof cause === 'string');
+}
+
+export const codeBookLanguage = () => activeCodeBookLanguage;
+export const isTranslatedEntry = (entry) => translatedCodes.has(entry?.code) && isMachineTranslated(getLanguage());
 
 // Loads the generic definitions for the code families these codes belong to (P0, U3, ...).
 // A failed download just leaves Bob with his own notes.
@@ -74,14 +116,17 @@ export function isManufacturerCode(code) {
 
 export function describeCategory(code) {
   const [letter, d1, d2] = code;
-  if (letter === 'P' && d1 === '0' && P0_GROUPS[d2]) return `a P0${d2}xx code is ${P0_GROUPS[d2]}`;
-  return `${letter} codes are about the ${SYSTEMS[letter]}`;
+  if (letter === 'P' && d1 === '0' && P0_GROUPS[d2]) return t('bob.category.p0', { digit: d2, group: P0_GROUPS[d2]() });
+  return t('bob.category.system', { letter, system: SYSTEMS[letter]() });
 }
 
 // Always returns something Bob can say, even for codes he has no notes on.
 export function lookup(code) {
   const entry = codeBook[code];
-  if (entry) return { code, known: true, ...entry };
+  if (entry) {
+    const translated = isTranslatedEntry({ code });
+    return { code, known: true, ...entry, translated, lang: translated ? activeCodeBookLanguage : 'en' };
+  }
 
   const general = generic[code];
   if (general) {
@@ -89,12 +134,14 @@ export function lookup(code) {
       code,
       known: false,
       generic: true,
+      lang: 'en',
       plain: general.title,
       urgency: 'unknown',
       causes: [],
       difficulty: null,
       tellMechanic: `I have a ${code}, ${general.title}. Can you diagnose it?`,
       ...general,
+      lang: 'en',
     };
   }
 
@@ -103,14 +150,15 @@ export function lookup(code) {
     code,
     known: false,
     manufacturer,
-    title: manufacturer ? 'Manufacturer-specific code' : 'Generic code (no notes yet)',
+    title: manufacturer ? t('bob.title.manufacturer') : t('bob.title.genericUnknown'),
+    lang: getLanguage(),
     plain: manufacturer
-      ? "Hmm, that one's specific to your car's brand, so it isn't in my book. A quick search with your car's details is the fastest way to find out what it means."
-      : `I haven't written notes on this one yet, but ${describeCategory(code)}. Here's a search to get you started.`,
+      ? t('bob.lookup.manufacturer', {})
+      : t('bob.lookup.unknown', { category: describeCategory(code) }),
     urgency: 'unknown',
     causes: [],
     difficulty: null,
-    tellMechanic: `I have a ${code}. Can you look up what it means for my car?`,
+    tellMechanic: t('bob.lookup.tellMechanic', { code }),
   };
 }
 
@@ -184,26 +232,26 @@ export class Bob {
 
     const details = [
       h('p', { class: 'urgency-line' }, badge, h('span', {}, urgency.says)),
-      entry.causes.length > 0 && h('h4', {}, 'Common causes'),
+      entry.causes.length > 0 && h('h4', {}, t('bob.commonCauses')),
       entry.causes.length > 0 && h('ul', {}, entry.causes.map((cause) => h('li', {}, cause))),
-      entry.difficulty && h('p', {}, h('strong', {}, 'DIY or shop: '), DIFFICULTY[entry.difficulty]),
-      h('h4', {}, 'Tell your mechanic'),
+      entry.difficulty && h('p', {}, h('strong', {}, t('bob.diyOrShop')), DIFFICULTY[entry.difficulty]),
+      h('h4', {}, t('bob.tellMechanic')),
       h('p', { class: 'tell' }, `“${entry.tellMechanic}”`),
       entry.generic && h('p', { class: 'hint' },
-        "This is a general description from an open code database, not one of my own notes. Details can vary by car."),
+        t('bob.genericDisclaimer')),
       !entry.known && h('p', {},
         h('a', { href: searchUrl(entry.code, this.getCar()), target: '_blank', rel: 'noopener noreferrer',
           dataset: { searchCode: entry.code } },
-          'Search Google for this code')),
+          t('bob.searchGoogle'))),
     ].filter(Boolean);
 
     const script = [
       `${entry.code}: ${entry.title}.`,
       entry.plain,
       `${urgency.label} urgency. ${urgency.says}`,
-      entry.causes.length > 0 && `Common causes: ${entry.causes.join(', ')}.`,
-      entry.difficulty && `DIY or shop: ${DIFFICULTY[entry.difficulty]}.`,
-      `Tell your mechanic: ${entry.tellMechanic}`,
+      entry.causes.length > 0 && `${t('bob.commonCauses')}: ${entry.causes.join(', ')}.`,
+      entry.difficulty && `${t('bob.diyOrShop')}${DIFFICULTY[entry.difficulty]}.`,
+      `${t('bob.tellMechanic')}: ${entry.tellMechanic}`, 
     ].filter(Boolean).join(' ');
 
     const mood = entry.urgency === 'high' ? 'warning' : entry.known || entry.generic ? null : 'question';

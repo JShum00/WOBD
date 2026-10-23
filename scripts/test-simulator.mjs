@@ -23,6 +23,9 @@ async function connect(car, override = null, options = {}) {
   return { supported, protocol, vin, codes, transport };
 }
 
+// The PT Cruiser case from the field: automatic works (ATSP0 then A2), a forced CAN protocol does not.
+const PT_CRUISER = { year: '2001', make: 'Chrysler', model: 'PT Cruiser' };
+
 const RANGER = { year: '2001', make: 'Ford', model: 'Ranger' };
 
 const cases = [
@@ -60,9 +63,44 @@ const cases = [
     assert.equal(transport.selected, '1');
   }],
   ['a wrong override cannot connect', async () => {
-    for (const wrong of ['2', '3', '6']) {
+    for (const wrong of ['2', '3']) {
       await assert.rejects(connect(RANGER, wrong), { code: 'UNABLE_TO_CONNECT' }, `override ${wrong}`);
     }
+    await assert.rejects(connect(RANGER, '6'), { code: 'BUS_ERROR', reply: 'CAN ERROR' });
+  }],
+  ['PT Cruiser: automatic search connects and ATDPN reports A2', async () => {
+    const { protocol, transport } = await connect(PT_CRUISER);
+    assert.equal(protocol.number, '2');
+    assert.equal(transport.selected, '0');
+    assert.deepEqual(await new ELM327(transport).send('ATDPN'), ['A2']);
+  }],
+  ['PT Cruiser: forcing ATSP6 gives CAN ERROR, and the app can explain it', async () => {
+    const err = await connect(PT_CRUISER, '6').catch((e) => e);
+    assert.equal(err.code, 'BUS_ERROR');
+    assert.equal(err.reply, 'CAN ERROR');
+    const { diagnoseConnection } = await import('../js/troubleshoot.js');
+    const advice = diagnoseConnection(err, { protocol: '6', car: PT_CRUISER });
+    assert.match(advice.text, /automatic/i);
+    assert.equal(advice.suggestAutomatic, true);
+    assert.match(advice.text, /CAN 11-bit 500k/);
+  }],
+  ['a definitive CAN ERROR on the first request ends connecting with no more requests', async () => {
+    const transport = new DemoTransport({ ...vehicleProfile(PT_CRUISER), initMs: 0, latency: 1, mismatchMs: 1 });
+    await transport.open();
+    const elm = new ELM327(transport);
+    await elm.reset();
+    await elm.configure('6');
+    const sent = [];
+    const send = elm.send.bind(elm);
+    elm.send = (command, ...rest) => { sent.push(command); return send(command, ...rest); };
+    await assert.rejects(obd.readSupportedPids(elm, { headers: true }), { code: 'BUS_ERROR' });
+    assert.deepEqual(sent.filter((c) => /^01/.test(c)), ['0100']);
+    assert.ok(!sent.includes('ATDP') && !sent.includes('ATDPN'), 'no protocol queries after a definitive failure');
+    assert.ok(sent.includes('ATH0') && sent.includes('ATS0'), 'temporary header settings are put back');
+  }],
+  ['transient bus trouble (BUS BUSY) on the first request still falls back, not fails', async () => {
+    const elm = { send: async () => { const { ElmError } = await import('../js/elm327.js'); throw new ElmError('BUS_ERROR', 'busy', 'BUS BUSY'); } };
+    assert.equal(await obd.readSupportedPids(elm), null);
   }],
   ['a CAN car rejects a legacy override', async () => {
     await assert.rejects(connect({ year: '2015', make: 'Honda', model: 'Civic' }, '3'), { code: 'UNABLE_TO_CONNECT' });

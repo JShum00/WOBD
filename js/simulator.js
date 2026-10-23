@@ -1,3 +1,4 @@
+import './i18n-boot.js';
 // The Simulator page: pick a year, make, and model, connect to a pretend car
 // with the same steps WOBD uses, and watch the adapter traffic.
 import { DemoTransport } from './demo.js';
@@ -7,6 +8,7 @@ import * as ui from './ui.js';
 import { CODE_SETS, DEFAULT_CODE_SET, vehicleProfile } from './vehicles.js';
 import { createTrafficView } from './traffic.js';
 import { h } from './dom.js';
+import { formatNumber, onLanguageChange, t } from './i18n.js';
 
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
@@ -16,7 +18,7 @@ start();
 
 async function start() {
   ui.initProtocolOverride(obd.PROTOCOLS);
-  for (const [key, { label }] of Object.entries(CODE_SETS)) $('sim-codes').append(h('option', { value: key }, label));
+  renderCodeSets();
   $('sim-codes').value = CODE_SETS[params.get('codes')] ? params.get('codes') : DEFAULT_CODE_SET;
   $('sim-noauto').checked = params.has('noauto');
 
@@ -28,12 +30,20 @@ async function start() {
     ui.initCarForm(makes, models);
     ui.setCar({ year: params.get('year'), make: params.get('make'), model: params.get('model') });
   } catch (err) {
-    showResult(`Couldn't load the make and model lists. ${err.message}`, true);
+    showResult(t('bob.simulator.failedLists', { error: err.message }), true);
   }
 
   for (const id of ['car-form', 'sim-codes', 'sim-noauto']) $(id).addEventListener('input', refresh);
+  onLanguageChange(() => { renderCodeSets(); refresh(); });
   $('sim-connect').addEventListener('click', connect);
   refresh();
+}
+
+function renderCodeSets() {
+  const select = $('sim-codes');
+  const selected = select.value || params.get('codes');
+  select.replaceChildren(...Object.entries(CODE_SETS).map(([key, { label }]) => h('option', { value: key }, label)));
+  select.value = CODE_SETS[selected] ? selected : DEFAULT_CODE_SET;
 }
 
 function currentVehicle() {
@@ -42,7 +52,7 @@ function currentVehicle() {
 
 function refresh() {
   const vehicle = currentVehicle();
-  $('sim-profile').textContent = `${vehicle.label}: protocol ${vehicle.protocol} (${obd.PROTOCOLS[vehicle.protocol]}). ${vehicle.reason}. ${vehicle.vin ? 'Reports a VIN.' : 'No VIN.'}`;
+  $('sim-profile').textContent = `${vehicle.label}: ${t('bob.simulator.protocolLabel')} ${vehicle.protocol} (${obd.PROTOCOLS[vehicle.protocol]}). ${vehicle.reason}. ${vehicle.vin ? t('bob.simulator.vinReported') : t('bob.simulator.noVin')}`;
 
   const link = new URLSearchParams({ demo: 'sim' });
   const car = ui.getCar();
@@ -62,7 +72,7 @@ function showResult(text, bad = false) {
 async function connect() {
   const override = ui.getProtocolOverride();
   if (override === '') {
-    showResult('Choose a protocol or uncheck the override to use automatic selection.', true);
+    showResult(t('bob.simulator.chooseProtocolError'), true);
     return;
   }
 
@@ -73,7 +83,7 @@ async function connect() {
 
   $('sim-connect').disabled = true;
   $('protocol-options').disabled = true;
-  showResult('Connecting…');
+  showResult(t('bob.simulator.connecting'));
   try {
     await transport.open();
     const elm = new ELM327(transport);
@@ -83,15 +93,15 @@ async function connect() {
     const protocol = await obd.readProtocol(elm);
     const vin = await obd.readVin(elm);
     const codes = await obd.readStoredCodes(elm, protocol.isCan);
-    const how = override === null ? 'automatic selection' : `protocol ${override} chosen by you`;
+    const how = override === null ? t('bob.simulator.protocolAutomatic') : t('bob.simulator.protocolChosen', { protocol: override });
     showResult([
-      `Connected on protocol ${protocol.number} (${protocol.name}), ${how}.`,
-      supported ? `${supported.pids.size} supported PIDs.` : "The car wouldn't list its supported PIDs.",
-      vin ? `VIN ${vin}.` : 'No VIN.',
-      codes.length ? `Trouble codes: ${codes.join(', ')}.` : 'No trouble codes.',
+      t('bob.simulator.connected', { number: protocol.number, name: protocol.name, how }),
+      supported ? t('bob.simulator.supportedPids', { count: formatNumber(supported.pids.size) }) : t('bob.simulator.noPids'),
+      vin ? t('bob.simulator.vin', { vin }) : t('bob.simulator.noVin'),
+      codes.length ? t('bob.simulator.codesFound', { codes: codes.join(', ') }) : t('bob.simulator.noCodes'),
     ].join(' '));
   } catch (err) {
-    showResult(`${err.code ?? 'Error'}: ${err.message}`, true);
+    showResult(t('bob.simulator.error', { code: err.code ?? 'Error', message: err.message }), true);
   } finally {
     await transport.close();
     $('sim-connect').disabled = false;

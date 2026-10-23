@@ -15,6 +15,7 @@
 // Anything else answers UNABLE TO CONNECT. ?demo=sim builds the car from the
 // year, make, and model (see vehicles.js); the Simulator page does the same.
 import { BASE_RATES } from './smartbauder.js';
+import { t } from './i18n.js';
 
 const SCENARIOS = {
   can: { protocol: '6', vin: '1HGCM82633A004352', codes: ['P0301', 'P0171', 'P0442'] },
@@ -48,6 +49,7 @@ const DESCRIBE_PROTOCOL = {
 const isCanProtocol = (protocol) => /^[6-9A-C]$/.test(protocol);
 // Protocols that wake the car with a "BUS INIT" handshake.
 const BUS_INIT = new Set(['3', '4', '5']);
+const CAN_PROTOCOLS = new Set(['6', '7', '8', '9', 'A', 'B', 'C']);
 const MISMATCH_MS = 1500;  // default time a wrong protocol takes to give up
 
 // The ?demo=drive trip, repeating: [seconds into the loop, mph]. Speed is
@@ -157,6 +159,8 @@ export class DemoTransport {
     if (!fixed && !autoFails) {
       return { ok: true, lines: ['SEARCHING...', ...(BUS_INIT.has(protocol) ? ['BUS INIT: ...OK'] : [])], delay: initMs + 800 };
     }
+    // Modelled on a real adapter: a forced CAN protocol on a car that isn't CAN answers CAN ERROR.
+    if (fixed && CAN_PROTOCOLS.has(this.selected) && !this.isCan) return { ok: false, lines: ['CAN ERROR'] };
     return { ok: false, lines: [...(BUS_INIT.has(this.selected) ? ['BUS INIT: ...ERROR'] : []), 'UNABLE TO CONNECT'] };
   }
 
@@ -315,6 +319,12 @@ export class DemoTransport {
 
 export const BAUD_DEMOS = ['slowbaud', 'nobaud'];
 
+export function demoLabel(name) {
+  if (name === 'slowbaud') return t('bob.demo.slowbaud');
+  if (name === 'nobaud') return t('bob.demo.nobaud');
+  return name;
+}
+
 // Demo adapters that, unlike DemoTransport, make WOBD run baud rate detection.
 // No `info`, so detectBaud never touches the real baud cache.
 //   slowbaud: silent until the fourth rate it tries, then acts like the normal demo car.
@@ -326,6 +336,8 @@ export class DemoBaudTransport extends DemoTransport {
     this.baudRate = null;
     this.opens = 0;
   }
+
+  get label() { return demoLabel(this.mode); }
 
   async open(baudRate) {
     this.baudRate = baudRate;

@@ -1,0 +1,691 @@
+{
+  "P0011": {
+    "title": "Sincronización del árbol de levas de admisión demasiado adelantada (banco 1)",
+    "plain": "La distribución de las válvulas del motor está más adelantada de lo que indicó la computadora. A menudo se debe a que el aceite está bajo o sucio.",
+    "causes": [
+      "Nivel bajo o aceite del motor sucio",
+      "Solenoide de sincronización variable de válvulas (VVT) atascado",
+      "Cadena de distribución estirada"
+    ],
+    "tellMechanic": "Tengo el código P0011. ¿Puede revisar primero el nivel de aceite y el solenoide de sincronización del árbol de levas?"
+  },
+  "P0016": {
+    "title": "Falta de sincronización entre el cigüeñal y el árbol de levas (banco 1, sensor A)",
+    "plain": "El cigüeñal y el árbol de levas no están sincronizados como espera la computadora; a menudo se debe a una cadena o correa de distribución estirada o desplazada. En muchos motores, si la cadena salta, puede doblar las válvulas, así que evite conducir hasta que lo revisen.",
+    "causes": [
+      "Cadena de distribución estirada o correa desplazada",
+      "Solenoide de sincronización variable de válvulas (VVT) defectuoso",
+      "Sensor de posición del árbol de levas o del cigüeñal defectuoso",
+      "Nivel bajo o aceite del motor sucio"
+    ],
+    "tellMechanic": "Tengo el código P0016 de sincronización del cigüeñal y el árbol de levas. ¿Puede revisar la cadena de distribución y el solenoide VVT?"
+  },
+  "P0101": {
+    "title": "Rango o funcionamiento del sensor de flujo de aire (MAF)",
+    "plain": "El sensor que mide el aire que entra al motor está dando lecturas que no tienen sentido. Es posible que el motor funcione de forma irregular o dé tirones.",
+    "causes": [
+      "Sensor de flujo de aire (MAF) sucio",
+      "Filtro de aire obstruido",
+      "Fuga de aire entre el sensor y el motor",
+      "Sensor de flujo de aire (MAF) averiado"
+    ],
+    "tellMechanic": "Tengo el código P0101. ¿Puede limpiar o probar el sensor MAF y revisar si hay fugas en la admisión?"
+  },
+  "P0102": {
+    "title": "Señal baja en el circuito de flujo de aire másico o volumétrico",
+    "plain": "El sensor de flujo de aire indica que entra menos aire del que debería al motor. Es común que se deba a un sensor sucio o a una fuga de aire.",
+    "causes": [
+      "Sensor de flujo de aire sucio",
+      "Tubo de admisión flojo o agrietado después del sensor",
+      "Cableado o conector dañado",
+      "Sensor averiado"
+    ],
+    "tellMechanic": "Tengo el código P0102. ¿Puede revisar el sensor MAF y buscar fugas en la admisión?"
+  },
+  "P0103": {
+    "title": "Señal alta en el circuito de flujo de aire másico o volumétrico",
+    "plain": "El sensor de flujo de aire indica que entra más aire del que debería al motor. Es común que se deba a un sensor contaminado o a un problema de cableado.",
+    "causes": [
+      "Sensor de flujo de aire sucio o contaminado",
+      "Cortocircuito en el cableado o mala conexión a tierra",
+      "Filtro de aire de alto rendimiento con demasiado aceite",
+      "Sensor averiado"
+    ],
+    "tellMechanic": "Tengo el código P0103. ¿Puede revisar el sensor MAF y su cableado?"
+  },
+  "P0106": {
+    "title": "Rango o funcionamiento del circuito de presión absoluta del múltiple o presión barométrica",
+    "plain": "La lectura del sensor de presión del múltiple no coincide con el funcionamiento del motor. Es común que se deba a una fuga de vacío o a un sensor defectuoso.",
+    "causes": [
+      "Manguera de vacío floja o agrietada",
+      "Fuga de vacío",
+      "Sensor MAP defectuoso"
+    ],
+    "tellMechanic": "Tengo el código P0106. ¿Puede hacer una prueba de humo para detectar fugas de vacío y revisar el sensor MAP?"
+  },
+  "P0113": {
+    "title": "Señal alta en el circuito del sensor de temperatura del aire de admisión",
+    "plain": "El sensor que mide la temperatura del aire de admisión está enviando una señal demasiado alta; normalmente se debe a que está desconectado o a que su cableado está dañado.",
+    "causes": [
+      "Conector del sensor desconectado o corroído",
+      "Cableado dañado",
+      "Sensor de temperatura del aire de admisión averiado"
+    ],
+    "tellMechanic": "Tengo el código P0113. ¿Puede revisar el sensor de temperatura del aire de admisión y su conector?"
+  },
+  "P0117": {
+    "title": "Señal baja en el circuito del sensor de temperatura del refrigerante del motor",
+    "plain": "El sensor de temperatura del motor indica una temperatura imposiblemente alta; normalmente se debe a un cortocircuito en el cableado o a un sensor defectuoso. El indicador de temperatura y el ventilador de refrigeración pueden comportarse de forma extraña.",
+    "causes": [
+      "Cortocircuito en el cableado del sensor",
+      "Sensor de temperatura del refrigerante averiado",
+      "Conector dañado"
+    ],
+    "tellMechanic": "Tengo el código P0117. ¿Puede probar el sensor de temperatura del refrigerante y su cableado?"
+  },
+  "P0118": {
+    "title": "Señal alta en el circuito del sensor de temperatura del refrigerante del motor",
+    "plain": "El sensor de temperatura del motor indica una temperatura imposiblemente baja; normalmente se debe a que está desconectado o averiado. El indicador de temperatura y el ventilador de refrigeración pueden comportarse de forma extraña.",
+    "causes": [
+      "Conector del sensor desconectado o corroído",
+      "Cableado roto",
+      "Sensor de temperatura del refrigerante averiado"
+    ],
+    "tellMechanic": "Tengo el código P0118. ¿Puede probar el sensor de temperatura del refrigerante y su conector?"
+  },
+  "P0121": {
+    "title": "Rango o funcionamiento del circuito del sensor o interruptor A de posición del acelerador o pedal",
+    "plain": "La lectura de la posición del acelerador no coincide con el comportamiento del motor. Puede notar que acelera mal o que el ralentí es inestable.",
+    "causes": [
+      "Cuerpo del acelerador sucio",
+      "Sensor de posición del acelerador desgastado",
+      "Problema de cableado o conector",
+      "Acelerador electrónico defectuoso"
+    ],
+    "tellMechanic": "Tengo el código P0121. ¿Puede limpiar el cuerpo del acelerador y revisar el sensor de posición?"
+  },
+  "P0122": {
+    "title": "Señal baja en el circuito del sensor o interruptor A de posición del acelerador o pedal",
+    "plain": "El sensor de posición del acelerador está indicando un voltaje muy bajo. Puede notar tirones, poca respuesta o pérdida de potencia.",
+    "causes": [
+      "Cableado flojo o dañado",
+      "Sensor de posición del acelerador o pedal defectuoso",
+      "Cuerpo del acelerador averiado"
+    ],
+    "tellMechanic": "Tengo el código P0122. ¿Puede revisar el circuito del sensor de posición del acelerador y el cableado?"
+  },
+  "P0128": {
+    "title": "Termostato del refrigerante (temperatura del refrigerante por debajo de la temperatura de regulación)",
+    "plain": "El motor tarda demasiado en calentarse. Por lo general, el termostato está atascado en posición abierta.",
+    "causes": [
+      "Termostato atascado en posición abierta",
+      "Sensor de temperatura del refrigerante defectuoso",
+      "Nivel bajo de refrigerante"
+    ],
+    "tellMechanic": "Tengo el código P0128. ¿Puede revisar el termostato y el sensor de temperatura del refrigerante?"
+  },
+  "P0131": {
+    "title": "Voltaje bajo en el circuito del sensor de oxígeno (banco 1, sensor 1)",
+    "plain": "El sensor de oxígeno situado antes del catalizador indica un valor bajo, lo que parece una mezcla pobre. La causa puede ser el sensor, una fuga o una condición real de mezcla pobre.",
+    "causes": [
+      "Fuga de escape cerca del sensor",
+      "Sensor de oxígeno defectuoso",
+      "Cableado dañado",
+      "Fuga de vacío que provoca una mezcla realmente pobre"
+    ],
+    "tellMechanic": "Tengo el código P0131. ¿Puede revisar si hay fugas de escape o de vacío antes de cambiar el sensor de oxígeno anterior al catalizador?"
+  },
+  "P0133": {
+    "title": "Respuesta lenta del circuito del sensor de oxígeno (banco 1, sensor 1)",
+    "plain": "El sensor de oxígeno situado antes del catalizador responde lentamente, lo que puede reducir el rendimiento de combustible. A menudo, simplemente es un sensor viejo.",
+    "causes": [
+      "Sensor de oxígeno anterior al catalizador envejecido",
+      "Fuga de escape antes del sensor",
+      "Cableado del sensor dañado"
+    ],
+    "tellMechanic": "Tengo el código P0133. ¿Puede revisar si hay fugas de escape antes de cambiar el sensor de oxígeno anterior al catalizador?"
+  },
+  "P0134": {
+    "title": "No se detecta actividad en el circuito del sensor de oxígeno (banco 1, sensor 1)",
+    "plain": "El sensor de oxígeno situado antes del catalizador no responde. La computadora no puede ajustar con precisión la mezcla de combustible, así que el consumo puede aumentar.",
+    "causes": [
+      "Sensor de oxígeno averiado",
+      "Fusible quemado o cableado dañado",
+      "Fuga de escape"
+    ],
+    "tellMechanic": "Tengo el código P0134. ¿Puede revisar el sensor de oxígeno anterior al catalizador, su circuito calefactor y el cableado?"
+  },
+  "P0135": {
+    "title": "Circuito calefactor del sensor de oxígeno (banco 1, sensor 1)",
+    "plain": "El calefactor integrado en el sensor de oxígeno situado antes del catalizador no funciona, por lo que el sensor tarda más en empezar a medir.",
+    "causes": [
+      "Calefactor interno del sensor de oxígeno averiado",
+      "Fusible del calefactor del sensor quemado",
+      "Cableado o conector dañado"
+    ],
+    "tellMechanic": "Tengo el código P0135. ¿Puede revisar el fusible del calefactor del sensor de oxígeno antes de cambiar el sensor?"
+  },
+  "P0138": {
+    "title": "Voltaje alto en el circuito del sensor de oxígeno (banco 1, sensor 2)",
+    "plain": "El sensor de oxígeno situado después del catalizador indica un valor alto. Lo habitual es que la causa sea el sensor o su cableado, y por lo general el automóvil funciona con normalidad.",
+    "causes": [
+      "Sensor de oxígeno posterior al catalizador defectuoso",
+      "Cableado en cortocircuito con una fuente de voltaje",
+      "Sensor contaminado por refrigerante o silicona"
+    ],
+    "tellMechanic": "Tengo el código P0138. ¿Puede revisar el sensor de oxígeno posterior al catalizador y su cableado?"
+  },
+  "P0141": {
+    "title": "Circuito calefactor del sensor de oxígeno (banco 1, sensor 2)",
+    "plain": "El calefactor integrado en el sensor de oxígeno situado después del catalizador no funciona.",
+    "causes": [
+      "Calefactor interno del sensor de oxígeno averiado",
+      "Fusible del calefactor del sensor quemado",
+      "Cableado o conector dañado"
+    ],
+    "tellMechanic": "Tengo el código P0141. ¿Puede revisar el fusible del calefactor y el cableado del sensor de oxígeno posterior al catalizador?"
+  },
+  "P0171": {
+    "title": "Mezcla demasiado pobre (banco 1)",
+    "plain": "Al motor le entra demasiado aire o no le llega suficiente combustible. La causa más común es una fuga de vacío.",
+    "causes": [
+      "Fuga de vacío por una manguera agrietada",
+      "Sensor de flujo de aire (MAF) sucio",
+      "Bomba de combustible débil o filtro de combustible obstruido",
+      "Junta del múltiple de admisión con fuga"
+    ],
+    "tellMechanic": "Tengo un código P0171 de mezcla pobre. ¿Puede hacer una prueba de humo para detectar fugas de vacío y revisar el sensor MAF?"
+  },
+  "P0172": {
+    "title": "Mezcla demasiado rica (banco 1)",
+    "plain": "Al motor le llega demasiado combustible para la cantidad de aire. Puede notar olor a combustible o un mayor consumo.",
+    "causes": [
+      "Sensor de flujo de aire (MAF) sucio",
+      "Inyector de combustible con fuga",
+      "Regulador de presión de combustible defectuoso",
+      "Filtro de aire obstruido"
+    ],
+    "tellMechanic": "Tengo un código P0172 de mezcla rica. ¿Puede revisar el sensor MAF y la presión del combustible?"
+  },
+  "P0174": {
+    "title": "Mezcla demasiado pobre (banco 2)",
+    "plain": "A un lado del motor le entra demasiado aire o no le llega suficiente combustible. La causa más común es una fuga de vacío.",
+    "causes": [
+      "Fuga de vacío por una manguera agrietada",
+      "Sensor de flujo de aire (MAF) sucio",
+      "Bomba de combustible débil o filtro de combustible obstruido",
+      "Junta del múltiple de admisión con fuga"
+    ],
+    "tellMechanic": "Tengo un código P0174 de mezcla pobre. ¿Puede hacer una prueba de humo para detectar fugas de vacío y revisar el sensor MAF?"
+  },
+  "P0175": {
+    "title": "Mezcla demasiado rica (banco 2)",
+    "plain": "A un lado del motor le llega demasiado combustible para la cantidad de aire. Puede notar olor a combustible o un mayor consumo.",
+    "causes": [
+      "Sensor de flujo de aire (MAF) sucio",
+      "Inyector de combustible con fuga",
+      "Regulador de presión de combustible defectuoso",
+      "Filtro de aire obstruido"
+    ],
+    "tellMechanic": "Tengo un código P0175 de mezcla rica. ¿Puede revisar el sensor MAF y la presión del combustible?"
+  },
+  "P0217": {
+    "title": "Sobrecalentamiento del motor",
+    "plain": "El motor se ha sobrecalentado. Deje de conducir en cuanto sea seguro hacerlo, porque el calor puede deformar o agrietar componentes del motor.",
+    "causes": [
+      "Nivel bajo de refrigerante por una fuga",
+      "Ventilador de refrigeración que no funciona",
+      "Termostato atascado",
+      "Bomba de agua defectuosa"
+    ],
+    "tellMechanic": "Tengo un código P0217 de sobrecalentamiento. ¿Puede hacer una prueba de presión del sistema de refrigeración y revisar el ventilador?"
+  },
+  "P0299": {
+    "title": "Presión de sobrealimentación insuficiente del turbocompresor o compresor",
+    "plain": "El turbocompresor no genera tanta presión como indicó la computadora, por lo que el automóvil pierde potencia. Es común que haya una fuga de presión.",
+    "causes": [
+      "Manguera de sobrealimentación o tubo del intercooler flojo o agrietado",
+      "Filtro de aire obstruido",
+      "Válvula de descarga o solenoide de control de presión atascados",
+      "Turbocompresor desgastado"
+    ],
+    "tellMechanic": "Tengo el código P0299 de presión de sobrealimentación insuficiente. ¿Puede hacer una prueba de humo en la admisión y las mangueras de sobrealimentación, y revisar la válvula de descarga?"
+  },
+  "P0300": {
+    "title": "Se detectaron fallos de encendido aleatorios o en varios cilindros",
+    "plain": "El motor tiene fallos de encendido: los cilindros no están encendiendo correctamente. Puede notar vibraciones o tirones. Si la luz de revisión del motor parpadea, deje de conducir y solicite que remolquen el automóvil. Si permanece encendida sin parpadear, conduzca con suavidad y haga revisar el automóvil pronto.",
+    "causes": [
+      "Bujías desgastadas",
+      "Bobinas de encendido o cables de bujía defectuosos",
+      "Fuga de vacío",
+      "Presión baja del combustible"
+    ],
+    "tellMechanic": "Tengo un código P0300 de fallos de encendido aleatorios. ¿Puede revisar las bujías y las bobinas, y buscar fugas de vacío?"
+  },
+  "P0301": {
+    "title": "Se detectó un fallo de encendido en el cilindro 1",
+    "plain": "El cilindro 1 no está encendiendo correctamente, por lo que puede notar vibraciones o tirones. Si la luz de revisión del motor parpadea, deje de conducir y solicite que remolquen el automóvil. Si permanece encendida sin parpadear, conduzca con suavidad y haga revisar el automóvil pronto.",
+    "causes": [
+      "Bujía desgastada en el cilindro 1",
+      "Bobina de encendido o cable de bujía defectuoso",
+      "Inyector de combustible obstruido o con fuga",
+      "Compresión baja"
+    ],
+    "tellMechanic": "Tengo un código P0301. ¿Puede intercambiar la bobina del cilindro 1 con la de otro cilindro para ver si el fallo se traslada?"
+  },
+  "P0302": {
+    "title": "Se detectó un fallo de encendido en el cilindro 2",
+    "plain": "El cilindro 2 no está encendiendo correctamente, por lo que puede notar vibraciones o tirones. Si la luz de revisión del motor parpadea, deje de conducir y solicite que remolquen el automóvil. Si permanece encendida sin parpadear, conduzca con suavidad y haga revisar el automóvil pronto.",
+    "causes": [
+      "Bujía desgastada en el cilindro 2",
+      "Bobina de encendido o cable de bujía defectuoso",
+      "Inyector de combustible obstruido o con fuga",
+      "Compresión baja"
+    ],
+    "tellMechanic": "Tengo un código P0302. ¿Puede intercambiar la bobina del cilindro 2 con la de otro cilindro para ver si el fallo se traslada?"
+  },
+  "P0303": {
+    "title": "Se detectó un fallo de encendido en el cilindro 3",
+    "plain": "El cilindro 3 no está encendiendo correctamente, por lo que puede notar vibraciones o tirones. Si la luz de revisión del motor parpadea, deje de conducir y solicite que remolquen el automóvil. Si permanece encendida sin parpadear, conduzca con suavidad y haga revisar el automóvil pronto.",
+    "causes": [
+      "Bujía desgastada en el cilindro 3",
+      "Bobina de encendido o cable de bujía defectuoso",
+      "Inyector de combustible obstruido o con fuga",
+      "Compresión baja"
+    ],
+    "tellMechanic": "Tengo un código P0303. ¿Puede intercambiar la bobina del cilindro 3 con la de otro cilindro para ver si el fallo se traslada?"
+  },
+  "P0304": {
+    "title": "Se detectó un fallo de encendido en el cilindro 4",
+    "plain": "El cilindro 4 no está encendiendo correctamente, por lo que puede notar vibraciones o tirones. Si la luz de revisión del motor parpadea, deje de conducir y solicite que remolquen el automóvil. Si permanece encendida sin parpadear, conduzca con suavidad y haga revisar el automóvil pronto.",
+    "causes": [
+      "Bujía desgastada en el cilindro 4",
+      "Bobina de encendido o cable de bujía defectuoso",
+      "Inyector de combustible obstruido o con fuga",
+      "Compresión baja"
+    ],
+    "tellMechanic": "Tengo un código P0304. ¿Puede intercambiar la bobina del cilindro 4 con la de otro cilindro para ver si el fallo se traslada?"
+  },
+  "P0305": {
+    "title": "Se detectó un fallo de encendido en el cilindro 5",
+    "plain": "El cilindro 5 no está encendiendo correctamente, por lo que puede notar vibraciones o tirones. Si la luz de revisión del motor parpadea, deje de conducir y solicite que remolquen el automóvil. Si permanece encendida sin parpadear, conduzca con suavidad y haga revisar el automóvil pronto.",
+    "causes": [
+      "Bujía desgastada en el cilindro 5",
+      "Bobina de encendido o cable de bujía defectuoso",
+      "Inyector de combustible obstruido o con fuga",
+      "Compresión baja"
+    ],
+    "tellMechanic": "Tengo un código P0305. ¿Puede intercambiar la bobina del cilindro 5 con la de otro cilindro para ver si el fallo se traslada?"
+  },
+  "P0306": {
+    "title": "Se detectó un fallo de encendido en el cilindro 6",
+    "plain": "El cilindro 6 no está encendiendo correctamente, por lo que puede notar vibraciones o tirones. Si la luz de revisión del motor parpadea, deje de conducir y solicite que remolquen el automóvil. Si permanece encendida sin parpadear, conduzca con suavidad y haga revisar el automóvil pronto.",
+    "causes": [
+      "Bujía desgastada en el cilindro 6",
+      "Bobina de encendido o cable de bujía defectuoso",
+      "Inyector de combustible obstruido o con fuga",
+      "Compresión baja"
+    ],
+    "tellMechanic": "Tengo un código P0306. ¿Puede intercambiar la bobina del cilindro 6 con la de otro cilindro para ver si el fallo se traslada?"
+  },
+  "P0307": {
+    "title": "Se detectó un fallo de encendido en el cilindro 7",
+    "plain": "El cilindro 7 no está encendiendo correctamente, por lo que puede notar vibraciones o tirones. Si la luz de revisión del motor parpadea, deje de conducir y solicite que remolquen el automóvil. Si permanece encendida sin parpadear, conduzca con suavidad y haga revisar el automóvil pronto.",
+    "causes": [
+      "Bujía desgastada en el cilindro 7",
+      "Bobina de encendido o cable de bujía defectuoso",
+      "Inyector de combustible obstruido o con fuga",
+      "Compresión baja"
+    ],
+    "tellMechanic": "Tengo un código P0307. ¿Puede intercambiar la bobina del cilindro 7 con la de otro cilindro para ver si el fallo se traslada?"
+  },
+  "P0308": {
+    "title": "Se detectó un fallo de encendido en el cilindro 8",
+    "plain": "El cilindro 8 no está encendiendo correctamente, por lo que puede notar vibraciones o tirones. Si la luz de revisión del motor parpadea, deje de conducir y solicite que remolquen el automóvil. Si permanece encendida sin parpadear, conduzca con suavidad y haga revisar el automóvil pronto.",
+    "causes": [
+      "Bujía desgastada en el cilindro 8",
+      "Bobina de encendido o cable de bujía defectuoso",
+      "Inyector de combustible obstruido o con fuga",
+      "Compresión baja"
+    ],
+    "tellMechanic": "Tengo un código P0308. ¿Puede intercambiar la bobina del cilindro 8 con la de otro cilindro para ver si el fallo se traslada?"
+  },
+  "P0325": {
+    "title": "Circuito del sensor de detonación 1 (banco 1)",
+    "plain": "El sensor que detecta las detonaciones del motor no está enviando una señal correcta. La computadora puede reducir la potencia como medida de precaución.",
+    "causes": [
+      "Cableado del sensor de detonación dañado",
+      "Conector corroído",
+      "Sensor de detonación averiado"
+    ],
+    "tellMechanic": "Tengo el código P0325. ¿Puede revisar el cableado del sensor de detonación antes de cambiar el sensor?"
+  },
+  "P0335": {
+    "title": "Circuito del sensor A de posición del cigüeñal",
+    "plain": "La computadora perdió la señal que indica la posición del cigüeñal. Es posible que el motor se apague o no arranque.",
+    "causes": [
+      "Sensor de posición del cigüeñal averiado",
+      "Cableado del sensor dañado",
+      "Rueda fónica del cigüeñal dañada"
+    ],
+    "tellMechanic": "Tengo el código P0335. ¿Puede revisar la señal del sensor del cigüeñal y su cableado?"
+  },
+  "P0340": {
+    "title": "Circuito del sensor A de posición del árbol de levas (banco 1)",
+    "plain": "La computadora no está recibiendo una buena señal del sensor del árbol de levas. Puede costar arrancar el automóvil o el motor puede funcionar mal.",
+    "causes": [
+      "Sensor de posición del árbol de levas averiado",
+      "Cableado o conector dañado",
+      "Correa o cadena de distribución desplazada"
+    ],
+    "tellMechanic": "Tengo el código P0340. ¿Puede revisar el sensor del árbol de levas y su cableado, y confirmar que la distribución esté bien sincronizada?"
+  },
+  "P0401": {
+    "title": "Flujo insuficiente de recirculación de gases de escape (EGR)",
+    "plain": "El sistema que devuelve una pequeña cantidad de gases de escape al motor para reducir las emisiones no está haciendo circular suficiente gas. Puede oír golpeteos al acelerar.",
+    "causes": [
+      "Conductos de EGR obstruidos con carbonilla",
+      "Válvula EGR atascada",
+      "Sensor de presión de EGR defectuoso"
+    ],
+    "tellMechanic": "Tengo el código P0401. ¿Puede revisar si los conductos de EGR tienen carbonilla antes de cambiar la válvula?"
+  },
+  "P0411": {
+    "title": "Flujo incorrecto del sistema de inyección de aire secundario",
+    "plain": "La bomba que inyecta aire fresco en el escape al arrancar en frío no está moviendo suficiente aire. Solo afecta las emisiones durante el primer minuto más o menos.",
+    "causes": [
+      "Bomba de aire secundario averiada",
+      "Válvula de retención atascada",
+      "Fusible quemado o relé defectuoso",
+      "Manguera de aire agrietada"
+    ],
+    "tellMechanic": "Tengo el código P0411. ¿Puede revisar el fusible y el relé de la bomba de aire, y la válvula de retención?"
+  },
+  "P0420": {
+    "title": "Eficiencia del sistema catalizador por debajo del umbral (banco 1)",
+    "plain": "El catalizador no está limpiando los gases de escape tan bien como debería.",
+    "causes": [
+      "Sensor de oxígeno posterior al catalizador defectuoso",
+      "Fuga de escape",
+      "Catalizador desgastado"
+    ],
+    "tellMechanic": "Tengo el código P0420. ¿Puede revisar los sensores de oxígeno y buscar fugas de escape antes de cambiar el catalizador?"
+  },
+  "P0421": {
+    "title": "Eficiencia del catalizador de calentamiento por debajo del umbral (banco 1)",
+    "plain": "El catalizador no está limpiando los gases de escape lo suficiente mientras se calienta.",
+    "causes": [
+      "Sensor de oxígeno posterior al catalizador defectuoso",
+      "Fuga de escape",
+      "Catalizador desgastado"
+    ],
+    "tellMechanic": "Tengo el código P0421. ¿Puede revisar los sensores de oxígeno y buscar fugas de escape antes de cambiar el catalizador?"
+  },
+  "P0430": {
+    "title": "Eficiencia del sistema catalizador por debajo del umbral (banco 2)",
+    "plain": "El catalizador de un lado del motor no está limpiando los gases de escape tan bien como debería.",
+    "causes": [
+      "Sensor de oxígeno posterior al catalizador defectuoso",
+      "Fuga de escape",
+      "Catalizador desgastado"
+    ],
+    "tellMechanic": "Tengo el código P0430. ¿Puede revisar los sensores de oxígeno y buscar fugas de escape antes de cambiar el catalizador?"
+  },
+  "P0431": {
+    "title": "Eficiencia del catalizador de calentamiento por debajo del umbral (banco 2)",
+    "plain": "El catalizador del banco 2 no está limpiando los gases de escape lo suficiente mientras se calienta.",
+    "causes": [
+      "Sensor de oxígeno posterior al catalizador defectuoso",
+      "Fuga de escape",
+      "Catalizador desgastado"
+    ],
+    "tellMechanic": "Tengo el código P0431. ¿Puede revisar los sensores de oxígeno del banco 2 y buscar fugas de escape antes de cambiar el catalizador?"
+  },
+  "P0440": {
+    "title": "Falla del sistema de control de emisiones evaporativas",
+    "plain": "El sistema que retiene los vapores de combustible del tanque detectó un problema. No afecta el funcionamiento del automóvil.",
+    "causes": [
+      "Tapón del tanque flojo o desgastado",
+      "Manguera de vapores agrietada",
+      "Válvula de purga o ventilación defectuosa"
+    ],
+    "tellMechanic": "Tengo el código P0440. ¿Puede hacer una prueba de humo en el sistema EVAP?"
+  },
+  "P0441": {
+    "title": "Flujo de purga incorrecto del sistema de control de emisiones evaporativas",
+    "plain": "El sistema que envía los vapores de combustible al motor no está haciendo circular la cantidad correcta. Lo habitual es que se deba a una válvula de purga atascada.",
+    "causes": [
+      "Válvula de purga atascada",
+      "Manguera de vapores agrietada o desconectada",
+      "Canister de carbón activado obstruido"
+    ],
+    "tellMechanic": "Tengo el código P0441. ¿Puede revisar la válvula de purga EVAP y las mangueras de vapores?"
+  },
+  "P0442": {
+    "title": "Se detectó una fuga pequeña en el sistema de control de emisiones evaporativas",
+    "plain": "El sistema que retiene los vapores de combustible tiene una fuga pequeña. A menudo, el tapón del tanque no está sellando bien; primero, apriételo hasta que haga clic.",
+    "causes": [
+      "Tapón del tanque flojo o desgastado",
+      "Manguera de vapores agrietada",
+      "Válvula de purga o ventilación defectuosa"
+    ],
+    "tellMechanic": "Tengo el código P0442. ¿Puede hacer una prueba de humo en el sistema EVAP y revisar el sello del tapón del tanque?"
+  },
+  "P0443": {
+    "title": "Circuito de la válvula de control de purga del sistema de control de emisiones evaporativas",
+    "plain": "La computadora no puede controlar la válvula que envía los vapores de combustible al motor. Normalmente, la falla está en la válvula o su cableado.",
+    "causes": [
+      "Válvula de purga averiada",
+      "Conector flojo o corroído",
+      "Fusible quemado",
+      "Cableado dañado"
+    ],
+    "tellMechanic": "Tengo el código P0443. ¿Puede probar la válvula de purga EVAP y su cableado?"
+  },
+  "P0446": {
+    "title": "Circuito de control de ventilación del sistema de control de emisiones evaporativas",
+    "plain": "La válvula que permite la ventilación del sistema de vapores de combustible no funciona correctamente. No afecta el funcionamiento del automóvil.",
+    "causes": [
+      "Válvula de ventilación averiada",
+      "Filtro de ventilación obstruido",
+      "Cableado de la válvula de ventilación dañado"
+    ],
+    "tellMechanic": "Tengo el código P0446. ¿Puede revisar la válvula de ventilación EVAP y su cableado?"
+  },
+  "P0449": {
+    "title": "Circuito de la válvula o solenoide de ventilación del sistema de control de emisiones evaporativas",
+    "plain": "La válvula de ventilación EVAP tiene una falla eléctrica. La válvula que está cerca del tanque de combustible puede estar atascada o tener el cableado corroído. También puede costar llenar el tanque.",
+    "causes": [
+      "Válvula de ventilación averiada",
+      "Conector o cableado corroído cerca del tanque",
+      "Fusible quemado"
+    ],
+    "tellMechanic": "Tengo el código P0449. ¿Puede probar la válvula de ventilación EVAP y revisar su cableado y conector?"
+  },
+  "P0455": {
+    "title": "Se detectó una fuga grande en el sistema de control de emisiones evaporativas",
+    "plain": "El sistema que retiene los vapores de combustible tiene una fuga grande. Primero, compruebe que el tapón del tanque esté colocado y bien apretado hasta que haga clic.",
+    "causes": [
+      "Tapón del tanque ausente o flojo",
+      "Manguera de vapores desconectada",
+      "Válvula de ventilación atascada abierta",
+      "Canister de carbón activado agrietado"
+    ],
+    "tellMechanic": "Tengo el código P0455. ¿Puede hacer una prueba de humo para detectar una fuga grande en el sistema EVAP, empezando por el tapón del tanque y las mangueras de vapores?"
+  },
+  "P0456": {
+    "title": "Se detectó una fuga muy pequeña en el sistema de control de emisiones evaporativas",
+    "plain": "El sistema que retiene los vapores de combustible tiene una fuga muy pequeña. Una causa común es que el sello del tapón del tanque esté desgastado.",
+    "causes": [
+      "Sello del tapón del tanque desgastado",
+      "Pequeña grieta en una manguera de vapores",
+      "Válvula de purga o ventilación con fuga"
+    ],
+    "tellMechanic": "Tengo el código P0456. ¿Puede hacer una prueba de humo para detectar una fuga pequeña en el sistema EVAP?"
+  },
+  "P0457": {
+    "title": "Se detectó una fuga en el sistema de control de emisiones evaporativas (tapón del tanque flojo o ausente)",
+    "plain": "El tapón del tanque está flojo o falta. Apriételo hasta que haga clic; la luz debería apagarse después de conducir un tiempo.",
+    "causes": [
+      "Tapón del tanque sin apretar",
+      "Tapón del tanque ausente",
+      "Sello del tapón del tanque desgastado"
+    ],
+    "tellMechanic": "Tengo el código P0457. Ya apreté el tapón del tanque. ¿Podría estar dañado el sello?"
+  },
+  "P0500": {
+    "title": "Sensor A de velocidad del vehículo",
+    "plain": "La computadora no está recibiendo una señal de velocidad. Es posible que el velocímetro deje de funcionar y que una transmisión automática cambie de marcha de forma extraña.",
+    "causes": [
+      "Sensor de velocidad del vehículo averiado",
+      "Cableado o conector dañado",
+      "Engranaje de accionamiento del sensor desgastado"
+    ],
+    "tellMechanic": "Tengo el código P0500. ¿Puede revisar el sensor de velocidad y su cableado?"
+  },
+  "P0505": {
+    "title": "Sistema de control de aire en ralentí",
+    "plain": "El motor no puede mantener un ralentí estable. Puede quedar acelerado, demasiado bajo o apagarse al detenerse.",
+    "causes": [
+      "Cuerpo del acelerador sucio",
+      "Válvula de control de aire en ralentí averiada",
+      "Fuga de vacío"
+    ],
+    "tellMechanic": "Tengo el código P0505. ¿Puede limpiar el cuerpo del acelerador y revisar la válvula de control de aire en ralentí?"
+  },
+  "P0507": {
+    "title": "Revoluciones del motor en ralentí por encima de lo esperado",
+    "plain": "El motor está funcionando en ralentí a más revoluciones de las que indica la computadora. Lo habitual es que se deba a un cuerpo del acelerador sucio o a una fuga de vacío.",
+    "causes": [
+      "Cuerpo del acelerador sucio",
+      "Fuga de vacío por una manguera o junta del múltiple de admisión agrietada",
+      "Válvula de control de aire en ralentí o actuador del acelerador defectuosos",
+      "Válvula PCV atascada abierta"
+    ],
+    "tellMechanic": "Tengo un código P0507 de ralentí alto. ¿Puede limpiar el cuerpo del acelerador, hacer una prueba de humo para detectar fugas de vacío y volver a calibrar el acelerador?"
+  },
+  "P0524": {
+    "title": "Presión de aceite del motor demasiado baja",
+    "plain": "La presión de aceite del motor es demasiado baja. Deje de conducir en cuanto sea seguro hacerlo y revise el nivel de aceite, porque una presión baja puede arruinar rápidamente el motor.",
+    "causes": [
+      "Nivel bajo de aceite del motor",
+      "Aceite incorrecto o desgastado",
+      "Bomba de aceite defectuosa",
+      "Sensor de presión de aceite defectuoso"
+    ],
+    "tellMechanic": "Tengo el código P0524. ¿Puede medir la presión real del aceite con un manómetro?"
+  },
+  "P0562": {
+    "title": "Voltaje bajo del sistema",
+    "plain": "El voltaje del sistema eléctrico del automóvil es demasiado bajo. Es posible que la batería o el alternador estén por fallar.",
+    "causes": [
+      "Batería débil o vieja",
+      "Alternador defectuoso",
+      "Cables de batería flojos o corroídos"
+    ],
+    "tellMechanic": "Tengo el código P0562. ¿Puede probar la batería y la salida del alternador?"
+  },
+  "P0606": {
+    "title": "Falla del procesador del módulo de control",
+    "plain": "La computadora del motor detectó un problema interno. A veces se soluciona con una actualización de software; otras veces hay que cambiar la computadora.",
+    "causes": [
+      "Falla interna de la computadora del motor",
+      "Alimentación eléctrica o conexión a tierra deficiente de la computadora",
+      "Software de la computadora desactualizado"
+    ],
+    "tellMechanic": "Tengo el código P0606. ¿Puede revisar la alimentación y las conexiones a tierra de la computadora, y comprobar si hay una actualización de software?"
+  },
+  "P0700": {
+    "title": "Falla del sistema de control de la transmisión",
+    "plain": "La computadora de la transmisión detectó un problema y guardó su propio código. Un escaneo de la transmisión mostrará los detalles.",
+    "causes": [
+      "Falla registrada en la computadora de la transmisión",
+      "Solenoide de cambio defectuoso",
+      "Líquido de transmisión bajo o viejo"
+    ],
+    "tellMechanic": "Tengo el código P0700. ¿Puede leer los códigos de la computadora de la transmisión?"
+  },
+  "P0730": {
+    "title": "Relación de marchas incorrecta",
+    "plain": "La transmisión no está usando la relación de marchas que espera la computadora, lo que normalmente significa que patina. Seguir conduciendo así puede dañar la transmisión.",
+    "causes": [
+      "Líquido de transmisión bajo o quemado",
+      "Embragues o bandas desgastados",
+      "Solenoide de cambio o cuerpo de válvulas defectuosos"
+    ],
+    "tellMechanic": "Tengo el código P0730 de relación de marchas incorrecta. ¿Puede revisar el líquido de transmisión y comprobar si patina?"
+  },
+  "P0740": {
+    "title": "Circuito del embrague del convertidor de par abierto o con falla",
+    "plain": "El circuito del embrague del convertidor de par tiene una falla. Puede notar vibraciones, revoluciones altas a velocidad de carretera o un mayor consumo.",
+    "causes": [
+      "Líquido de transmisión bajo o viejo",
+      "Solenoide del embrague del convertidor de par averiado",
+      "Problema de cableado",
+      "Convertidor de par desgastado"
+    ],
+    "tellMechanic": "Tengo el código P0740. ¿Puede revisar el líquido de transmisión y el solenoide del embrague del convertidor de par?"
+  },
+  "P0741": {
+    "title": "Rendimiento deficiente o desactivación del circuito del embrague del convertidor de par",
+    "plain": "El embrague del convertidor de par no se bloquea cuando debería. Puede notar revoluciones más altas a velocidad de carretera y un mayor consumo.",
+    "causes": [
+      "Líquido de transmisión bajo o quemado",
+      "Solenoide del embrague del convertidor de par desgastado",
+      "Convertidor de par desgastado"
+    ],
+    "tellMechanic": "Tengo el código P0741. ¿Puede revisar el líquido de transmisión y probar el embrague del convertidor de par?"
+  },
+  "P2096": {
+    "title": "Ajuste de combustible posterior al catalizador demasiado pobre (banco 1)",
+    "plain": "Los gases de escape después del catalizador parecen indicar una mezcla demasiado pobre. Es común que se deba a una fuga de escape o a un sensor posterior defectuoso.",
+    "causes": [
+      "Fuga de escape antes del sensor posterior al catalizador",
+      "Sensor de oxígeno posterior al catalizador defectuoso",
+      "Fuga de vacío o suministro de combustible débil"
+    ],
+    "tellMechanic": "Tengo el código P2096. ¿Puede revisar si hay fugas de escape y probar el sensor de oxígeno posterior al catalizador?"
+  },
+  "P2097": {
+    "title": "Ajuste de combustible posterior al catalizador demasiado rico (banco 1)",
+    "plain": "Los gases de escape después del catalizador parecen indicar una mezcla demasiado rica. Es común que se deba a un sensor posterior defectuoso o a un exceso de combustible.",
+    "causes": [
+      "Sensor de oxígeno posterior al catalizador defectuoso",
+      "Inyector de combustible con fuga o presión de combustible alta",
+      "Filtro de aire o sensor MAF sucio"
+    ],
+    "tellMechanic": "Tengo el código P2097. ¿Puede probar el sensor de oxígeno posterior al catalizador y revisar la presión del combustible?"
+  },
+  "P2135": {
+    "title": "Correlación de voltaje entre los sensores o interruptores A y B de posición del acelerador o pedal",
+    "plain": "Los dos sensores del acelerador no coinciden. Para mayor seguridad, la computadora puede limitar la potencia del motor (modo de emergencia).",
+    "causes": [
+      "Cuerpo del acelerador sucio",
+      "Problema de cableado o conector",
+      "Cuerpo del acelerador electrónico defectuoso"
+    ],
+    "tellMechanic": "Tengo el código P2135. ¿Puede revisar el cuerpo del acelerador y las señales de ambos sensores de posición?"
+  },
+  "U0100": {
+    "title": "Se perdió la comunicación con el módulo A de control del motor o del tren motriz",
+    "plain": "Las otras computadoras del automóvil no pueden comunicarse con la computadora del motor. Es posible que el motor se apague o no arranque, y que se enciendan otras luces de advertencia.",
+    "causes": [
+      "Batería débil o conexión de batería floja",
+      "Fusible quemado o problema de alimentación eléctrica o conexión a tierra de la computadora del motor",
+      "Cableado de la red CAN dañado",
+      "Computadora del motor averiada"
+    ],
+    "tellMechanic": "Tengo el código U0100 de pérdida de comunicación con la computadora del motor. ¿Puede revisar primero la batería, los fusibles y el cableado de la red?"
+  },
+  "U0101": {
+    "title": "Se perdió la comunicación con el módulo de control de la transmisión",
+    "plain": "Las otras computadoras del automóvil no pueden comunicarse con la computadora de la transmisión. Es posible que la transmisión cambie de marcha de forma extraña o se quede en una sola marcha.",
+    "causes": [
+      "Batería débil o conexión de batería floja",
+      "Fusible quemado o problema de alimentación eléctrica o conexión a tierra de la computadora de la transmisión",
+      "Cableado de la red CAN dañado",
+      "Computadora de la transmisión averiada"
+    ],
+    "tellMechanic": "Tengo el código U0101 de pérdida de comunicación con la computadora de la transmisión. ¿Puede revisar primero la batería, los fusibles y el cableado de la red?"
+  }
+}

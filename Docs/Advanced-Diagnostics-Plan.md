@@ -286,7 +286,9 @@ CSV is excellent for interchange but verbose at hours-long scale: the real 7.4-m
 
 **Acceptance/tests:** empty session, no auto events, many annotations, three-/seven-hour sessions, category labels, exact times, telemetry gaps, missing speed, localization and unit display, long tables, print page breaks, privacy toggle, legacy CSV with reduced metadata. Test report export with all actual code details only where the source session included them.
 
-### F9 — Language selection and offline localization (Proposed; medium initially, ongoing)
+### F9 — Language selection and offline localization (Released in v1.8; native review pending)
+
+**Decision (updated from Cloudflare data: US 2.33k, France 240, Singapore 200, China 170, Germany 150, Japan 130, Taiwan 90, India 90, Switzerland 70):** the first languages are French, German, Spanish, Japanese and Simplified Chinese. Scope is the core app only, with AI-drafted static bundles labelled "AI" until native speakers review them. The candidate list below is the original proposal and is kept for history.
 
 **Goal:** Make WOBD—including Bob, warnings, connection errors, live-data labels, replay, reports, and help—usable in languages other than English without per-user translation charges.
 

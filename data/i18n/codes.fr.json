@@ -1,0 +1,691 @@
+{
+  "P0011": {
+    "title": "Calage de l’arbre à cames d’admission trop avancé (banc 1)",
+    "plain": "Le calage des soupapes est plus avancé que ne le demande le calculateur. Un niveau d’huile trop bas ou une huile encrassée est souvent en cause.",
+    "causes": [
+      "Niveau d’huile moteur bas ou huile encrassée",
+      "Électrovanne de déphaseur/VVT grippée",
+      "Chaîne de distribution détendue"
+    ],
+    "tellMechanic": "J’ai le code P0011. Pouvez-vous d’abord vérifier le niveau d’huile et l’électrovanne du déphaseur ?"
+  },
+  "P0016": {
+    "title": "Corrélation de position vilebrequin/arbre à cames (banc 1, capteur A)",
+    "plain": "Le vilebrequin et l’arbre à cames ne sont pas synchronisés comme prévu par le calculateur, souvent à cause d’une chaîne détendue ou d’une courroie qui a sauté. Sur de nombreux moteurs, un décalage de la chaîne peut tordre les soupapes : évitez de rouler jusqu’à vérification.",
+    "causes": [
+      "Chaîne de distribution détendue ou courroie décalée",
+      "Électrovanne de déphaseur/VVT défectueuse",
+      "Capteur de position d’arbre à cames ou de vilebrequin défectueux",
+      "Niveau d’huile moteur bas ou huile encrassée"
+    ],
+    "tellMechanic": "J’ai un code P0016 de corrélation vilebrequin/arbre à cames. Pouvez-vous vérifier la distribution et le déphaseur VVT ?"
+  },
+  "P0101": {
+    "title": "Débitmètre d’air MAF : plage de mesure/performance",
+    "plain": "Le capteur qui mesure l’air entrant dans le moteur renvoie des valeurs incohérentes. Le moteur peut tourner irrégulièrement ou avoir des hésitations.",
+    "causes": [
+      "Débitmètre MAF encrassé",
+      "Filtre à air colmaté",
+      "Prise d’air entre le débitmètre et le moteur",
+      "Débitmètre MAF défectueux"
+    ],
+    "tellMechanic": "J’ai un P0101. Pouvez-vous nettoyer ou tester le débitmètre MAF et rechercher des prises d’air à l’admission ?"
+  },
+  "P0102": {
+    "title": "Circuit de débit d’air massique ou volumique : signal faible",
+    "plain": "Le débitmètre MAF mesure moins d’air que le moteur ne devrait en aspirer. Un capteur encrassé ou une prise d’air est une cause fréquente.",
+    "causes": [
+      "Débitmètre MAF encrassé",
+      "Manchon d’admission desserré ou fissuré après le débitmètre",
+      "Câble ou connecteur endommagé",
+      "Débitmètre défectueux"
+    ],
+    "tellMechanic": "J’ai un P0102. Pouvez-vous vérifier le débitmètre MAF et rechercher des prises d’air à l’admission ?"
+  },
+  "P0103": {
+    "title": "Circuit de débit d’air massique ou volumique : signal élevé",
+    "plain": "Le débitmètre MAF mesure plus d’air que le moteur ne devrait en aspirer. Un capteur contaminé ou un problème de câblage est souvent en cause.",
+    "causes": [
+      "Débitmètre MAF sale ou contaminé",
+      "Court-circuit dans le câblage ou mauvaise masse",
+      "Filtre à air adaptable trop huilé",
+      "Débitmètre défectueux"
+    ],
+    "tellMechanic": "J’ai un P0103. Pouvez-vous vérifier le débitmètre MAF et son câblage ?"
+  },
+  "P0106": {
+    "title": "Capteur de pression absolue du collecteur/MAP : plage de mesure/performance",
+    "plain": "La valeur du capteur de pression du collecteur ne correspond pas au fonctionnement du moteur. Une fuite de dépression ou un capteur défectueux est souvent en cause.",
+    "causes": [
+      "Durite de dépression desserrée ou fissurée",
+      "Prise d’air sur le circuit de dépression",
+      "Capteur MAP défectueux"
+    ],
+    "tellMechanic": "J’ai un P0106. Pouvez-vous rechercher les prises d’air à la fumée et vérifier le capteur MAP ?"
+  },
+  "P0113": {
+    "title": "Circuit du capteur de température d’air d’admission : signal élevé",
+    "plain": "Le capteur de température de l’air admis envoie un signal trop élevé, généralement parce qu’il est débranché ou que son câblage est endommagé.",
+    "causes": [
+      "Connecteur du capteur débranché ou oxydé",
+      "Câblage endommagé",
+      "Capteur de température d’air d’admission défectueux"
+    ],
+    "tellMechanic": "J’ai un P0113. Pouvez-vous vérifier le capteur de température d’air d’admission et son connecteur ?"
+  },
+  "P0117": {
+    "title": "Circuit du capteur de température du liquide de refroidissement : signal faible",
+    "plain": "Le capteur indique une température moteur anormalement élevée, généralement à cause d’un court-circuit dans le câblage ou d’un capteur défectueux. La jauge de température ou le ventilateur de refroidissement peut fonctionner de façon anormale.",
+    "causes": [
+      "Câblage du capteur en court-circuit",
+      "Capteur de température du liquide de refroidissement défectueux",
+      "Connecteur endommagé"
+    ],
+    "tellMechanic": "J’ai un P0117. Pouvez-vous tester le capteur de température du liquide de refroidissement et son câblage ?"
+  },
+  "P0118": {
+    "title": "Circuit du capteur de température du liquide de refroidissement : signal élevé",
+    "plain": "Le capteur indique une température moteur anormalement basse, généralement parce qu’il est débranché ou défectueux. La jauge de température ou le ventilateur de refroidissement peut fonctionner de façon anormale.",
+    "causes": [
+      "Connecteur du capteur débranché ou oxydé",
+      "Câblage coupé",
+      "Capteur de température du liquide de refroidissement défectueux"
+    ],
+    "tellMechanic": "J’ai un P0118. Pouvez-vous tester le capteur de température du liquide de refroidissement et son connecteur ?"
+  },
+  "P0121": {
+    "title": "Capteur/commutateur de position du papillon ou de la pédale A : plage de mesure/performance",
+    "plain": "La position du papillon mesurée ne correspond pas au comportement du moteur. Vous pouvez constater une accélération médiocre ou un ralenti instable.",
+    "causes": [
+      "Boîtier papillon encrassé",
+      "Capteur de position du papillon usé",
+      "Problème de câblage ou de connecteur",
+      "Commande électronique du papillon défectueuse"
+    ],
+    "tellMechanic": "J’ai un P0121. Pouvez-vous nettoyer le boîtier papillon et vérifier son capteur de position ?"
+  },
+  "P0122": {
+    "title": "Capteur/commutateur de position du papillon ou de la pédale A : signal faible",
+    "plain": "Le capteur de position du papillon renvoie une tension très faible. Vous pouvez ressentir des à-coups, une réponse médiocre ou une perte de puissance.",
+    "causes": [
+      "Câblage desserré ou endommagé",
+      "Capteur de position du papillon ou de la pédale défectueux",
+      "Boîtier papillon défectueux"
+    ],
+    "tellMechanic": "J’ai un P0122. Pouvez-vous vérifier le circuit du capteur de position du papillon et son câblage ?"
+  },
+  "P0128": {
+    "title": "Thermostat du liquide de refroidissement : température de régulation non atteinte",
+    "plain": "Le moteur met trop de temps à chauffer. Le thermostat est généralement bloqué en position ouverte.",
+    "causes": [
+      "Thermostat bloqué en position ouverte",
+      "Capteur de température du liquide de refroidissement défectueux",
+      "Niveau de liquide de refroidissement bas"
+    ],
+    "tellMechanic": "J’ai un P0128. Pouvez-vous vérifier le thermostat et le capteur de température du liquide de refroidissement ?"
+  },
+  "P0131": {
+    "title": "Circuit de sonde lambda : tension faible (banc 1, sonde 1)",
+    "plain": "La sonde lambda en amont du catalyseur indique une tension faible, ce qui évoque un mélange pauvre. Le problème peut venir de la sonde, d’une fuite ou d’un mélange réellement trop pauvre.",
+    "causes": [
+      "Fuite d’échappement près de la sonde",
+      "Sonde lambda défectueuse",
+      "Câblage endommagé",
+      "Prise d’air provoquant réellement un mélange pauvre"
+    ],
+    "tellMechanic": "J’ai un P0131. Pouvez-vous vérifier les fuites d’échappement et les prises d’air avant de remplacer la sonde lambda amont ?"
+  },
+  "P0133": {
+    "title": "Circuit de sonde lambda : réponse lente (banc 1, sonde 1)",
+    "plain": "La sonde lambda en amont du catalyseur réagit lentement, ce qui peut augmenter la consommation. Elle est souvent simplement en fin de vie.",
+    "causes": [
+      "Sonde lambda amont usée",
+      "Fuite d’échappement en amont de la sonde",
+      "Câblage de la sonde endommagé"
+    ],
+    "tellMechanic": "J’ai un P0133. Pouvez-vous vérifier les fuites d’échappement avant de remplacer la sonde lambda amont ?"
+  },
+  "P0134": {
+    "title": "Circuit de sonde lambda : aucune activité détectée (banc 1, sonde 1)",
+    "plain": "La sonde lambda en amont du catalyseur ne répond pas. Le calculateur ne peut plus ajuster précisément le mélange, et la consommation peut augmenter.",
+    "causes": [
+      "Sonde lambda défectueuse",
+      "Fusible grillé ou câblage endommagé",
+      "Fuite d’échappement"
+    ],
+    "tellMechanic": "J’ai un P0134. Pouvez-vous vérifier la sonde lambda amont, son circuit de chauffage et son câblage ?"
+  },
+  "P0135": {
+    "title": "Circuit de chauffage de la sonde lambda (banc 1, sonde 1)",
+    "plain": "Le chauffage intégré à la sonde lambda en amont du catalyseur ne fonctionne pas. La sonde met donc plus de temps à commencer à mesurer.",
+    "causes": [
+      "Élément chauffant de la sonde lambda défectueux",
+      "Fusible du chauffage de la sonde grillé",
+      "Câblage ou connecteur endommagé"
+    ],
+    "tellMechanic": "J’ai un P0135. Pouvez-vous vérifier le fusible du chauffage de la sonde lambda avant de la remplacer ?"
+  },
+  "P0138": {
+    "title": "Circuit de sonde lambda : tension élevée (banc 1, sonde 2)",
+    "plain": "La sonde lambda en aval du catalyseur indique une tension élevée. La sonde ou son câblage est généralement en cause, mais la voiture roule souvent normalement.",
+    "causes": [
+      "Sonde lambda aval défectueuse",
+      "Câblage en court-circuit avec une alimentation",
+      "Sonde contaminée par du liquide de refroidissement ou du silicone"
+    ],
+    "tellMechanic": "J’ai un P0138. Pouvez-vous vérifier la sonde lambda aval et son câblage ?"
+  },
+  "P0141": {
+    "title": "Circuit de chauffage de la sonde lambda (banc 1, sonde 2)",
+    "plain": "Le chauffage intégré à la sonde lambda en aval du catalyseur ne fonctionne pas.",
+    "causes": [
+      "Élément chauffant de la sonde lambda défectueux",
+      "Fusible du chauffage de la sonde grillé",
+      "Câblage ou connecteur endommagé"
+    ],
+    "tellMechanic": "J’ai un P0141. Pouvez-vous vérifier le fusible du chauffage et le câblage de la sonde lambda aval ?"
+  },
+  "P0171": {
+    "title": "Mélange trop pauvre (banc 1)",
+    "plain": "Le moteur reçoit trop d’air ou pas assez de carburant. Une prise d’air est la cause la plus fréquente.",
+    "causes": [
+      "Prise d’air par une durite fissurée",
+      "Débitmètre MAF encrassé",
+      "Pompe à carburant faible ou filtre à carburant colmaté",
+      "Joint de collecteur d’admission non étanche"
+    ],
+    "tellMechanic": "J’ai un P0171 indiquant un mélange pauvre. Pouvez-vous rechercher les prises d’air à la fumée et vérifier le débitmètre MAF ?"
+  },
+  "P0172": {
+    "title": "Mélange trop riche (banc 1)",
+    "plain": "Le moteur reçoit trop de carburant par rapport à la quantité d’air. Vous pouvez sentir une odeur d’essence ou constater une hausse de consommation.",
+    "causes": [
+      "Débitmètre MAF encrassé",
+      "Injecteur qui fuit",
+      "Régulateur de pression de carburant défectueux",
+      "Filtre à air colmaté"
+    ],
+    "tellMechanic": "J’ai un P0172 indiquant un mélange riche. Pouvez-vous vérifier le débitmètre MAF et la pression de carburant ?"
+  },
+  "P0174": {
+    "title": "Mélange trop pauvre (banc 2)",
+    "plain": "Un côté du moteur reçoit trop d’air ou pas assez de carburant. Une prise d’air est la cause la plus fréquente.",
+    "causes": [
+      "Prise d’air par une durite fissurée",
+      "Débitmètre MAF encrassé",
+      "Pompe à carburant faible ou filtre à carburant colmaté",
+      "Joint de collecteur d’admission non étanche"
+    ],
+    "tellMechanic": "J’ai un P0174 indiquant un mélange pauvre. Pouvez-vous rechercher les prises d’air à la fumée et vérifier le débitmètre MAF ?"
+  },
+  "P0175": {
+    "title": "Mélange trop riche (banc 2)",
+    "plain": "Un côté du moteur reçoit trop de carburant par rapport à la quantité d’air. Vous pouvez sentir une odeur d’essence ou constater une hausse de consommation.",
+    "causes": [
+      "Débitmètre MAF encrassé",
+      "Injecteur qui fuit",
+      "Régulateur de pression de carburant défectueux",
+      "Filtre à air colmaté"
+    ],
+    "tellMechanic": "J’ai un P0175 indiquant un mélange riche. Pouvez-vous vérifier le débitmètre MAF et la pression de carburant ?"
+  },
+  "P0217": {
+    "title": "Surchauffe du moteur",
+    "plain": "Votre moteur a surchauffé. Arrêtez-vous dès que vous pouvez le faire sans danger, car la chaleur peut déformer ou fissurer des pièces du moteur.",
+    "causes": [
+      "Niveau de liquide de refroidissement bas à cause d’une fuite",
+      "Ventilateur de refroidissement en panne",
+      "Thermostat bloqué",
+      "Pompe à eau défectueuse"
+    ],
+    "tellMechanic": "J’ai un code P0217 de surchauffe. Pouvez-vous mettre le circuit de refroidissement sous pression et vérifier le ventilateur ?"
+  },
+  "P0299": {
+    "title": "Pression de suralimentation du turbocompresseur/compresseur trop faible",
+    "plain": "Le turbocompresseur ne fournit pas la pression demandée par le calculateur, et la voiture manque de puissance. Une fuite sur le circuit de suralimentation est fréquente.",
+    "causes": [
+      "Durite de suralimentation ou tuyau d’intercooler desserré ou fissuré",
+      "Filtre à air colmaté",
+      "Wastegate ou électrovanne de régulation de pression grippée",
+      "Turbocompresseur usé"
+    ],
+    "tellMechanic": "J’ai un P0299 de sous-pression. Pouvez-vous rechercher les fuites à la fumée sur l’admission et les durites de suralimentation, et vérifier la wastegate ?"
+  },
+  "P0300": {
+    "title": "Ratés d’allumage aléatoires ou sur plusieurs cylindres",
+    "plain": "Le moteur a des ratés : certains cylindres ne brûlent pas correctement le mélange. Vous pouvez ressentir des vibrations ou des hésitations. Si le voyant moteur clignote, arrêtez de rouler et faites remorquer la voiture. S’il reste allumé en continu, roulez doucement et faites contrôler la voiture rapidement.",
+    "causes": [
+      "Bougies d’allumage usées",
+      "Bobines d’allumage ou fils de bougie défectueux",
+      "Prise d’air",
+      "Pression de carburant insuffisante"
+    ],
+    "tellMechanic": "J’ai un P0300 pour des ratés d’allumage aléatoires. Pouvez-vous vérifier les bougies et les bobines, et rechercher des prises d’air ?"
+  },
+  "P0301": {
+    "title": "Ratés d’allumage détectés sur le cylindre 1",
+    "plain": "Le cylindre 1 ne fonctionne pas correctement : vous pouvez ressentir des vibrations ou des hésitations. Si le voyant moteur clignote, arrêtez de rouler et faites remorquer la voiture. S’il reste allumé en continu, roulez doucement et faites contrôler la voiture rapidement.",
+    "causes": [
+      "Bougie d’allumage du cylindre 1 usée",
+      "Bobine d’allumage ou fil de bougie défectueux",
+      "Injecteur encrassé ou qui fuit",
+      "Compression insuffisante"
+    ],
+    "tellMechanic": "J’ai un P0301. Pouvez-vous intervertir la bobine du cylindre 1 avec celle d’un autre cylindre pour voir si le raté se déplace ?"
+  },
+  "P0302": {
+    "title": "Ratés d’allumage détectés sur le cylindre 2",
+    "plain": "Le cylindre 2 ne fonctionne pas correctement : vous pouvez ressentir des vibrations ou des hésitations. Si le voyant moteur clignote, arrêtez de rouler et faites remorquer la voiture. S’il reste allumé en continu, roulez doucement et faites contrôler la voiture rapidement.",
+    "causes": [
+      "Bougie d’allumage du cylindre 2 usée",
+      "Bobine d’allumage ou fil de bougie défectueux",
+      "Injecteur encrassé ou qui fuit",
+      "Compression insuffisante"
+    ],
+    "tellMechanic": "J’ai un P0302. Pouvez-vous intervertir la bobine du cylindre 2 avec celle d’un autre cylindre pour voir si le raté se déplace ?"
+  },
+  "P0303": {
+    "title": "Ratés d’allumage détectés sur le cylindre 3",
+    "plain": "Le cylindre 3 ne fonctionne pas correctement : vous pouvez ressentir des vibrations ou des hésitations. Si le voyant moteur clignote, arrêtez de rouler et faites remorquer la voiture. S’il reste allumé en continu, roulez doucement et faites contrôler la voiture rapidement.",
+    "causes": [
+      "Bougie d’allumage du cylindre 3 usée",
+      "Bobine d’allumage ou fil de bougie défectueux",
+      "Injecteur encrassé ou qui fuit",
+      "Compression insuffisante"
+    ],
+    "tellMechanic": "J’ai un P0303. Pouvez-vous intervertir la bobine du cylindre 3 avec celle d’un autre cylindre pour voir si le raté se déplace ?"
+  },
+  "P0304": {
+    "title": "Ratés d’allumage détectés sur le cylindre 4",
+    "plain": "Le cylindre 4 ne fonctionne pas correctement : vous pouvez ressentir des vibrations ou des hésitations. Si le voyant moteur clignote, arrêtez de rouler et faites remorquer la voiture. S’il reste allumé en continu, roulez doucement et faites contrôler la voiture rapidement.",
+    "causes": [
+      "Bougie d’allumage du cylindre 4 usée",
+      "Bobine d’allumage ou fil de bougie défectueux",
+      "Injecteur encrassé ou qui fuit",
+      "Compression insuffisante"
+    ],
+    "tellMechanic": "J’ai un P0304. Pouvez-vous intervertir la bobine du cylindre 4 avec celle d’un autre cylindre pour voir si le raté se déplace ?"
+  },
+  "P0305": {
+    "title": "Ratés d’allumage détectés sur le cylindre 5",
+    "plain": "Le cylindre 5 ne fonctionne pas correctement : vous pouvez ressentir des vibrations ou des hésitations. Si le voyant moteur clignote, arrêtez de rouler et faites remorquer la voiture. S’il reste allumé en continu, roulez doucement et faites contrôler la voiture rapidement.",
+    "causes": [
+      "Bougie d’allumage du cylindre 5 usée",
+      "Bobine d’allumage ou fil de bougie défectueux",
+      "Injecteur encrassé ou qui fuit",
+      "Compression insuffisante"
+    ],
+    "tellMechanic": "J’ai un P0305. Pouvez-vous intervertir la bobine du cylindre 5 avec celle d’un autre cylindre pour voir si le raté se déplace ?"
+  },
+  "P0306": {
+    "title": "Ratés d’allumage détectés sur le cylindre 6",
+    "plain": "Le cylindre 6 ne fonctionne pas correctement : vous pouvez ressentir des vibrations ou des hésitations. Si le voyant moteur clignote, arrêtez de rouler et faites remorquer la voiture. S’il reste allumé en continu, roulez doucement et faites contrôler la voiture rapidement.",
+    "causes": [
+      "Bougie d’allumage du cylindre 6 usée",
+      "Bobine d’allumage ou fil de bougie défectueux",
+      "Injecteur encrassé ou qui fuit",
+      "Compression insuffisante"
+    ],
+    "tellMechanic": "J’ai un P0306. Pouvez-vous intervertir la bobine du cylindre 6 avec celle d’un autre cylindre pour voir si le raté se déplace ?"
+  },
+  "P0307": {
+    "title": "Ratés d’allumage détectés sur le cylindre 7",
+    "plain": "Le cylindre 7 ne fonctionne pas correctement : vous pouvez ressentir des vibrations ou des hésitations. Si le voyant moteur clignote, arrêtez de rouler et faites remorquer la voiture. S’il reste allumé en continu, roulez doucement et faites contrôler la voiture rapidement.",
+    "causes": [
+      "Bougie d’allumage du cylindre 7 usée",
+      "Bobine d’allumage ou fil de bougie défectueux",
+      "Injecteur encrassé ou qui fuit",
+      "Compression insuffisante"
+    ],
+    "tellMechanic": "J’ai un P0307. Pouvez-vous intervertir la bobine du cylindre 7 avec celle d’un autre cylindre pour voir si le raté se déplace ?"
+  },
+  "P0308": {
+    "title": "Ratés d’allumage détectés sur le cylindre 8",
+    "plain": "Le cylindre 8 ne fonctionne pas correctement : vous pouvez ressentir des vibrations ou des hésitations. Si le voyant moteur clignote, arrêtez de rouler et faites remorquer la voiture. S’il reste allumé en continu, roulez doucement et faites contrôler la voiture rapidement.",
+    "causes": [
+      "Bougie d’allumage du cylindre 8 usée",
+      "Bobine d’allumage ou fil de bougie défectueux",
+      "Injecteur encrassé ou qui fuit",
+      "Compression insuffisante"
+    ],
+    "tellMechanic": "J’ai un P0308. Pouvez-vous intervertir la bobine du cylindre 8 avec celle d’un autre cylindre pour voir si le raté se déplace ?"
+  },
+  "P0325": {
+    "title": "Circuit du capteur de cliquetis 1 (banc 1)",
+    "plain": "Le capteur qui détecte le cliquetis moteur n’envoie pas un signal correct. Par précaution, le calculateur peut réduire une partie de la puissance.",
+    "causes": [
+      "Câblage du capteur de cliquetis endommagé",
+      "Connecteur oxydé",
+      "Capteur de cliquetis défectueux"
+    ],
+    "tellMechanic": "J’ai un P0325. Pouvez-vous vérifier le câblage du capteur de cliquetis avant de remplacer le capteur ?"
+  },
+  "P0335": {
+    "title": "Circuit du capteur de position A du vilebrequin",
+    "plain": "Le calculateur ne reçoit plus le signal indiquant la position du vilebrequin. Le moteur peut caler ou refuser de démarrer.",
+    "causes": [
+      "Capteur de position du vilebrequin défectueux",
+      "Câblage du capteur endommagé",
+      "Roue phonique du vilebrequin endommagée"
+    ],
+    "tellMechanic": "J’ai un P0335. Pouvez-vous vérifier le signal du capteur de vilebrequin et son câblage ?"
+  },
+  "P0340": {
+    "title": "Circuit du capteur de position A de l’arbre à cames (banc 1)",
+    "plain": "Le calculateur ne reçoit pas un signal correct du capteur d’arbre à cames. La voiture peut avoir du mal à démarrer ou mal fonctionner.",
+    "causes": [
+      "Capteur de position d’arbre à cames défectueux",
+      "Câblage ou connecteur endommagé",
+      "Courroie ou chaîne de distribution décalée"
+    ],
+    "tellMechanic": "J’ai un P0340. Pouvez-vous vérifier le capteur d’arbre à cames et son câblage, et confirmer le bon calage de la distribution ?"
+  },
+  "P0401": {
+    "title": "Débit insuffisant du système de recirculation des gaz d’échappement (EGR)",
+    "plain": "Le système qui renvoie une partie des gaz d’échappement dans le moteur pour réduire les émissions ne laisse pas passer assez de gaz. Vous pouvez entendre du cliquetis à l’accélération.",
+    "causes": [
+      "Conduits EGR obstrués par la calamine",
+      "Vanne EGR grippée",
+      "Capteur de pression EGR défectueux"
+    ],
+    "tellMechanic": "J’ai un P0401. Pouvez-vous vérifier l’encrassement des conduits EGR avant de remplacer la vanne ?"
+  },
+  "P0411": {
+    "title": "Débit incorrect du système d’injection d’air secondaire",
+    "plain": "La pompe qui envoie de l’air frais dans l’échappement au démarrage à froid ne fait pas circuler assez d’air. Cela ne concerne les émissions que pendant la première minute environ.",
+    "causes": [
+      "Pompe d’air secondaire défectueuse",
+      "Clapet anti-retour bloqué",
+      "Fusible grillé ou relais défectueux",
+      "Durite d’air fissurée"
+    ],
+    "tellMechanic": "J’ai un P0411. Pouvez-vous vérifier le fusible et le relais de la pompe à air, ainsi que le clapet anti-retour ?"
+  },
+  "P0420": {
+    "title": "Rendement du catalyseur inférieur au seuil (banc 1)",
+    "plain": "Le catalyseur ne dépollue pas les gaz d’échappement aussi efficacement qu’il le devrait.",
+    "causes": [
+      "Sonde lambda aval défectueuse",
+      "Fuite d’échappement",
+      "Catalyseur usé"
+    ],
+    "tellMechanic": "J’ai un P0420. Pouvez-vous vérifier les sondes lambda et rechercher des fuites d’échappement avant de remplacer le catalyseur ?"
+  },
+  "P0421": {
+    "title": "Rendement du catalyseur de préchauffage inférieur au seuil (banc 1)",
+    "plain": "Le catalyseur ne dépollue pas suffisamment les gaz d’échappement pendant sa montée en température.",
+    "causes": [
+      "Sonde lambda aval défectueuse",
+      "Fuite d’échappement",
+      "Catalyseur usé"
+    ],
+    "tellMechanic": "J’ai un P0421. Pouvez-vous vérifier les sondes lambda et rechercher des fuites d’échappement avant de remplacer le catalyseur ?"
+  },
+  "P0430": {
+    "title": "Rendement du catalyseur inférieur au seuil (banc 2)",
+    "plain": "Le catalyseur d’un côté du moteur ne dépollue pas les gaz d’échappement aussi efficacement qu’il le devrait.",
+    "causes": [
+      "Sonde lambda aval défectueuse",
+      "Fuite d’échappement",
+      "Catalyseur usé"
+    ],
+    "tellMechanic": "J’ai un P0430. Pouvez-vous vérifier les sondes lambda et rechercher des fuites d’échappement avant de remplacer le catalyseur ?"
+  },
+  "P0431": {
+    "title": "Rendement du catalyseur de préchauffage inférieur au seuil (banc 2)",
+    "plain": "Le catalyseur du banc 2 ne dépollue pas suffisamment les gaz d’échappement pendant sa montée en température.",
+    "causes": [
+      "Sonde lambda aval défectueuse",
+      "Fuite d’échappement",
+      "Catalyseur usé"
+    ],
+    "tellMechanic": "J’ai un P0431. Pouvez-vous vérifier les sondes lambda du banc 2 et rechercher des fuites d’échappement avant de remplacer le catalyseur ?"
+  },
+  "P0440": {
+    "title": "Dysfonctionnement du système antipollution des vapeurs de carburant (EVAP)",
+    "plain": "Le système qui retient les vapeurs d’essence du réservoir a détecté un problème. Cela ne change pas le comportement de la voiture.",
+    "causes": [
+      "Bouchon de réservoir desserré ou usé",
+      "Durite de vapeurs fissurée",
+      "Électrovanne de purge ou de mise à l’air défectueuse"
+    ],
+    "tellMechanic": "J’ai un P0440. Pouvez-vous contrôler le circuit EVAP à la fumée ?"
+  },
+  "P0441": {
+    "title": "Débit de purge incorrect du système EVAP",
+    "plain": "Le système qui envoie les vapeurs de carburant vers le moteur ne fait pas circuler la bonne quantité. Une électrovanne de purge grippée est la cause habituelle.",
+    "causes": [
+      "Électrovanne de purge grippée",
+      "Durite de vapeurs fissurée ou débranchée",
+      "Canister à charbon actif colmaté"
+    ],
+    "tellMechanic": "J’ai un P0441. Pouvez-vous vérifier l’électrovanne de purge EVAP et les durites de vapeurs ?"
+  },
+  "P0442": {
+    "title": "Fuite détectée dans le système EVAP (petite fuite)",
+    "plain": "Le système de récupération des vapeurs de carburant présente une petite fuite. Le bouchon de réservoir ne ferme souvent pas correctement : commencez par le resserrer jusqu’au clic.",
+    "causes": [
+      "Bouchon de réservoir desserré ou usé",
+      "Durite de vapeurs fissurée",
+      "Électrovanne de purge ou de mise à l’air défectueuse"
+    ],
+    "tellMechanic": "J’ai un P0442. Pouvez-vous contrôler le circuit EVAP à la fumée et vérifier l’étanchéité du bouchon de réservoir ?"
+  },
+  "P0443": {
+    "title": "Circuit de commande de la vanne de purge EVAP",
+    "plain": "Le calculateur ne peut pas commander la vanne qui envoie les vapeurs de carburant vers le moteur. La vanne ou son câblage est généralement en cause.",
+    "causes": [
+      "Électrovanne de purge défectueuse",
+      "Connecteur desserré ou oxydé",
+      "Fusible grillé",
+      "Câblage endommagé"
+    ],
+    "tellMechanic": "J’ai un P0443. Pouvez-vous tester l’électrovanne de purge EVAP et son câblage ?"
+  },
+  "P0446": {
+    "title": "Circuit de commande de mise à l’air du système EVAP",
+    "plain": "La vanne qui permet au système de récupération des vapeurs de carburant de respirer ne fonctionne pas correctement. Cela ne change pas le comportement de la voiture.",
+    "causes": [
+      "Vanne de mise à l’air défectueuse",
+      "Filtre de mise à l’air obstrué",
+      "Câblage de la vanne de mise à l’air endommagé"
+    ],
+    "tellMechanic": "J’ai un P0446. Pouvez-vous vérifier la vanne de mise à l’air EVAP et son câblage ?"
+  },
+  "P0449": {
+    "title": "Circuit de la vanne/électrovanne de mise à l’air EVAP",
+    "plain": "La vanne de mise à l’air EVAP présente un défaut électrique. La vanne près du réservoir peut être bloquée ou son câblage oxydé. Le plein peut aussi être difficile à faire.",
+    "causes": [
+      "Vanne de mise à l’air défectueuse",
+      "Connecteur ou câblage oxydé près du réservoir",
+      "Fusible grillé"
+    ],
+    "tellMechanic": "J’ai un P0449. Pouvez-vous tester la vanne de mise à l’air EVAP et vérifier son câblage et son connecteur ?"
+  },
+  "P0455": {
+    "title": "Fuite importante détectée dans le système EVAP",
+    "plain": "Le système de récupération des vapeurs de carburant présente une fuite importante. Vérifiez d’abord que le bouchon de réservoir est en place et bien serré jusqu’au clic.",
+    "causes": [
+      "Bouchon de réservoir absent ou desserré",
+      "Durite de vapeurs débranchée",
+      "Vanne de mise à l’air bloquée en position ouverte",
+      "Canister à charbon actif fissuré"
+    ],
+    "tellMechanic": "J’ai un P0455. Pouvez-vous rechercher à la fumée une grosse fuite sur le système EVAP, en commençant par le bouchon et les durites de vapeurs ?"
+  },
+  "P0456": {
+    "title": "Très petite fuite détectée dans le système EVAP",
+    "plain": "Le système de récupération des vapeurs de carburant présente une très petite fuite. Un joint de bouchon de réservoir usé est une cause fréquente.",
+    "causes": [
+      "Joint du bouchon de réservoir usé",
+      "Petite fissure dans une durite de vapeurs",
+      "Électrovanne de purge ou de mise à l’air non étanche"
+    ],
+    "tellMechanic": "J’ai un P0456. Pouvez-vous rechercher à la fumée une petite fuite sur le système EVAP ?"
+  },
+  "P0457": {
+    "title": "Fuite EVAP détectée (bouchon de réservoir desserré ou absent)",
+    "plain": "Le bouchon de réservoir est desserré ou absent. Serrez-le jusqu’au clic ; le voyant devrait s’éteindre après quelques trajets.",
+    "causes": [
+      "Bouchon de réservoir mal serré",
+      "Bouchon de réservoir absent",
+      "Joint du bouchon de réservoir usé"
+    ],
+    "tellMechanic": "J’ai un P0457. J’ai resserré le bouchon de réservoir. Est-ce que son joint pourrait être défectueux ?"
+  },
+  "P0500": {
+    "title": "Capteur de vitesse du véhicule A",
+    "plain": "Le calculateur ne reçoit pas de signal de vitesse. Le compteur de vitesse peut ne plus fonctionner et une boîte automatique peut passer les rapports de façon anormale.",
+    "causes": [
+      "Capteur de vitesse du véhicule défectueux",
+      "Câblage ou connecteur endommagé",
+      "Roue d’entraînement du capteur usée"
+    ],
+    "tellMechanic": "J’ai un P0500. Pouvez-vous vérifier le capteur de vitesse et son câblage ?"
+  },
+  "P0505": {
+    "title": "Système de régulation du ralenti",
+    "plain": "Le moteur ne parvient pas à maintenir un ralenti stable. Le régime peut être trop élevé ou trop bas, ou le moteur peut caler à l’arrêt.",
+    "causes": [
+      "Boîtier papillon encrassé",
+      "Vanne de régulation du ralenti défectueuse",
+      "Prise d’air"
+    ],
+    "tellMechanic": "J’ai un P0505. Pouvez-vous nettoyer le boîtier papillon et vérifier la vanne de régulation du ralenti ?"
+  },
+  "P0507": {
+    "title": "Régime de ralenti supérieur à la valeur attendue",
+    "plain": "Le moteur tourne au ralenti plus vite que ne le souhaite le calculateur. Un boîtier papillon encrassé ou une prise d’air est généralement en cause.",
+    "causes": [
+      "Boîtier papillon encrassé",
+      "Prise d’air par une durite fissurée ou un joint de collecteur",
+      "Vanne de régulation du ralenti ou actionneur de papillon défectueux",
+      "Vanne PCV bloquée en position ouverte"
+    ],
+    "tellMechanic": "J’ai un P0507 de ralenti trop élevé. Pouvez-vous nettoyer le boîtier papillon, rechercher les prises d’air à la fumée et réinitialiser l’apprentissage du papillon ?"
+  },
+  "P0524": {
+    "title": "Pression d’huile moteur trop faible",
+    "plain": "La pression d’huile moteur est trop faible. Arrêtez-vous dès que vous pouvez le faire sans danger et vérifiez le niveau d’huile : une pression insuffisante peut rapidement détruire le moteur.",
+    "causes": [
+      "Niveau d’huile moteur bas",
+      "Huile inadaptée ou usée",
+      "Pompe à huile défectueuse",
+      "Capteur de pression d’huile défectueux"
+    ],
+    "tellMechanic": "J’ai un P0524. Pouvez-vous mesurer la pression réelle d’huile avec un manomètre ?"
+  },
+  "P0562": {
+    "title": "Tension du système trop faible",
+    "plain": "La tension du circuit électrique de la voiture est trop faible. La batterie ou l’alternateur est peut-être en train de faiblir.",
+    "causes": [
+      "Batterie faible ou usée",
+      "Alternateur défectueux",
+      "Cosses ou câbles de batterie desserrés ou oxydés"
+    ],
+    "tellMechanic": "J’ai un P0562. Pouvez-vous tester la batterie et la tension de charge de l’alternateur ?"
+  },
+  "P0606": {
+    "title": "Défaut du processeur du calculateur moteur",
+    "plain": "Le calculateur moteur a détecté un problème interne. Une mise à jour logicielle peut parfois le résoudre ; dans d’autres cas, le calculateur doit être remplacé.",
+    "causes": [
+      "Défaut interne du calculateur moteur",
+      "Alimentation ou masse du calculateur insuffisante",
+      "Logiciel du calculateur obsolète"
+    ],
+    "tellMechanic": "J’ai un P0606. Pouvez-vous vérifier les alimentations et les masses du calculateur, et voir s’il existe une mise à jour logicielle ?"
+  },
+  "P0700": {
+    "title": "Dysfonctionnement du système de commande de la transmission",
+    "plain": "Le calculateur de transmission a détecté un problème et a enregistré son propre code. Une lecture des codes de la transmission permettra d’en connaître le détail.",
+    "causes": [
+      "Défaut enregistré dans le calculateur de transmission",
+      "Électrovanne de changement de rapport défectueuse",
+      "Huile de transmission basse ou usée"
+    ],
+    "tellMechanic": "J’ai un P0700. Pouvez-vous lire les codes du calculateur de transmission ?"
+  },
+  "P0730": {
+    "title": "Rapport de transmission incorrect",
+    "plain": "La transmission n’utilise pas le rapport attendu par le calculateur, ce qui indique généralement un patinage. Continuer à rouler ainsi peut endommager la transmission.",
+    "causes": [
+      "Niveau d’huile de transmission bas ou huile brûlée",
+      "Disques ou bandes de friction usés",
+      "Électrovanne de changement de rapport ou bloc hydraulique défectueux"
+    ],
+    "tellMechanic": "J’ai un P0730 de rapport de transmission incorrect. Pouvez-vous vérifier l’huile de transmission et rechercher un patinage ?"
+  },
+  "P0740": {
+    "title": "Circuit d’embrayage du convertisseur de couple ouvert ou défectueux",
+    "plain": "Le circuit d’embrayage du convertisseur de couple présente un défaut. Vous pouvez ressentir des vibrations, constater un régime moteur élevé sur autoroute ou une hausse de consommation.",
+    "causes": [
+      "Huile de transmission basse ou usée",
+      "Électrovanne d’embrayage du convertisseur de couple défectueuse",
+      "Problème de câblage",
+      "Convertisseur de couple usé"
+    ],
+    "tellMechanic": "J’ai un P0740. Pouvez-vous vérifier l’huile de transmission et l’électrovanne d’embrayage du convertisseur de couple ?"
+  },
+  "P0741": {
+    "title": "Circuit d’embrayage du convertisseur de couple : performance ou blocage en position ouverte",
+    "plain": "L’embrayage du convertisseur de couple ne se verrouille pas quand il le devrait. Vous pouvez constater un régime moteur plus élevé sur autoroute et une hausse de consommation.",
+    "causes": [
+      "Huile de transmission basse ou brûlée",
+      "Électrovanne d’embrayage du convertisseur de couple usée",
+      "Convertisseur de couple usé"
+    ],
+    "tellMechanic": "J’ai un P0741. Pouvez-vous vérifier l’huile de transmission et tester l’embrayage du convertisseur de couple ?"
+  },
+  "P2096": {
+    "title": "Correction de richesse après catalyseur trop pauvre (banc 1)",
+    "plain": "Les gaz d’échappement après le catalyseur semblent trop pauvres. Une fuite d’échappement ou une sonde lambda aval défectueuse est souvent en cause.",
+    "causes": [
+      "Fuite d’échappement avant la sonde lambda aval",
+      "Sonde lambda aval défectueuse",
+      "Prise d’air ou alimentation en carburant insuffisante"
+    ],
+    "tellMechanic": "J’ai un P2096. Pouvez-vous rechercher les fuites d’échappement et tester la sonde lambda aval ?"
+  },
+  "P2097": {
+    "title": "Correction de richesse après catalyseur trop riche (banc 1)",
+    "plain": "Les gaz d’échappement après le catalyseur semblent trop riches. Une sonde lambda aval défectueuse ou un excès de carburant est souvent en cause.",
+    "causes": [
+      "Sonde lambda aval défectueuse",
+      "Injecteur qui fuit ou pression de carburant trop élevée",
+      "Filtre à air ou débitmètre MAF encrassé"
+    ],
+    "tellMechanic": "J’ai un P2097. Pouvez-vous tester la sonde lambda aval et vérifier la pression de carburant ?"
+  },
+  "P2135": {
+    "title": "Corrélation des tensions des capteurs/commutateurs de position A/B du papillon ou de la pédale",
+    "plain": "Les deux capteurs de position du papillon ne donnent pas la même valeur. Par sécurité, le calculateur peut limiter la puissance du moteur (mode dégradé).",
+    "causes": [
+      "Boîtier papillon encrassé",
+      "Problème de câblage ou de connecteur",
+      "Boîtier papillon électronique défectueux"
+    ],
+    "tellMechanic": "J’ai un P2135. Pouvez-vous vérifier le boîtier papillon et les signaux des deux capteurs de position ?"
+  },
+  "U0100": {
+    "title": "Perte de communication avec le calculateur moteur ECM/PCM « A »",
+    "plain": "Les autres calculateurs de la voiture ne communiquent plus avec le calculateur moteur. Le moteur peut caler ou ne pas démarrer, et d’autres voyants peuvent s’allumer.",
+    "causes": [
+      "Batterie faible ou connexion de batterie desserrée",
+      "Fusible grillé ou alimentation/masse défectueuse du calculateur moteur",
+      "Câblage endommagé du réseau CAN",
+      "Calculateur moteur défectueux"
+    ],
+    "tellMechanic": "J’ai un U0100 de perte de communication avec le calculateur moteur. Pouvez-vous d’abord vérifier la batterie, les fusibles et le câblage du réseau CAN ?"
+  },
+  "U0101": {
+    "title": "Perte de communication avec le calculateur de transmission TCM",
+    "plain": "Les autres calculateurs de la voiture ne communiquent plus avec le calculateur de transmission. La boîte peut passer les rapports de façon anormale ou rester sur un seul rapport.",
+    "causes": [
+      "Batterie faible ou connexion de batterie desserrée",
+      "Fusible grillé ou alimentation/masse défectueuse du calculateur de transmission",
+      "Câblage endommagé du réseau CAN",
+      "Calculateur de transmission défectueux"
+    ],
+    "tellMechanic": "J’ai un U0101 de perte de communication avec le calculateur de transmission. Pouvez-vous d’abord vérifier la batterie, les fusibles et le câblage du réseau CAN ?"
+  }
+}

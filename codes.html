@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Trouble code search · WOBD</title>
-  <meta name="description" content="Type an OBD-II trouble code like P0601 and Bob explains it in plain English. Works offline, no adapter needed.">
+  <title data-i18n="bob.codes.title">Trouble code search</title>
+  <meta name="description" content="Type an OBD-II trouble code like P0601 and Bob explains it in plain English. Works offline, no adapter needed." data-i18n-attr="content:bob.codes.metaDescription">
   <link rel="canonical" href="https://wobd.app/codes">
   <meta name="theme-color" content="#1F3F8F">
   <link rel="manifest" href="manifest.webmanifest">
@@ -12,6 +12,7 @@
   <link rel="apple-touch-icon" href="img/icons/apple-touch-icon.png">
   <link rel="stylesheet" href="css/style.css">
   <script src="js/theme.js"></script>
+  <script type="module" src="js/i18n-boot.js"></script>
   <script type="module" src="js/codes.js"></script>
   <script src="js/pwa.js" defer></script>
   <script src="js/site-nav.js" defer></script>
@@ -21,15 +22,15 @@
   <header class="site-header">
     <a class="logo" href="./"><img class="logo-image" src="Assets/header-logo.png" alt="">WOBD</a>
     <div class="header-right">
-      <nav class="site-nav" aria-label="Main navigation">
-        <a class="header-link" href="./" data-nav="scanner">Scanner</a>
-        <a class="header-link" href="codes.html" data-nav="codes">Code Search</a>
-        <a class="header-link" href="replay.html" data-nav="replay">Replay</a>
-        <a class="header-link" href="./#demos" data-nav="demos">Demos</a>
-        <a class="header-link" href="guide.html" data-nav="guide">How to Use</a>
-        <a class="header-link" href="tested-adapters.html" data-nav="adapters">Tested Adapters</a>
+      <nav class="site-nav" aria-label="Main navigation" data-i18n-attr="aria-label:nav.main">
+        <a class="header-link" href="./" data-nav="scanner" data-i18n="nav.scanner">Scanner</a>
+        <a class="header-link" href="codes.html" data-nav="codes" data-i18n="nav.codes">Code Search</a>
+        <a class="header-link" href="replay.html" data-nav="replay" data-i18n="nav.replay">Replay</a>
+        <a class="header-link" href="./#demos" data-nav="demos" data-i18n="nav.demos">Demos</a>
+        <a class="header-link" href="guide.html" data-nav="guide" data-i18n="nav.guide">How to Use</a>
+        <a class="header-link" href="tested-adapters.html" data-nav="adapters" data-i18n="nav.adapters">Tested Adapters</a>
       </nav>
-      <button id="theme-btn" type="button" class="theme-btn" aria-pressed="false" aria-label="Dark mode">
+      <button id="theme-btn" type="button" class="theme-btn" aria-pressed="false" aria-label="Dark mode" data-i18n-attr="aria-label:nav.theme">
         <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="currentColor"/></svg>
         <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></g></svg>
       </button>
@@ -37,40 +38,40 @@
   </header>
 
   <main class="layout">
-    <section class="panel" aria-label="Trouble code search">
-      <h1 class="page-title">Trouble code search</h1>
-      <p class="lede">Type a code from your check engine light, like <strong>P0601</strong>, and Bob will explain it. This works offline and doesn't need an adapter.</p>
+    <section class="panel" aria-label="Trouble code search" data-i18n-attr="aria-label:bob.codes.panel">
+      <h1 class="page-title" data-i18n="bob.codes.title">Trouble code search</h1>
+      <p class="lede" data-i18n-rich="bob.codes.lede">Type a code from your check engine light, like <strong>P0601</strong>, and Bob will explain it. This works offline and doesn't need an adapter.</p>
 
       <form id="code-form" class="code-form" role="search" autocomplete="off">
-        <label for="code-input">Trouble code</label>
+        <label for="code-input" data-i18n="bob.codes.label">Trouble code</label>
         <div class="code-form-row">
-          <input id="code-input" type="text" inputmode="text" maxlength="8" placeholder="P0601" spellcheck="false" autocapitalize="characters" required>
-          <button type="submit" class="btn btn-primary">Ask Bob</button>
+          <input id="code-input" type="text" inputmode="text" maxlength="8" placeholder="P0601" data-i18n-attr="placeholder:bob.codes.placeholder" spellcheck="false" autocapitalize="characters" required>
+          <button type="submit" class="btn btn-primary" data-i18n="bob.codes.ask">Ask Bob</button>
         </div>
       </form>
 
-      <form id="car-form" class="car-form car-form-page" aria-label="Your car" onsubmit="return false">
-        <span class="car-form-title">Your car (optional)</span>
-        <label class="sr-only" for="car-year">Year</label>
-        <select id="car-year"><option value="">Year</option></select>
-        <label class="sr-only" for="car-make">Make</label>
-        <select id="car-make"><option value="">Make</option></select>
-        <label class="sr-only" for="car-make-other">Make (other)</label>
-        <input id="car-make-other" type="text" placeholder="Make" autocomplete="off" hidden>
-        <label class="sr-only" for="car-model">Model</label>
-        <select id="car-model" disabled><option value="">Model</option></select>
-        <label class="sr-only" for="car-model-other">Model (other)</label>
-        <input id="car-model-other" type="text" placeholder="Model" autocomplete="off" hidden>
+      <form id="car-form" class="car-form car-form-page" aria-label="Your car" data-i18n-attr="aria-label:bob.codes.carAria" onsubmit="return false">
+        <span class="car-form-title" data-i18n="bob.codes.car">Your car (optional)</span>
+        <label class="sr-only" for="car-year" data-i18n="bob.codes.year">Year</label>
+        <select id="car-year"><option value="" data-i18n="bob.codes.year">Year</option></select>
+        <label class="sr-only" for="car-make" data-i18n="bob.codes.make">Make</label>
+        <select id="car-make"><option value="" data-i18n="bob.codes.make">Make</option></select>
+        <label class="sr-only" for="car-make-other" data-i18n="bob.codes.makeOther">Make (other)</label>
+        <input id="car-make-other" type="text" placeholder="Make" data-i18n-attr="placeholder:bob.codes.make" autocomplete="off" hidden>
+        <label class="sr-only" for="car-model" data-i18n="bob.codes.model">Model</label>
+        <select id="car-model" disabled><option value="" data-i18n="bob.codes.model">Model</option></select>
+        <label class="sr-only" for="car-model-other" data-i18n="bob.codes.modelOther">Model (other)</label>
+        <input id="car-model-other" type="text" placeholder="Model" data-i18n-attr="placeholder:bob.codes.model" autocomplete="off" hidden>
       </form>
 
-      <p class="hint">Try:
+      <p class="hint"><span data-i18n="bob.codes.try">Try:</span>
         <button type="button" class="code-chip" data-code="P0601">P0601</button>
         <button type="button" class="code-chip" data-code="P0420">P0420</button>
         <button type="button" class="code-chip" data-code="P2002">P2002</button>
         <button type="button" class="code-chip" data-code="P1000">P1000</button>
       </p>
 
-      <p class="hint">The offline list covers the standard (SAE generic) codes for the engine and transmission (P0, P2, P34), body (B0), chassis (C0), and network (U0, U3). Codes starting with P1, or P30-P33, are defined by each car maker, so Bob won't guess at them.</p>
+      <p class="hint" data-i18n="bob.codes.hint">The offline list covers the standard (SAE generic) codes for the engine and transmission (P0, P2, P34), body (B0), chassis (C0), and network (U0, U3). Codes starting with P1, or P30-P33, are defined by each car maker, so Bob won't guess at them.</p>
 
       <!-- code-list:start (generated by scripts/build-code-pages.mjs) -->
       <section class="code-list" aria-labelledby="code-list-title">
@@ -147,7 +148,7 @@
       <!-- code-list:end -->
     </section>
 
-    <aside class="bob-panel" aria-label="Bob the mechanic">
+    <aside class="bob-panel" aria-label="Bob the mechanic" data-i18n-attr="aria-label:bob.codes.bobLabel">
       <div id="bob-slot" class="bubble-slot"></div>
       <div class="bob-figure"><img src="img/bob.png" alt="Bob the mechanic"></div>
       <div class="bob-name-row"><p class="bob-name">Bob</p></div>
@@ -156,8 +157,8 @@
   </main>
 
   <footer class="site-footer">
-    <p>WOBD gives general information, not a professional diagnosis. Always confirm a problem before replacing parts.</p>
-    <p>Free and open source. Nothing you type leaves this computer.</p>
+    <p data-i18n="footer.disclaimer">WOBD gives general information, not a professional diagnosis. Always confirm a problem before replacing parts.</p>
+    <p data-i18n="bob.footer.privacy">Free and open source. Nothing you type leaves this computer.</p>
   </footer>
 </body>
 </html>

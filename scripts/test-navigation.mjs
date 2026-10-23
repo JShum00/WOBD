@@ -26,7 +26,7 @@ for (const page of pages) {
   const html = await readFile(new URL(page, root), 'utf8');
   const nav = html.match(/<nav class="site-nav"[^>]*>([\s\S]*?)<\/nav>/)?.[1];
   assert.ok(nav, `${page} has the shared navigation`);
-  const links = [...nav.matchAll(/<a class="header-link" href="([^"]+)" data-nav="([^"]+)">([^<]+)<\/a>/g)]
+  const links = [...nav.matchAll(/<a class="header-link" href="([^"]+)" data-nav="([^"]+)"(?: data-i18n="[^"]+")?>([^<]+)<\/a>/g)]
     .map(([, href, key, label]) => [href, key, label]);
   assert.deepEqual(links, expectedLinks, `${page} has the canonical destinations in order`);
   assert.match(html, /js\/site-nav\.js/, `${page} loads active-page behavior`);

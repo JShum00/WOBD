@@ -1,7 +1,7 @@
 // Service worker: caches the static app shell only. Web Serial talks to the
 // USB adapter directly and never goes through fetch, so nothing here can touch
 // it. Bump CACHE_VERSION to force every returning user onto fresh files.
-const CACHE_VERSION = 'v45';
+const CACHE_VERSION = 'v46';
 const CACHE_NAME = `wobd-cache-${CACHE_VERSION}`;
 
 const APP_SHELL = [
@@ -33,6 +33,28 @@ const APP_SHELL = [
   'js/record-lock.js',
   'js/recorder.js',
   'js/replay-data.js',
+  'js/annotations.js',
+  'js/detectors.js',
+  'js/session-report.js',
+  'js/i18n.js',
+  'js/i18n-boot.js',
+  'js/units.js',
+  'data/i18n/en.json',
+  'data/i18n/fr.json',
+  'data/i18n/de.json',
+  'data/i18n/es.json',
+  'data/i18n/ja.json',
+  'data/i18n/zh-Hans.json',
+  'data/i18n/codes.fr.json',
+  'data/i18n/codes.de.json',
+  'data/i18n/codes.es.json',
+  'data/i18n/codes.ja.json',
+  'data/i18n/codes.zh-Hans.json',
+  'js/zip.js',
+  'js/wobd.js',
+  'js/csv-lossless.js',
+  'js/flight-store.js',
+  'js/backup.js',
   'js/replay-downsample.js',
   'js/replay.js',
   'js/info-tip.js',
@@ -49,6 +71,7 @@ const APP_SHELL = [
   'js/ui.js',
   'js/vehicles.js',
   'js/version-info.js',
+  'js/vin.js',
   'js/version.js',
   'js/voice.js',
   'data/codes.json',

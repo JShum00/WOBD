@@ -1,20 +1,18 @@
+import { formatNumber, onLanguageChange, t } from './i18n.js';
+
 // The full-screen driving lock shown while live data is recording. It's a
 // modal <dialog>, so the page underneath is inert: no clicks, no Tab, no
 // screen reader browsing. Nothing on it changes except the REC timer, so
 // there's nothing to read while driving.
 const $ = (id) => document.getElementById(id);
 
-const TEXT = {
-  locked: ['EYES ON THE ROAD.', 'Recording in progress. Pull over and stop to unlock.'],
-  lost: ['CONNECTION LOST.', 'I stopped hearing from the car. Everything recorded so far is safe. Pull over, then save it.'],
-};
-
 function clock(ms) {
   const total = Math.floor(ms / 1000);
   const h = Math.floor(total / 3600);
   const m = Math.floor(total / 60) % 60;
-  const s = String(total % 60).padStart(2, '0');
-  return h ? `${h}:${String(m).padStart(2, '0')}:${s}` : `${m}:${s}`;
+  const twoDigits = (value) => formatNumber(value, { minimumIntegerDigits: 2, useGrouping: false });
+  const s = total % 60;
+  return h ? `${formatNumber(h)}:${twoDigits(m)}:${twoDigits(s)}` : `${formatNumber(m)}:${twoDigits(s)}`;
 }
 
 export class RecordLock {
@@ -28,6 +26,7 @@ export class RecordLock {
     // Escape must not close the lock. Chrome lets a second Escape close a
     // dialog anyway, so the close handler reopens it while still recording.
     this.#dialog.addEventListener('cancel', (e) => e.preventDefault());
+    onLanguageChange(() => this.#tick());
     this.#dialog.addEventListener('close', () => {
       if (this.#session) this.#dialog.showModal();
     });
@@ -73,8 +72,9 @@ export class RecordLock {
     $('record-elapsed').textContent = clock(now - this.#session.startedAt);
     $('record-note').hidden = !detectionUnavailable || isLost;
     this.#dialog.dataset.lost = isLost;
-    [$('record-title').textContent, $('record-text').textContent] = TEXT[isLost ? 'lost' : 'locked'];
-    $('record-save').textContent = isLost ? 'Save CSV' : 'Stop & Save CSV';
+    $('record-title').textContent = t(isLost ? 'app.lock.connectionLost' : 'app.lock.eyesOnRoad');
+    $('record-text').textContent = t(isLost ? 'app.lock.lostText' : 'app.lock.recordingLocked');
+    $('record-save').textContent = t(isLost ? 'app.lock.saveCsv' : 'app.lock.stopSave');
     $('record-keep').hidden = this.#unplugged;
 
     const canUnlock = unlocked || isLost;

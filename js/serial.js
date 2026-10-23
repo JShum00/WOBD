@@ -1,3 +1,5 @@
+import { t } from './i18n.js';
+
 // Web Serial transport: opens the USB adapter and streams text in and out.
 // elm327.js only relies on open/close/write plus the onData and onDisconnect
 // callbacks, so demo.js can stand in for this class.
@@ -32,16 +34,16 @@ export function checkBrowser() {
     return {
       supported: false,
       name,
-      reason: "Phones and tablets can't connect to a USB car adapter.",
-      fix: 'Open wobd.app on a laptop or Chromebook in Chrome, Edge, or Opera.',
+      reason: t('app.browser.mobileReason'),
+      fix: t('app.browser.mobileFix'),
     };
   }
   if (!window.isSecureContext) {
     return {
       supported: false,
       name,
-      reason: 'This page needs a secure (https) connection to reach the adapter.',
-      fix: 'Open https://wobd.app instead.',
+      reason: t('app.browser.secureReason'),
+      fix: t('app.browser.secureFix'),
     };
   }
   if (!isSerialSupported()) {
@@ -49,9 +51,9 @@ export function checkBrowser() {
       supported: false,
       name,
       reason: name === 'Brave'
-        ? 'Brave turns off Web Serial, the feature WOBD uses to talk to the adapter.'
-        : `${name} doesn't support Web Serial, the feature WOBD uses to talk to the adapter.`,
-      fix: 'Open wobd.app in Chrome, Edge, or Opera on a computer.',
+        ? t('app.browser.braveReason')
+        : t('app.browser.unsupportedReason', { browser: name }),
+      fix: t('app.browser.unsupportedFix'),
     };
   }
   return { supported: true, name };
