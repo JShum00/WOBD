@@ -943,6 +943,7 @@ dialog h2 { margin: 0 0 0.5rem; font-size: 1.2rem; color: var(--heading); }
 /* ---------- Live data recording ---------- */
 
 .record-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.9rem; margin: 0 0 1rem; }
+.record-raw-hint { font-style: italic; }
 .record-raw { flex: 1 1 100%; font-size: 0.9rem; color: var(--muted); }
 .record-hint { margin: 0; font-size: 0.9rem; color: var(--muted); flex: 1 1 14rem; }
 

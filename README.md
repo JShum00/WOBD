@@ -20,7 +20,8 @@ A free, browser-based car diagnostic tool. Plug a USB OBD-II adapter into a Chro
 
 - Updated navigation and demo layout.
 - Replay imports CSV recordings incrementally with a 128 MiB file limit.
-- Recordings add a `raw` column with each reply's data bytes (hex). A reply WOBD couldn't decode keeps an empty `value` and its raw bytes, and Replay decodes it from those bytes when a decoder exists. Ticking "Also record parameters WOBD can't decode yet" samples undecoded PIDs as raw-only rows. Second values in one reply (wideband voltage/current) are rows like `0x24.2`.
+- Recordings add `raw`, `mode`, and `ecu` columns: each reply's data bytes (hex), the service (`01`), and the responding ECU when the adapter reports it. A reply WOBD couldn't decode keeps an empty `value` and its raw bytes, and Replay decodes it from those bytes when a decoder exists. Second values in one reply (wideband voltage/current) are rows like `0x24.2`. Older CSVs without these columns still replay.
+- "Record undecoded parameters (raw)" is off by default. Turning it on opens an acknowledgement dialog (shown every time), and the setting is locked while recording. Undecoded PIDs are then sampled one at a time as raw-only rows, one row per responding ECU: every round when stopped (0 mph), every 3 rounds at low speed, every 6 rounds when driving or when speed is unavailable or stale. A time budget keeps raw reads to a small share of polling, so regular gauges keep priority (tests: `node scripts/test-raw-capture.mjs`).
 - Replay charts downsample for display while retaining the original readings for playback and hover; isolated spikes are preserved and detected visual gaps are not connected.
 
 ### WOBD v1.51 release notes

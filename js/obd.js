@@ -629,14 +629,15 @@ export const FAILURE_REASONS = {
 // def may be a bare { pid } for a parameter WOBD has no decoder for (raw only).
 export async function readPidDetailed(elm, def) {
   const m = findReply(toMessages(await elm.send(`01${hex2(def.pid)}`)), 0x01, def.pid);
-  if (!m) return { value: null, raw: null, extras: [], failure: 'no-response' };
+  if (!m) return { value: null, raw: null, ecu: null, extras: [], failure: 'no-response' };
   const raw = bytesToHex(m.slice(2));
-  if (!def.decode) return { value: null, raw, extras: [], failure: null };
+  const ecu = m.ecuSource ?? null;
+  if (!def.decode) return { value: null, raw, ecu, extras: [], failure: null };
   let value;
   try {
     value = decodeReply(def, m);
   } catch (err) {
-    return { value: null, raw, extras: [], failure: /invalid numeric/.test(err.message) ? 'invalid' : 'malformed' };
+    return { value: null, raw, ecu, extras: [], failure: /invalid numeric/.test(err.message) ? 'invalid' : 'malformed' };
   }
   const extras = DERIVED_PIDS.filter((extra) => extra.pid === def.pid).flatMap((extra) => {
     try {
@@ -645,7 +646,16 @@ export async function readPidDetailed(elm, def) {
       return [];
     }
   });
-  return { value, raw, extras, failure: null };
+  return { value, raw, ecu, extras, failure: null };
+}
+
+// Raw-only read of a parameter WOBD can't decode: one entry per responding ECU, so a car with
+// several ECUs keeps every answer with its source. Empty when nothing answered.
+export async function readRawPid(elm, pid) {
+  const messages = toMessages(await elm.send(`01${hex2(pid)}`));
+  return messages
+    .filter((m) => m[0] === 0x41 && m[1] === pid)
+    .map((m) => ({ raw: bytesToHex(m.slice(2)), ecu: m.ecuSource ?? null }));
 }
 
 // The gauges this car can show, in display order. Battery comes from the adapter,

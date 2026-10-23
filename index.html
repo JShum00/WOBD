@@ -186,7 +186,7 @@
           <div class="record-bar">
             <button id="record-btn" type="button" class="btn btn-danger" disabled><span aria-hidden="true">●</span> Start Recording</button>
             <button id="gauges-btn" type="button" class="btn" disabled>Change gauges</button>
-            <label id="record-raw-label" class="record-raw" hidden><input id="record-raw" type="checkbox"> Also record parameters WOBD can't decode yet (raw bytes, polled one at a time every few rounds)</label>
+            <label id="record-raw-label" class="record-raw" hidden><input id="record-raw" type="checkbox"> Record undecoded parameters (raw) <span id="record-raw-hint" class="record-raw-hint" hidden>· locked while recording; applies to the next recording</span></label>
             <p class="record-hint">Logs these readings to a CSV you can graph later. The screen locks until you stop. Saved a drive? <a href="replay.html">Replay it</a>.</p>
           </div>
           <div id="gauges" class="gauges"></div>
@@ -246,6 +246,23 @@
       <div class="dialog-actions">
         <button type="submit" value="cancel" class="btn">Cancel</button>
         <button id="clear-confirm" type="submit" value="clear" class="btn btn-danger" disabled>Clear codes</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="raw-dialog" aria-labelledby="raw-title">
+    <form method="dialog">
+      <h2 id="raw-title">Record undecoded parameters</h2>
+      <p>WOBD can save raw responses from parameters it cannot currently interpret.</p>
+      <p>Some parameters may have known names, while others may be unidentified. Their values and units cannot be reliably displayed until an appropriate decoder is available.</p>
+      <p>Recording additional parameters may slightly reduce live-data refresh rates.</p>
+      <label class="check-row">
+        <input id="raw-ack" type="checkbox">
+        <span>I understand that these raw readings may not be immediately usable.</span>
+      </label>
+      <div class="dialog-actions">
+        <button type="submit" value="cancel" class="btn">Cancel</button>
+        <button id="raw-confirm" type="submit" value="enable" class="btn btn-primary" disabled>Enable recording</button>
       </div>
     </form>
   </dialog>

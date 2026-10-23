@@ -491,6 +491,28 @@ export function updateParameterCatalog(entry) {
 
 // ---------- Clear codes dialog ----------
 
+// Consent dialog for recording undecoded parameters. optIn is a RawOptIn (js/raw-capture.js);
+// resolves true only when it was confirmed, so Cancel, Escape, or closing never enable it.
+export function confirmRawCapture(optIn) {
+  const dialog = $('raw-dialog');
+  const check = $('raw-ack');
+  const confirm = $('raw-confirm');
+  check.checked = false;
+  confirm.disabled = true;
+  check.onchange = () => {
+    optIn.setAcknowledged(check.checked);
+    confirm.disabled = !optIn.canConfirm;
+  };
+  dialog.returnValue = '';
+  dialog.showModal();
+  return new Promise((resolve) => {
+    dialog.addEventListener('close', () => {
+      if (dialog.returnValue === 'enable' && optIn.confirm()) resolve(true);
+      else { optIn.cancel(); resolve(false); }
+    }, { once: true });
+  });
+}
+
 export function confirmClear() {
   const dialog = $('clear-dialog');
   const check = $('clear-ready');

@@ -10,6 +10,7 @@ import * as ui from './ui.js';
 import { Voice } from './voice.js';
 import { createTrafficView } from './traffic.js';
 import { DriveLock, Recording } from './recorder.js';
+import { RawBudget, RawOptIn, SPEED_FRESH_MS, rawEvery } from './raw-capture.js';
 import { RecordLock } from './record-lock.js';
 import { GaugePicker, defaultKeys, pickerChoices } from './gauge-picker.js';
 import { baudLabel, collectConnInfo, friendlyError, hideConnInfo, initConnInfo, isLowBattery, renderConnInfo, FRIENDLY } from './conninfo.js';
@@ -73,6 +74,7 @@ function trafficHeader() {
 
 const voice = new Voice();
 const bob = new Bob({ slot: $('bob-slot'), live: $('bob-live'), getCar: ui.getCar, voice });
+const rawOptIn = new RawOptIn();
 const recordLock = new RecordLock({ onSave: saveRecording, onKeep: keepRecording });
 const picker = new GaugePicker({ root: $('gauge-picker'), onApply: applyGauges, onPresetHint: presetHint });
 
@@ -120,6 +122,12 @@ async function start() {
   $('clear-btn').addEventListener('click', onClearClick);
   $('print-btn').addEventListener('click', () => window.print());
   $('record-btn').addEventListener('click', startRecording);
+  $('record-raw').addEventListener('change', async (e) => {
+    if (!e.target.checked) { rawOptIn.disable(); return; }
+    e.target.checked = false;
+    if (!rawOptIn.request()) return;
+    e.target.checked = await ui.confirmRawCapture(rawOptIn);
+  });
   $('gauges-btn').addEventListener('click', changeGauges);
   window.addEventListener('beforeunload', (e) => { if (state.recording) e.preventDefault(); });
   document.addEventListener('visibilitychange', keepScreenOn);
@@ -686,11 +694,10 @@ async function startLive() {
   const defs = state.gauges.filter((def) => def.pid !== undefined);
   const battery = state.gauges.includes(obd.BATTERY);
 
-  let rawIndex = 0;
-
   // One command at a time: each read waits for the last one. Slow-changing
   // values are only polled every few rounds so the fast gauges stay lively.
   for (let round = 0; active(); round++) {
+    const roundStart = performance.now();
     const slowRound = round % obd.SLOW_EVERY === 0;
     for (const def of defs) {
       if (round % obd.pollingInterval(def, state.monitorMode) !== 0) continue;
@@ -702,22 +709,31 @@ async function startLive() {
       if (result.raw !== null) state.requestMs = 0.8 * (state.requestMs ?? 0) + 0.2 * (performance.now() - started);
       reading(def, result.value, result);
     }
-    // Opt-in while recording: one undecoded parameter every few rounds, saved as raw bytes only.
-    const rawPids = state.recording?.rawPids;
-    if (rawPids?.length && round % RAW_EVERY === 0 && active()) {
-      const pid = rawPids[rawIndex++ % rawPids.length];
-      const result = await obd.readPidDetailed(elm, { pid }).catch(() => null);
-      if (result?.raw && state.recording) {
-        state.recording.data.add({ pid, label: undecodedName(pid) }, null, Date.now(), result.raw);
-      }
-    }
+    state.recording?.budget.note('gauge', performance.now() - roundStart);
+    await sampleRaw(elm, round, active);
     if (!active()) return;
     if (battery && slowRound) reading(obd.BATTERY, await obd.readBatteryVoltage(elm).catch(() => null));
     await wait(obd.ROUND_PAUSE_MS);
   }
 }
 
-const RAW_EVERY = 3;
+// Opt-in raw capture while recording: one undecoded parameter now and then, saved as raw bytes only.
+// Regular gauges come first; the cadence follows the car's speed and a time budget keeps this small.
+async function sampleRaw(elm, round, active) {
+  const rec = state.recording;
+  if (!rec?.rawPids.length || !active()) return;
+  const { lock } = rec;
+  const speedValid = lock.speed !== null && Date.now() - lock.speedAt < SPEED_FRESH_MS;
+  const { band, every } = rawEvery(lock.speed, speedValid, rec.rawBand);
+  rec.rawBand = band;
+  if (round % every !== 0 || !rec.budget.allows(band)) return;
+  const pid = rec.rawPids[rec.rawCursor++ % rec.rawPids.length];
+  const started = performance.now();
+  const replies = await obd.readRawPid(elm, pid).catch(() => []);
+  rec.budget.note('raw', performance.now() - started);
+  const now = Date.now();
+  for (const { raw, ecu } of replies) rec.data.add({ pid, label: undecodedName(pid) }, null, now, raw, ecu);
+}
 
 function undecodedName(pid) {
   return state.undecoded.find((item) => item.pid === pid)?.name ?? obd.UNNAMED_PID;
@@ -728,7 +744,7 @@ function stopLive() {
 }
 
 // Every live reading lands here: the gauge always, the recording when one is running.
-function reading(def, value, { raw = null, failure = null, extras = [] } = {}) {
+function reading(def, value, { raw = null, ecu = null, failure = null, extras = [] } = {}) {
   ui.updateGauge(def, value);
   const now = Date.now();
   if (def.pid === undefined) {
@@ -757,8 +773,8 @@ function reading(def, value, { raw = null, failure = null, extras = [] } = {}) {
     }
   }
   if (!state.recording) return;
-  state.recording.data.add(def, value, now, raw);
-  for (const extra of extras) state.recording.data.add(extra.def, extra.value, now);
+  state.recording.data.add(def, value, now, raw, ecu);
+  for (const extra of extras) state.recording.data.add(extra.def, extra.value, now, null, ecu);
   state.recording.lock.update(def, value, now);
 }
 
@@ -781,13 +797,19 @@ function startRecording() {
   const now = Date.now();
   state.recording = {
     data: new Recording(now, { protocol: state.protocol?.name, baudRate: state.baudRate }),
-    rawPids: $('record-raw').checked ? state.undecoded.map((item) => item.pid) : [],
+    rawPids: rawOptIn.enabled ? state.undecoded.map((item) => item.pid) : [],
+    rawBand: null,
+    rawCursor: 0,
+    budget: new RawBudget(),
     lock: new DriveLock({
       hasSpeed: watching('speed'),
       hasRpm: watching('rpm'),
       hasPids: state.gauges.some((def) => def.pid !== undefined),
     }, now),
   };
+  rawOptIn.lock();
+  $('record-raw').disabled = true;
+  $('record-raw-hint').hidden = false;
   recordLock.open({ startedAt: now, lock: state.recording.lock });
   keepScreenOn();
   bob.say({
@@ -807,6 +829,9 @@ function saveRecording() {
   if (!recording) return;
   downloadCsv(recording.data.toCsv(), recording.data.filename());
   state.recording = null;
+  rawOptIn.unlock();
+  $('record-raw').disabled = false;
+  $('record-raw-hint').hidden = true;
   recordLock.close();
   state.wakeLock?.release().catch(() => {});
   state.wakeLock = null;

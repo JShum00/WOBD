@@ -31,14 +31,15 @@ export class Recording {
   }
 
   // Dropouts (null, with no bytes) are skipped. A reply that couldn't be decoded is still
-  // kept with its raw bytes (hex) and an empty value, so it can be decoded later.
-  add(def, value, now, raw = null) {
-    if (isValid(value) || raw) this.rows.push({ at: now, def, value: isValid(value) ? value : null, raw });
+  // kept with its raw bytes (hex) and an empty value, so it can be decoded later. ecu is the
+  // responding ECU's id when the adapter reported one.
+  add(def, value, now, raw = null, ecu = null) {
+    if (isValid(value) || raw) this.rows.push({ at: now, def, value: isValid(value) ? value : null, raw, ecu });
   }
 
   toCsv() {
-    const lines = [['timestamp', 'elapsed_ms', 'pid', 'name', 'value', 'unit', 'protocol', 'baud', 'raw']];
-    for (const { at, def, value, raw } of this.rows) {
+    const lines = [['timestamp', 'elapsed_ms', 'pid', 'name', 'value', 'unit', 'protocol', 'baud', 'raw', 'mode', 'ecu']];
+    for (const { at, def, value, raw, ecu } of this.rows) {
       lines.push([
         new Date(at).toISOString(),
         at - this.startedAt,
@@ -49,6 +50,8 @@ export class Recording {
         this.protocol,
         this.baud,
         raw ?? '',
+        def.pid === undefined ? '' : '01',
+        ecu ?? '',
       ]);
     }
     return `${lines.map((line) => line.map(csvField).join(',')).join('\r\n')}\r\n`;
@@ -82,6 +85,7 @@ export class DriveLock {
     this.stoppedMs = 0;
     this.lastZeroAt = null;  // previous speed reply, if it was a valid 0
     this.speed = null;       // latest valid speed
+    this.speedAt = null;     // when that speed arrived
   }
 
   update(def, value, now) {
@@ -98,6 +102,7 @@ export class DriveLock {
 
   #speed(mph, now) {
     this.speed = mph;
+    this.speedAt = now;
     this.speedSeen = true;
     if (mph > DRIVING_SPEED_MPH && this.phase !== 'driving') {
       // Moving again before anyone pressed Unlock locks it back up.

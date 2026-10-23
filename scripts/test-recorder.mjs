@@ -146,18 +146,18 @@ const cases = [
     rec.add(BATTERY, 13.98, start + 600);
     rec.add(RPM, NaN, start + 700);
     assert.equal(rec.toCsv(), [
-      'timestamp,elapsed_ms,pid,name,value,unit,protocol,baud,raw',
-      '2026-10-02T21:30:05.250Z,250,0x0D,Speed,31,mph,SAE J1850 VPW,115200,',
-      '2026-10-02T21:30:05.400Z,400,0x14,"O2 sensor, bank 1 sensor 1",0.45,V,SAE J1850 VPW,115200,',
-      '2026-10-02T21:30:05.500Z,500,0x03,Fuel system,"Closed loop ""normal""",,SAE J1850 VPW,115200,',
-      '2026-10-02T21:30:05.600Z,600,ATRV,Battery,14.0,V,SAE J1850 VPW,115200,',
+      'timestamp,elapsed_ms,pid,name,value,unit,protocol,baud,raw,mode,ecu',
+      '2026-10-02T21:30:05.250Z,250,0x0D,Speed,31,mph,SAE J1850 VPW,115200,,01,',
+      '2026-10-02T21:30:05.400Z,400,0x14,"O2 sensor, bank 1 sensor 1",0.45,V,SAE J1850 VPW,115200,,01,',
+      '2026-10-02T21:30:05.500Z,500,0x03,Fuel system,"Closed loop ""normal""",,SAE J1850 VPW,115200,,01,',
+      '2026-10-02T21:30:05.600Z,600,ATRV,Battery,14.0,V,SAE J1850 VPW,115200,,,',
       '',
     ].join('\r\n'));
   }],
   ['unknown protocol and baud say "unknown", not blank', () => {
     const rec = new Recording(0);
     rec.add(SPEED, 0, 100);
-    assert.equal(rec.toCsv().split('\r\n')[1], '1970-01-01T00:00:00.100Z,100,0x0D,Speed,0,mph,unknown,unknown,');
+    assert.equal(rec.toCsv().split('\r\n')[1], '1970-01-01T00:00:00.100Z,100,0x0D,Speed,0,mph,unknown,unknown,,01,');
   }],
   ['undecoded replies keep their raw bytes with an empty value; dropouts without bytes are skipped', () => {
     const rec = new Recording(0, { protocol: 'CAN 11-bit 500k', baudRate: 115200 });
@@ -165,8 +165,8 @@ const cases = [
     rec.add(def('o2b1s1'), null, 200, '01');
     rec.add(def('o2b1s1'), null, 300);
     assert.deepEqual(rec.toCsv().split('\r\n').slice(1, 3), [
-      '1970-01-01T00:00:00.100Z,100,0x55,Unnamed parameter,,,CAN 11-bit 500k,115200,1A2B',
-      '1970-01-01T00:00:00.200Z,200,0x14,"O2 sensor, bank 1 sensor 1",,V,CAN 11-bit 500k,115200,01',
+      '1970-01-01T00:00:00.100Z,100,0x55,Unnamed parameter,,,CAN 11-bit 500k,115200,1A2B,01,',
+      '1970-01-01T00:00:00.200Z,200,0x14,"O2 sensor, bank 1 sensor 1",,V,CAN 11-bit 500k,115200,01,01,',
     ]);
   }],
   ['filename is wobd-recording-YYYY-MM-DD-HHMMSS.csv (local time)', () => {
