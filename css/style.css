@@ -327,6 +327,104 @@ a:hover { color: var(--link-hover); }
   margin: 0 auto;
   align-items: start;
 }
+.code-search-layout {
+  display: block;
+  max-width: 1480px;
+}
+.code-search-panel {
+  min-height: 0;
+  padding: 1.25rem clamp(1rem, 3vw, 2.5rem) 2rem;
+}
+.code-search-panel .lede { max-width: 58rem; }
+.code-search-panel .code-form-row { max-width: 48rem; }
+.code-search-panel .car-form-page { margin: 1rem 0 0.5rem; }
+.code-directory { margin-top: 2rem; }
+.code-directory h2 {
+  margin: 0 0 0.4rem;
+  color: var(--heading);
+  font-size: 1.35rem;
+}
+.code-directory > .hint { margin: 0 0 0.85rem; }
+.code-counter { margin: 0 0 0.6rem; color: var(--muted); }
+.code-counter strong { color: var(--heading); font-size: 1.15em; }
+.directory-status { min-height: 1.3em; margin: 0 0 0.5rem; color: var(--muted); }
+.directory-status[data-state="error"], .directory-error { color: var(--high-text, #9d1c1c); }
+.directory-tree { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; align-items: start; }
+.directory-group {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+.directory-group > summary {
+  padding: 0.7rem 0.85rem;
+  color: var(--heading);
+  font-weight: 700;
+  cursor: pointer;
+  list-style-position: inside;
+}
+.directory-group > summary:hover { background: var(--hover-bg); }
+.directory-group > summary:focus-visible { outline: 3px solid var(--link); outline-offset: 2px; }
+.directory-root > summary { font-size: 1.05rem; }
+.directory-group-content, .directory-manufacturers { padding: 0 0.85rem 0.8rem; }
+.directory-root > .directory-group { margin: 0 0.65rem 0.6rem; }
+.directory-help { margin: 0 0.85rem 0.65rem; color: var(--muted); }
+.directory-count { color: var(--muted); font-size: 0.85em; font-weight: 400; }
+.directory-browser { display: grid; gap: 0.65rem; }
+.directory-filter { display: grid; gap: 0.25rem; max-width: 34rem; color: var(--muted); font-size: 0.9rem; }
+.directory-filter-input { width: 100%; min-width: 0; font: inherit; padding: 0.45rem 0.6rem; }
+.directory-loading, .directory-error { margin: 0.4rem 0; }
+.directory-empty { margin: 0; color: var(--muted); }
+.directory-show-more { justify-self: start; font: inherit; padding: 0.4rem 0.7rem; cursor: pointer; }
+.directory-links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.2rem 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.directory-code-link {
+  display: block;
+  padding: 0.3rem 0.2rem;
+  border-bottom: 1px solid var(--line);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+.directory-code-link code { font-weight: 700; }
+.directory-code-link:hover { background: var(--hover-bg); text-decoration: underline; }
+.directory-manufacturers > .directory-group { margin-top: 0.45rem; }
+.curated-code-pages { margin-top: 2rem; border-top: 1px solid var(--line); padding-top: 0.8rem; }
+.curated-code-pages > summary { color: var(--link); font-weight: 700; cursor: pointer; }
+.code-dialog {
+  width: min(760px, calc(100% - 2rem));
+  max-width: 760px;
+  max-height: min(88vh, 900px);
+  overflow: auto;
+}
+.code-dialog-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.code-dialog-header h2 { margin: 0 0 0.8rem; overflow-wrap: anywhere; }
+.code-dialog-close {
+  flex: 0 0 auto;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.code-dialog-close:hover { background: var(--hover-bg); }
+.code-dialog-content h3 { margin: 1.1rem 0 0.4rem; color: var(--heading); font-size: 1rem; }
+.code-dialog-description { font-size: 1.1rem; line-height: 1.6; }
+.code-dialog-content ul { padding-left: 1.4rem; }
+.code-dialog-content .hint { color: var(--muted); }
+.code-dialog-source, .code-dialog-search { margin: 0.75rem 0 0; font-size: 0.9rem; }
+.code-dialog:focus { outline: none; }
+.code-dialog::backdrop { background: rgb(21 43 99 / 55%); }
 
 .panel {
   background: var(--surface);
@@ -1372,6 +1470,7 @@ dialog.record-lock .btn { font-size: 1.15rem; padding: 0.7rem 1.4rem; }
 
 @media (max-width: 860px) {
   .layout { grid-template-columns: minmax(0, 1fr); padding: 1rem; }
+  .directory-tree { grid-template-columns: minmax(0, 1fr); }
   .bob-panel { position: static; max-width: 420px; width: 100%; justify-self: center; }
   /* Wrap the links so Connect never ends up off the right edge on a phone. */
   .header-right { flex: 1 1 100%; width: 100%; margin-left: 0; flex-wrap: wrap; gap: 0.5rem 1rem; }
@@ -1382,6 +1481,9 @@ dialog.record-lock .btn { font-size: 1.15rem; padding: 0.7rem 1.4rem; }
   .demo-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 520px) {
+  .code-search-layout { padding: 0.65rem; }
+  .code-search-panel { padding: 0.85rem; }
+  .directory-links { grid-template-columns: minmax(0, 1fr); }
   .demo-list { grid-template-columns: 1fr; }
 }
 

@@ -1,7 +1,7 @@
 // Service worker: caches the static app shell only. Web Serial talks to the
 // USB adapter directly and never goes through fetch, so nothing here can touch
 // it. Bump CACHE_VERSION to force every returning user onto fresh files.
-const CACHE_VERSION = 'v47';
+const CACHE_VERSION = 'v53';
 const CACHE_NAME = `wobd-cache-${CACHE_VERSION}`;
 
 const APP_SHELL = [
@@ -69,6 +69,7 @@ const APP_SHELL = [
   'js/troubleshoot.js',
   'js/tested-adapters.js',
   'js/ui.js',
+  'js/dtc.js',
   'js/vehicles.js',
   'js/version-info.js',
   'js/vin.js',
@@ -83,6 +84,48 @@ const APP_SHELL = [
   'data/generic/U3.json',
   'data/generic/B0.json',
   'data/generic/C0.json',
+  'data/code-counts.json',
+  // manufacturer-codes:start
+  'data/manufacturer/index.json',
+  'data/manufacturer/LICENSE',
+  'data/manufacturer/acura.json',
+  'data/manufacturer/alfa-romeo.json',
+  'data/manufacturer/audi.json',
+  'data/manufacturer/bmw.json',
+  'data/manufacturer/chevrolet.json',
+  'data/manufacturer/chrysler.json',
+  'data/manufacturer/citroen.json',
+  'data/manufacturer/dodge.json',
+  'data/manufacturer/fiat.json',
+  'data/manufacturer/ford.json',
+  'data/manufacturer/honda.json',
+  'data/manufacturer/hyundai.json',
+  'data/manufacturer/isuzu.json',
+  'data/manufacturer/jaguar.json',
+  'data/manufacturer/jeep.json',
+  'data/manufacturer/kia.json',
+  'data/manufacturer/lamborghini.json',
+  'data/manufacturer/land-rover.json',
+  'data/manufacturer/lexus.json',
+  'data/manufacturer/lincoln.json',
+  'data/manufacturer/mazda.json',
+  'data/manufacturer/mercedes-benz.json',
+  'data/manufacturer/mercury.json',
+  'data/manufacturer/mini.json',
+  'data/manufacturer/mitsubishi.json',
+  'data/manufacturer/nissan.json',
+  'data/manufacturer/oldsmobile.json',
+  'data/manufacturer/opel.json',
+  'data/manufacturer/peugeot.json',
+  'data/manufacturer/porsche.json',
+  'data/manufacturer/saab.json',
+  'data/manufacturer/saturn.json',
+  'data/manufacturer/subaru.json',
+  'data/manufacturer/suzuki.json',
+  'data/manufacturer/toyota.json',
+  'data/manufacturer/volkswagen.json',
+  'data/manufacturer/volvo.json',
+  // manufacturer-codes:end
   'data/makes.json',
   'data/models.json',
   'img/bob.png',

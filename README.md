@@ -9,13 +9,18 @@ A free, browser-based car diagnostic tool. Plug a USB OBD-II adapter into a Chro
 - **Adapter details**: see the detected protocol, car-response status, adapter voltage, and adapter identification. Automatic baud-rate detection has a manual retry option for adapters that need a specific speed.
 - **Protocol troubleshooting**: automatic protocol selection is the default; an optional per-connection override can force a specific OBD protocol for troubleshooting.
 - **Feedback during updates**: the home-page update banner links to a contact page with a Google Form for issue reports and feedback.
-- **Trouble code search** (`codes.html`): type a code like P0601 and Bob explains it offline, without an adapter. The offline catalog includes about 9,500 generic SAE codes; Bob's hand-written notes take precedence where available. Manufacturer-specific codes are identified rather than guessed. An optional year, make, and model personalize the external Google search link.
+- **Trouble code search** (`codes.html`): type a code like P0601 and see its details offline, without an adapter. Browse generic families and manufacturer-specific codes in a filterable directory that loads results in small batches; selecting a code opens its details in a modal. A counter shows the total codes in the library (from `data/code-counts.json`; regenerate with `node scripts/build-code-counts.mjs` after refreshing code data). Curated generic codes keep their dedicated pages. The offline catalog includes about 9,500 generic SAE codes; Bob's hand-written notes take precedence where available. Manufacturer-specific codes are identified rather than guessed. An optional year, make, and model personalize the external Google search link.
 - **Replay and demos** (`replay.html`): replay a local CSV recording in the browser, or use the scanner's Demos section to explore simulated scenarios without an adapter.
 - **Print reports**: print or save a scan report as PDF, including vehicle details, VIN when available, code urgency, explanations, causes, and mechanic notes.
 - **Languages and units**: switch between English, French, German, Spanish, Japanese, and Simplified Chinese (machine translated, labelled as such), and show km/h and °C instead of mph and °F. Both settings stay in your browser and work offline.
 - **Optional read-aloud**: Bob can read his speech bubble using the browser's speech synthesis when available.
 - **Tested adapters** (`tested-adapters.html`): personal adapter test results loaded from `data/tested-adapters.json`.
 - **Installable and offline**: WOBD is a PWA. After the first load, the scanner and bundled code search work offline. Scan data stays in the browser; only a search you choose to open, or a VIN lookup you agree to, leaves the site.
+
+### WOBD v1.9 release notes
+
+- Code Search redesign: a wider page with a filterable directory of generic families and manufacturer makes, code details in a modal, and a live counter of the 21,886 codes in the library. Bob now appears only on the scanner page.
+- Manufacturer-specific descriptions: 12,353 make-specific mappings across 37 makes, imported from [kierandrewett/obd](https://github.com/kierandrewett/obd) (MIT) with `node scripts/update-manufacturer-codes.mjs`; counts regenerate with `node scripts/build-code-counts.mjs`.
 
 ### WOBD v1.81 release notes
 
@@ -103,6 +108,10 @@ The Model dropdown comes from `data/models.json`, built from NHTSA's vPIC API. R
 ### Generic code database
 
 `data/generic/` is built from [OBDex](https://github.com/foerbsnavi/OBDex), an open code database released under CC0. Its descriptions and causes are general and technical, so Bob labels them as such. To refresh it, run `npm install` once, then `node scripts/update-generic-codes.mjs`.
+
+### Manufacturer-specific code database
+
+`data/manufacturer/` is refreshed from the per-make JSON files in [kierandrewett/obd](https://github.com/kierandrewett/obd/tree/main/dtc_codes) by running `node scripts/update-manufacturer-codes.mjs`. The updater keeps only manufacturer-specific DTC ranges, preserves the upstream MIT license notice, updates the offline app shell, and reports the current entry count. In the initial import, the 37 make files contained 17,060 mappings total; 12,353 were in manufacturer-specific ranges, covering 4,025 distinct code numbers. This is less than the repository README's 21,000+ headline, so use the updater's reported count for later refreshes. The repository says its descriptions were collected from [dot.report](https://dot.report/dtc/). Code Search now browses generic codes by family and manufacturer-specific codes by make; selecting a code opens its details in a modal.
 
 ### Demo mode
 

@@ -37,6 +37,15 @@ await test('generated files are up to date (deterministic)', async () => {
   assert.equal(html, injectCodeList(html, renderCodeList(codes, titles)));
 });
 
+await test('Code Search keeps curated URLs and uses the directory/modal layout', async () => {
+  const html = await readFile(join(root, 'codes.html'), 'utf8');
+  assert.ok(html.includes('id="code-form"'));
+  assert.ok(html.includes('id="code-directory"'));
+  assert.ok(html.includes('id="code-dialog"'));
+  assert.ok(!html.includes('id="bob-slot"'));
+  assert.ok(html.includes('class="curated-code-pages"'));
+});
+
 await test('titles, descriptions and canonicals are unique and correct', () => {
   const titlesSeen = new Set();
   const descs = new Set();

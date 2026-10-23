@@ -2,6 +2,7 @@
 // Everything he says is scripted, so he works offline and never makes things up.
 import { h } from './dom.js';
 import { getLanguage, isMachineTranslated, t } from './i18n.js';
+import { isDtcCode, isManufacturerCode, manufacturerMakeKey } from './dtc.js';
 
 export const URGENCY = {
   low: { get label() { return t('bob.urgency.low'); }, get says() { return t('bob.urgency.lowSays'); } },
@@ -41,7 +42,11 @@ let translatedCodes = new Set();
 let activeCodeBookLanguage = 'en';
 let generic = {};  // definitions from data/generic/, filled in by loadGenericCodes()
 const genericLoads = new Map();
+const genericFamilyLoads = new Map();
 const GENERIC_FAMILIES = new Set(['P0', 'P2', 'P3', 'U0', 'U3', 'B0', 'C0']);
+const manufacturerCodes = new Map();
+const manufacturerLoads = new Map();
+let manufacturerIndexLoad = null;
 
 export async function loadCodeBook(url = 'data/codes.json') {
   const res = await fetch(url);
@@ -92,26 +97,85 @@ function validCodeOverlay(entry) {
 export const codeBookLanguage = () => activeCodeBookLanguage;
 export const isTranslatedEntry = (entry) => translatedCodes.has(entry?.code) && isMachineTranslated(getLanguage());
 
+export async function loadGenericFamily(family) {
+  if (!GENERIC_FAMILIES.has(family)) throw new Error(`Unsupported generic code family: ${family}`);
+  if (!genericFamilyLoads.has(family)) {
+    genericFamilyLoads.set(family, fetch(`data/generic/${family}.json`)
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (!data || typeof data !== 'object' || Array.isArray(data)
+          || !Object.entries(data).every(([code, entry]) => code.startsWith(family)
+            && entry && typeof entry === 'object' && typeof entry.title === 'string')) {
+          throw new Error('Invalid generic-code data.');
+        }
+        Object.assign(generic, data);
+        return data;
+      })
+      .catch((err) => {
+        genericFamilyLoads.delete(family);
+        throw new Error(`Couldn't load ${family} generic codes (${err.message}).`);
+      }));
+  }
+  return genericFamilyLoads.get(family);
+}
+
 // Loads the generic definitions for the code families these codes belong to (P0, U3, ...).
 // A failed download just leaves Bob with his own notes.
 export async function loadGenericCodes(codes) {
   const families = new Set(codes.map((code) => code.slice(0, 2)).filter((f) => GENERIC_FAMILIES.has(f)));
   await Promise.all([...families].map((family) => {
     if (!genericLoads.has(family)) {
-      genericLoads.set(family, fetch(`data/generic/${family}.json`)
-        .then((res) => (res.ok ? res.json() : Promise.reject(new Error(String(res.status)))))
-        .then((data) => { Object.assign(generic, data); })
-        .catch(() => { genericLoads.delete(family); }));
+      genericLoads.set(family, loadGenericFamily(family).catch(() => {}));
     }
     return genericLoads.get(family);
   }));
 }
 
-// P1xxx, P30-P33xx, and C/B/U 1xxx-2xxx are defined by each car brand.
-export function isManufacturerCode(code) {
-  const [letter, d1, d2] = code;
-  if (letter === 'P') return d1 === '1' || (d1 === '3' && '0123'.includes(d2));
-  return d1 === '1' || d1 === '2';
+export async function loadManufacturerIndex() {
+  if (!manufacturerIndexLoad) {
+    manufacturerIndexLoad = fetch('data/manufacturer/index.json')
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const makes = await res.json();
+        if (!Array.isArray(makes) || !makes.every((item) => typeof item === 'string')) {
+          throw new Error('Invalid manufacturer-code index.');
+        }
+        return makes;
+      })
+      .catch((err) => {
+        manufacturerIndexLoad = null;
+        throw new Error(`Couldn't load the manufacturer-code index (${err.message}).`);
+      });
+  }
+  return manufacturerIndexLoad;
+}
+
+export async function loadManufacturerCodes(make) {
+  const key = manufacturerMakeKey(make);
+  if (!key) return {};
+  const makes = await loadManufacturerIndex();
+  if (!makes.includes(key)) return {};
+
+  if (!manufacturerLoads.has(key)) {
+    manufacturerLoads.set(key, fetch(`data/manufacturer/${key}.json`)
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (!data || typeof data !== 'object' || Array.isArray(data)
+          || !Object.entries(data).every(([code, description]) => isDtcCode(code)
+            && isManufacturerCode(code) && typeof description === 'string' && description.trim())) {
+          throw new Error('Invalid manufacturer-code data.');
+        }
+        manufacturerCodes.set(key, data);
+      })
+      .catch((err) => {
+        manufacturerLoads.delete(key);
+        throw new Error(`Couldn't load ${make}'s manufacturer-specific codes (${err.message}).`);
+      }));
+  }
+  await manufacturerLoads.get(key);
+  return manufacturerCodes.get(key);
 }
 
 export function describeCategory(code) {
@@ -121,11 +185,29 @@ export function describeCategory(code) {
 }
 
 // Always returns something Bob can say, even for codes he has no notes on.
-export function lookup(code) {
+export function lookup(code, make = '') {
   const entry = codeBook[code];
   if (entry) {
     const translated = isTranslatedEntry({ code });
     return { code, known: true, ...entry, translated, lang: translated ? activeCodeBookLanguage : 'en' };
+  }
+
+  const key = manufacturerMakeKey(make);
+  const manufacturerDescription = isManufacturerCode(code) ? manufacturerCodes.get(key)?.[code] : null;
+  if (manufacturerDescription) {
+    return {
+      code,
+      known: false,
+      brandSpecific: true,
+      make,
+      title: t('bob.title.manufacturer'),
+      lang: 'en',
+      plain: manufacturerDescription,
+      urgency: 'unknown',
+      causes: [],
+      difficulty: null,
+      tellMechanic: `${code} is listed for ${make}: ${manufacturerDescription}. Confirm it with vehicle-specific service information.`,
+    };
   }
 
   const general = generic[code];
@@ -239,6 +321,11 @@ export class Bob {
       h('p', { class: 'tell' }, `“${entry.tellMechanic}”`),
       entry.generic && h('p', { class: 'hint' },
         t('bob.genericDisclaimer')),
+      entry.brandSpecific && h('p', { class: 'hint' },
+        t('bob.codes.manufacturerDisclaimer')),
+      entry.brandSpecific && h('p', { class: 'hint' },
+        h('a', { href: 'https://github.com/kierandrewett/obd/blob/main/LICENSE',
+          target: '_blank', rel: 'noopener noreferrer' }, t('bob.codes.manufacturerSource'))),
       !entry.known && h('p', {},
         h('a', { href: searchUrl(entry.code, this.getCar()), target: '_blank', rel: 'noopener noreferrer',
           dataset: { searchCode: entry.code } },
