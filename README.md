@@ -17,6 +17,10 @@ A free, browser-based car diagnostic tool. Plug a USB OBD-II adapter into a Chro
 - **Tested adapters** (`tested-adapters.html`): personal adapter test results loaded from `data/tested-adapters.json`.
 - **Installable and offline**: WOBD is a PWA. After the first load, the scanner and bundled code search work offline. Scan data stays in the browser; only a search you choose to open, or a VIN lookup you agree to, leaves the site.
 
+### WOBD v1.91 release notes
+
+- Fixed the Replay file picker greying out `.wobd` files on iPhone and Android. Any recording (`.wobd` or CSV) can now be chosen on any device; the file type is detected from its contents.
+
 ### WOBD v1.9 release notes
 
 - Code Search redesign: a wider page with a filterable directory of generic families and manufacturer makes, code details in a modal, and a live counter of the 21,886 codes in the library. Bob now appears only on the scanner page.
