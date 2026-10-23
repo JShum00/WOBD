@@ -39,6 +39,15 @@
     <h1>Changelog</h1>
     <p class="lede">What changed in each WOBD release, newest first.</p>
 
+    <section id="v1-71">
+      <h2>v1.71 <time datetime="2026-10-22">October 22, 2026</time></h2>
+      <ul>
+        <li><strong>Exports say which WOBD made them.</strong> CSV recordings start with a <code>#&nbsp;WOBD v…</code> line, and adapter traffic logs and DTC reports name the version too. Replay shows it in the file summary.</li>
+        <li><strong>Report pages read the version from the files.</strong> The tested adapters table and each report page show it, and a version typed in by hand marks older tests (the PT Cruiser is 1.0, the Highlander 1.51).</li>
+        <li>Recordings saved from this version can't be opened by older WOBD versions because of the new first line.</li>
+      </ul>
+    </section>
+
     <section id="v1-7">
       <h2>v1.7 <time datetime="2026-10-22">October 22, 2026</time></h2>
       <ul>

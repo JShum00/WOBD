@@ -182,6 +182,33 @@ const cases = [
     assert.deepEqual(find(rec, 'speed').times, [10, 10, 20]);
     assert.deepEqual(find(rec, 'speed').values, [1, 9, 2]);
   }],
+  ['a "# WOBD vX" first line is skipped and its version exposed; old files report null', () => {
+    const body = 'timestamp,elapsed_ms,pid,name,value,unit\r\n2026-10-22T13:13:14.825Z,10,0x0D,Speed,5,mph\r\n';
+    const rec = parseRecording(`# WOBD v1.71\r\n${body}`);
+    assert.equal(rec.wobdVersion, '1.71');
+    assert.deepEqual(find(rec, 'speed').values, [5]);
+    assert.equal(parseRecording(`\uFEFF# WOBD v1.71\n${body}`).wobdVersion, '1.71');
+    assert.equal(parseRecording(body).wobdVersion, null);
+    assert.equal(parseRecording(`# some other comment\n${body}`).wobdVersion, null);
+  }],
+  ['the streaming parser reads the version stamp across chunk boundaries', async () => {
+    const text = '# WOBD v1.71\r\ntimestamp,elapsed_ms,pid,name,value,unit\r\nx,10,0x0D,Speed,5,mph\r\n';
+    const chunks = text.match(/.{1,7}/gs);
+    const stream = new ReadableStream({ start(c) { chunks.forEach((chunk) => c.enqueue(chunk)); c.close(); } });
+    const rec = await parseRecordingStream(stream);
+    assert.equal(rec.wobdVersion, '1.71');
+    assert.deepEqual(find(rec, 'speed').values, [5]);
+  }],
+  ['a recording saved by this WOBD replays with its own version', () => {
+    globalThis.WOBD_VERSION = '1.71';
+    try {
+      const recording = new Recording(0, { protocol: 'CAN 11-bit 500k', baudRate: 115200 });
+      recording.add(LIVE_PIDS.find((d) => d.key === 'speed'), 12, 100);
+      assert.equal(parseRecording(recording.toCsv()).wobdVersion, '1.71');
+    } finally {
+      delete globalThis.WOBD_VERSION;
+    }
+  }],
 ];
 
 let failed = 0;

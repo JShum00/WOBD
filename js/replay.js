@@ -121,6 +121,7 @@ function show(rec, sourceName) {
     `${clock(rec.durationMs)} long`,
     `${rec.readingCount.toLocaleString()} readings`,
     `${rec.protocol ?? 'Protocol unknown'} · ${baudLabel(rec.baudRate)}`,
+    rec.wobdVersion && `WOBD v${rec.wobdVersion}`,
   ].filter(Boolean).join(' · ');
   const unknown = $('replay-unknown');
   unknown.textContent = rec.unknownPids.length

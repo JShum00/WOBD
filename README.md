@@ -16,6 +16,12 @@ A free, browser-based car diagnostic tool. Plug a USB OBD-II adapter into a Chro
 - **Tested adapters** (`tested-adapters.html`): personal adapter test results loaded from `data/tested-adapters.json`.
 - **Installable and offline**: WOBD is a PWA. After the first load, the scanner and bundled code search work offline. Scan data stays in the browser; only a search you choose to open leaves the site.
 
+### WOBD v1.71 release notes
+
+- Every export names the WOBD version that made it, taken from `js/version.js` (the only place a version is written; helpers in `js/version-info.js`). CSV recordings begin with a `# WOBD v1.71` line before the header (Replay skips it and shows the version; older files without it still replay, but recordings made now won't open in WOBD before 1.71). Adapter traffic logs and DTC reports include it too.
+- `node scripts/update-report-versions.mjs` reads versions from each test's CSV and traffic log into `reports.versions` in `data/tested-adapters.json`. A hand-set `wobdVersion` is a manual override and always wins (used for the PT Cruiser, 1.0, and the Highlander, 1.51); PDFs can't be read, so they rely on an override. The tested adapters table and report pages show the result and mark overrides.
+- Ideas for letting users submit reports are in `Docs/Community-Report-Submissions.md` (design notes only, not built).
+
 ### WOBD v1.7 release notes
 
 - Connection failures are explained by type (adapter missing or silent, car silent, no data, bus error, unreadable reply, rejected command) in `js/troubleshoot.js`. The adapter's own wording, such as `CAN ERROR`, is shown and logged. A failed forced protocol is named and Bob recommends automatic selection first; with a year/make/model entered, a user-initiated protocol search link is offered (test: `node scripts/test-troubleshoot.mjs`).

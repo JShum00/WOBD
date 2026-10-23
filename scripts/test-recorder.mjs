@@ -173,6 +173,18 @@ const cases = [
     const rec = new Recording(new Date(2026, 9, 2, 7, 4, 9).getTime());
     assert.equal(rec.filename(), 'wobd-recording-2026-10-02-070409.csv');
   }],
+  ['CSV starts with a "# WOBD vX" line when the version is known, and the header follows', () => {
+    globalThis.WOBD_VERSION = '1.71';
+    try {
+      const rec = new Recording(0, { protocol: 'CAN', baudRate: 115200 });
+      rec.add(SPEED, 30, 100);
+      const lines = rec.toCsv().split('\r\n');
+      assert.equal(lines[0], '# WOBD v1.71');
+      assert.ok(lines[1].startsWith('timestamp,elapsed_ms,pid'));
+    } finally {
+      delete globalThis.WOBD_VERSION;
+    }
+  }],
 ];
 
 let failed = 0;

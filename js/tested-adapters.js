@@ -1,6 +1,6 @@
 // Test records and their validation live in js/adapter-data.js.
 import { infoTip } from './info-tip.js';
-import { hasReports, loadResults, notTested, vehicleName } from './adapter-data.js';
+import { hasReports, loadResults, notTested, vehicleName, versionInfo } from './adapter-data.js';
 
 const body = document.querySelector('#adapter-results');
 const message = document.querySelector('#adapter-message');
@@ -75,7 +75,7 @@ function rowFor(result) {
     capability(result.clearCodes, result.explanations?.clearCodes, 'Clear codes'),
     capability(result.liveData, result.explanations?.liveData, 'Live data'),
     field(result.dateTested),
-    field(result.wobdVersion),
+    field(versionInfo(result)?.version ?? 'Unknown'),
     field(result.notes),
     reportsLink(result),
   );

@@ -37,7 +37,7 @@
     "clearCodes": null,
     "liveData": true,
     "dateTested": "2026-10-22",
-    "wobdVersion": "1.0",
+    "wobdVersion": "1.51",
     "notes": "Live data streamed and was recorded. The vehicle returned no DTCs, so there are no before/after scan reports.",
     "explanations": {
       "readCodes": "The code request worked and the vehicle reported no stored trouble codes, so there was nothing to list and no scan report was generated.",
@@ -49,7 +49,10 @@
       "after": null,
       "graph": "reports/vlinker-fs-usb/toyota/2010/highlander/highlander-wobd-graphs.png",
       "csv": "reports/vlinker-fs-usb/toyota/2010/highlander/wobd-2010-toyota-highlander-recording-2026-10-22-091314.csv",
-      "traffic": "reports/vlinker-fs-usb/toyota/2010/highlander/wobd-2010-toyota-highlander-traffic-2026-10-22.txt"
+      "traffic": "reports/vlinker-fs-usb/toyota/2010/highlander/wobd-2010-toyota-highlander-traffic-2026-10-22.txt",
+      "versions": {
+        "traffic": "1.51"
+      }
     }
   }
 ]

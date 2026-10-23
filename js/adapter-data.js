@@ -2,6 +2,8 @@
 // Add a test by appending one object (with a unique "id") to that file. Put its
 // before/after PDFs (and optionally a live data recording "csv" and its "graph" image, and an adapter traffic log "traffic" as .txt) in
 // reports/<adapter>/<make>/<year>/<model>/ (lowercase, hyphenated) and point "reports" at them.
+// "wobdVersion" is a manual override for the WOBD version; leave it out and the version
+// is read from the files by scripts/update-report-versions.mjs (run it after adding files).
 // Optional "graphNote" is a caption under the graph (who made it, what a gap means).
 // Optional "explanations": { "readCodes" | "clearCodes" | "liveData": "text" } adds an (i) popover.
 // Any of before, after, graph, and csv can be null when that file doesn't exist.
@@ -21,7 +23,25 @@ function isReports(reports) {
     || (typeof reports === 'object'
       && isNullableString(reports.before)
       && isNullableString(reports.after)
-      && [reports.graph, reports.csv, reports.traffic].every((path) => path === undefined || isNullableString(path)));
+      && [reports.graph, reports.csv, reports.traffic].every((path) => path === undefined || isNullableString(path))
+      && isVersions(reports.versions));
+}
+
+// Versions read out of the report files by scripts/update-report-versions.mjs: { csv, traffic }.
+function isVersions(value) {
+  return value === undefined
+    || (value !== null && typeof value === 'object'
+      && Object.entries(value).every(([key, version]) => ['csv', 'traffic'].includes(key) && typeof version === 'string'));
+}
+
+// Which WOBD version made a test's data. A "wobdVersion" typed into the JSON is a
+// manual override and always wins; otherwise it comes from the files ("reports.versions").
+// Returns { version, manual, files } or null when nothing is known.
+export function versionInfo(result) {
+  const files = result.reports?.versions ?? {};
+  if (result.wobdVersion) return { version: result.wobdVersion, manual: true, files };
+  const found = [...new Set(Object.values(files))];
+  return found.length ? { version: found.join(', '), manual: false, files } : null;
 }
 
 // Optional per-capability explanations, e.g. why something was not tested.

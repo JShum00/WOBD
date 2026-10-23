@@ -1,7 +1,7 @@
 // Report page: report.html?id=<test id> shows that test's before/after scan PDFs
 // and, when there is one, a live data recording: its CSV (download or replay) and a graph image.
 import { infoTip } from './info-tip.js';
-import { hasReports, loadResults, vehicleName } from './adapter-data.js';
+import { hasReports, loadResults, vehicleName, versionInfo } from './adapter-data.js';
 
 const title = document.querySelector('#report-title');
 const content = document.querySelector('#report-content');
@@ -31,6 +31,15 @@ function yesNo(value) {
   if (value === true) return 'Yes';
   if (value === false) return 'No';
   return 'Not tested';
+}
+
+// "1.51 (set manually)" or "1.71 (read from the files)", with each file's own version
+// when they differ from what's shown.
+function versionText(result) {
+  const info = versionInfo(result);
+  if (!info) return 'Unknown';
+  const files = Object.entries(info.files).map(([key, version]) => `${key === 'csv' ? 'recording' : 'traffic log'} v${version}`);
+  return `${info.version} (${info.manual ? 'set manually' : 'read from the files'}${files.length && info.manual ? `; files say ${files.join(', ')}` : ''})`;
 }
 
 // The PDF or image is only built the first time its section opens, so closed
@@ -103,6 +112,7 @@ try {
   const stats = [
     ['Protocol', result.protocol ?? 'Not tested'],
     ['Tested', result.dateTested ?? 'Not tested'],
+    ['WOBD version', versionText(result)],
     ['Read codes', yesNo(result.readCodes), 'readCodes'],
     ['Clear codes', yesNo(result.clearCodes), 'clearCodes'],
     ['Live data', yesNo(result.liveData), 'liveData'],

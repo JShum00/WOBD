@@ -14,6 +14,7 @@ import { RawBudget, RawOptIn, SPEED_FRESH_MS, rawEvery } from './raw-capture.js'
 import { RecordLock } from './record-lock.js';
 import { GaugePicker, defaultKeys, pickerChoices } from './gauge-picker.js';
 import { h } from './dom.js';
+import { versionLine } from './version-info.js';
 import { diagnoseConnection } from './troubleshoot.js';
 import { baudLabel, collectConnInfo, friendlyError, hideConnInfo, initConnInfo, isLowBattery, renderConnInfo, FRIENDLY } from './conninfo.js';
 
@@ -60,12 +61,10 @@ const traffic = createTrafficView({
   header: trafficHeader,
   onFirstEntry: () => { $('traffic').hidden = false; },
 });
-// The version line is added by version.js, so this reads it when copying, not at load.
 function trafficHeader() {
-  const version = document.querySelector('.site-version')?.textContent ?? 'WOBD';
   const protocol = ui.getProtocolOverride();
   return [
-    version,
+    versionLine(),
     `Browser: ${navigator.userAgent}`,
     `Date: ${new Date().toISOString()}`,
     `Baud rate: ${state.baudRate ?? 'not detected'}`,

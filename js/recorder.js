@@ -2,6 +2,7 @@
 // decides when the driving lock may offer to unlock. No DOM here, and every
 // method takes the time as `now` (ms), so scripts/test-recorder.mjs can replay
 // a drive without a car or a browser.
+import { versionComment } from './version-info.js';
 import { pidLabel } from './obd.js';
 
 export const DRIVING_SPEED_MPH = 5;        // faster than this counts as driving
@@ -54,7 +55,8 @@ export class Recording {
         ecu ?? '',
       ]);
     }
-    return `${lines.map((line) => line.map(csvField).join(',')).join('\r\n')}\r\n`;
+    const stamp = versionComment();
+    return `${stamp ? `${stamp}\r\n` : ''}${lines.map((line) => line.map(csvField).join(',')).join('\r\n')}\r\n`;
   }
 
   // wobd-recording-YYYY-MM-DD-HHMMSS.csv, in local time, from when recording started.

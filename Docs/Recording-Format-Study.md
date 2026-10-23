@@ -354,3 +354,7 @@ None block approval of the specification. Before implementation or release:
 2. No measured CAN rate or long varied drive exists; scenario B and C are assumptions.
 3. Real-browser IndexedDB durability under crash is untested.
 4. The Chrome/Edge 89–102 policy needs a decision.
+
+## Addendum: version stamp (v1.71)
+
+Current CSV recordings begin with a comment line `# WOBD v<version>` before the `timestamp,...` header. Any importer, including a future `.wobd` migration, must skip a leading `#` line and may keep the version as metadata. Files without it (v1.7 and earlier) are still valid.

@@ -2,6 +2,7 @@
 // per-PID time series for the replay page. No DOM here, so
 // scripts/test-replay.mjs can check it in Node.
 import { LIVE_PIDS, BATTERY, DERIVED_PIDS } from './obd.js';
+import { parseVersionLine } from './version-info.js';
 
 export const MAX_FILE_BYTES = 128 * 1024 * 1024;
 const REQUIRED = ['timestamp', 'elapsed_ms', 'pid', 'name', 'value', 'unit'];
@@ -109,10 +110,16 @@ class RecordingBuilder {
     this.baudRate = null;
     this.startedAt = null;
     this.readingCount = 0;
+    this.wobdVersion = null;
   }
 
   addRow(row) {
     if (!row.some((cell) => cell.trim())) return;
+    // A "# WOBD v1.71" line before the header says which WOBD wrote the file.
+    if (!this.col && row[0].trim().startsWith('#')) {
+      this.wobdVersion ??= parseVersionLine(row[0]);
+      return;
+    }
     if (!this.col) {
       this.col = Object.fromEntries(row.map((name, i) => [name.trim(), i]));
       if (!REQUIRED.every((name) => name in this.col)) {
@@ -183,12 +190,13 @@ class RecordingBuilder {
     const series = [...this.byPid.values()].sort((a, b) => gaugeOrder.indexOf(a.def) - gaugeOrder.indexOf(b.def));
     return {
       startedAt: this.startedAt, durationMs, readingCount: this.readingCount,
-      protocol: this.protocol, baudRate: this.baudRate, series, unknownPids: [...this.unknownPids],
+      protocol: this.protocol, baudRate: this.baudRate, wobdVersion: this.wobdVersion, series, unknownPids: [...this.unknownPids],
     };
   }
 }
 
-// Returns { startedAt, durationMs, readingCount, protocol, baudRate, series, unknownPids }.
+// Returns { startedAt, durationMs, readingCount, protocol, baudRate, wobdVersion, series, unknownPids }.
+// wobdVersion is null for files from before v1.71.
 // series is in Live data gauge order; each entry is { def, times, values } sorted by time.
 export function parseRecording(text) {
   const builder = new RecordingBuilder();
