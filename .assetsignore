@@ -8,6 +8,8 @@ README.md
 Assets/*
 !Assets/favicon.png
 !Assets/header-logo.png
+!Assets/kierandrewett.jpeg
+!Assets/Foerb.jpeg
 Docs
 node_modules
 scripts
