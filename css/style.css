@@ -1386,7 +1386,24 @@ dialog.record-lock .btn { font-size: 1.15rem; padding: 0.7rem 1.4rem; }
 .adapter-not-tested { color: var(--muted); font-style: italic; }
 .adapter-message { margin: 0; }
 
+.adapter-crumbs { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; margin: 0 0 1rem; font-size: 0.9rem; color: var(--muted); }
+.adapter-crumbs button, .adapter-choice button {
+  background: none; border: 0; padding: 0; font: inherit; color: var(--link); cursor: pointer; text-decoration: underline;
+}
+.adapter-crumbs button:hover, .adapter-choice button:hover { color: var(--link-hover); }
+.adapter-crumbs [aria-current] { color: var(--text); font-weight: 600; }
+.adapter-choice { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.6rem; }
+.adapter-choice button { font-size: 1.35rem; font-weight: 700; letter-spacing: 0.03em; text-decoration: none; }
+.adapter-choice button:hover, .adapter-choice button:focus-visible { text-decoration: underline; }
+.adapter-count { color: var(--muted); font-size: 0.9rem; margin-left: 0.5rem; }
+.adapter-filters { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: end; margin: 0 0 1rem; }
+.adapter-filters label { display: grid; gap: 0.2rem; font-size: 0.85rem; color: var(--muted); }
+.adapter-filters select, .adapter-filters input { padding: 0.4rem; font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--line); border-radius: 4px; }
+.adapter-filter-count { margin: 0 0 0.5rem; color: var(--muted); font-size: 0.85rem; }
+.adapter-page h1:focus { outline: none; }
+
 @media print {
+  .adapter-crumbs, .adapter-filters, .adapter-filter-count { display: none; }
   body.adapter-page {
     display: block;
     background: #fff;
@@ -1503,3 +1520,19 @@ dialog.record-lock .btn { font-size: 1.15rem; padding: 0.7rem 1.4rem; }
 }
 .lang-suggest p { margin: 0; flex: 1 1 14rem; }
 @media print { .lang-select, .lang-notice, .lang-suggest { display: none; } }
+
+/* ---------- Credits page ---------- */
+.credit-list { display: grid; gap: 1rem; }
+.credit-card {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.credit-card h2 { margin: 0 0 0.25rem; }
+.credit-card p { margin: 0.25rem 0; }
+.credit-photo { width: 96px; height: 96px; border-radius: 50%; object-fit: cover; flex: none; }
+.site-credits { margin: 0.2rem 0; }

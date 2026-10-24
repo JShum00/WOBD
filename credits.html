@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Credits · WOBD</title>
+  <meta name="description" content="The open-source projects and authors behind the trouble code data used in WOBD.">
+  <link rel="icon" href="Assets/favicon.png" type="image/png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="img/icons/apple-touch-icon.png">
+  <link rel="canonical" href="https://wobd.app/credits">
+  <meta name="theme-color" content="#1F3F8F">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/theme.js"></script>
+  <script type="module" src="js/i18n-boot.js"></script>
+  <script src="js/pwa.js" defer></script>
+  <script src="js/site-nav.js" defer></script>
+  <script src="js/version.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="logo" href="./"><img class="logo-image" src="Assets/header-logo.png" alt="">WOBD</a>
+    <div class="header-right">
+      <nav class="site-nav" aria-label="Main navigation" data-i18n-attr="aria-label:nav.main">
+        <a class="header-link" href="./" data-nav="scanner" data-i18n="nav.scanner">Scanner</a>
+        <a class="header-link" href="codes.html" data-nav="codes" data-i18n="nav.codes">Code Search</a>
+        <a class="header-link" href="replay.html" data-nav="replay" data-i18n="nav.replay">Replay</a>
+        <a class="header-link" href="./#demos" data-nav="demos" data-i18n="nav.demos">Demos</a>
+        <a class="header-link" href="guide.html" data-nav="guide" data-i18n="nav.guide">How to Use</a>
+        <a class="header-link" href="tested-adapters.html" data-nav="adapters" data-i18n="nav.adapters">Tested Adapters</a>
+      </nav>
+      <button id="theme-btn" type="button" class="theme-btn" aria-pressed="false" aria-label="Dark mode" data-i18n-attr="aria-label:nav.theme">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="currentColor"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></g></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="guide credits-page">
+    <h1>Credits</h1>
+    <p class="lede">WOBD's trouble code data builds on the work of two open-source projects. Thank you to their authors.</p>
+    <section class="credit-list" aria-label="Credits">
+      <article class="credit-card">
+        <img class="credit-photo" src="Assets/kierandrewett.jpeg" alt="Kieran Drewett's GitHub profile photo" width="96" height="96">
+        <div>
+          <h2>Kieran Drewett</h2>
+          <p>Author of <a href="https://github.com/kierandrewett/obd" target="_blank" rel="noopener noreferrer">kierandrewett/obd</a>, the source of WOBD's manufacturer-specific trouble codes.</p>
+          <p><a href="https://github.com/kierandrewett" target="_blank" rel="noopener noreferrer">github.com/kierandrewett</a></p>
+        </div>
+      </article>
+      <article class="credit-card">
+        <img class="credit-photo" src="Assets/Foerb.jpeg" alt="Foerbsnavi's GitHub profile photo" width="96" height="96">
+        <div>
+          <h2>Foerbsnavi</h2>
+          <p>Author of <a href="https://github.com/foerbsnavi/OBDex/" target="_blank" rel="noopener noreferrer">OBDex</a>, the source of WOBD's generic trouble code database.</p>
+          <p><a href="https://github.com/foerbsnavi" target="_blank" rel="noopener noreferrer">github.com/foerbsnavi</a></p>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p data-i18n="footer.disclaimer">WOBD gives general information, not a professional diagnosis. Always confirm a problem before replacing parts.</p>
+    <p><a href="./">Back to WOBD</a></p>
+  </footer>
+</body>
+</html>

@@ -14,8 +14,13 @@ A free, browser-based car diagnostic tool. Plug a USB OBD-II adapter into a Chro
 - **Print reports**: print or save a scan report as PDF, including vehicle details, VIN when available, code urgency, explanations, causes, and mechanic notes.
 - **Languages and units**: switch between English, French, German, Spanish, Japanese, and Simplified Chinese (machine translated, labelled as such), and show km/h and °C instead of mph and °F. Both settings stay in your browser and work offline.
 - **Optional read-aloud**: Bob can read his speech bubble using the browser's speech synthesis when available.
-- **Tested adapters** (`tested-adapters.html`): personal adapter test results loaded from `data/tested-adapters.json`.
+- **Tested adapters** (`tested-adapters.html`): personal adapter test results loaded from `data/tested-adapters.json`, browsed by adapter, then make, with filters.
 - **Installable and offline**: WOBD is a PWA. After the first load, the scanner and bundled code search work offline. Scan data stays in the browser; only a search you choose to open, or a VIN lookup you agree to, leaves the site.
+
+### WOBD v1.92 release notes
+
+- New Credits page (`credits.html`, linked in every footer via `js/version.js`) crediting [kierandrewett/obd](https://github.com/kierandrewett/obd) and [foerbsnavi/OBDex](https://github.com/foerbsnavi/OBDex/) and their authors.
+- Tested adapters page redesigned: adapter list, then make list, then a vehicle table for that make with year, model, protocol, and notes filters. It is built from `data/tested-adapters.json`, so new tests appear automatically.
 
 ### WOBD v1.91 release notes
 
@@ -143,6 +148,7 @@ The pretend adapter behaves like a real ELM327 about protocols: it only reaches 
 | Path | What it is |
 | --- | --- |
 | `index.html`, `guide.html`, `codes.html`, `tested-adapters.html` | The app, the How to use page, code search, and tested adapter results |
+| `credits.html` | Credits for the code data sources and their authors |
 | `manifest.webmanifest`, `sw.js`, `js/pwa.js` | PWA manifest, service worker, and its registration |
 | `img/icons/` | App icons |
 | `css/` | Theme and layout (`style.css`), print report (`print.css`) |

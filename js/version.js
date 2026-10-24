@@ -1,7 +1,7 @@
 // The site's version, shown in the bottom-right corner of every page's footer.
 // Bump this (and CACHE_VERSION in sw.js) when releasing. This is the only place a
 // version is written: exports read it through js/version-info.js.
-const WOBD_VERSION = '1.91';
+const WOBD_VERSION = '1.92';
 window.WOBD_VERSION = WOBD_VERSION;
 
 for (const footer of document.querySelectorAll('.site-footer')) {
@@ -11,5 +11,11 @@ for (const footer of document.querySelectorAll('.site-footer')) {
   link.href = '/changelog';
   link.textContent = `WOBD v${WOBD_VERSION}`;
   tag.append(link);
-  footer.append(tag);
+  const credits = document.createElement('p');
+  credits.className = 'site-credits';
+  const creditsLink = document.createElement('a');
+  creditsLink.href = '/credits';
+  creditsLink.textContent = 'Credits';
+  credits.append(creditsLink);
+  footer.append(credits, tag);
 }
