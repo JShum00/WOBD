@@ -40,6 +40,17 @@
     <h1>Changelog</h1>
     <p class="lede">What changed in each WOBD release, newest first.</p>
 
+    <section id="v1-93">
+      <h2>v1.93 <time datetime="2026-10-25">October 25, 2026</time></h2>
+      <ul>
+        <li><strong>Bob knows manufacturer-specific codes.</strong> When you pick your car's make, Bob now uses the make-specific title for codes his own notes don't cover. Urgency, DIY-or-shop, and causes are marked unknown, with a Google search link. Changing the make after a scan refreshes his explanations.</li>
+        <li><strong>Cleaner Ford descriptions.</strong> Leading fault-type numbers and stray letters are removed, and long descriptions wrap inside Bob's bubble.</li>
+        <li><strong>Simulator custom codes.</strong> Choose "Custom codes…" to make the pretend car report any codes you type, up to 16, so you can see how Bob explains a code for any make.</li>
+        <li><strong>Credits.</strong> The OBD Dashboard (MIT) attribution for manufacturer descriptions moved from Bob's bubble to the Credits page.</li>
+        <li><strong>Hardening.</strong> Code lookups ignore inherited object keys, and new tests cover Bob's lookup and the custom code list.</li>
+      </ul>
+    </section>
+
     <section id="v1-92">
       <h2>v1.92 <time datetime="2026-10-24">October 24, 2026</time></h2>
       <ul>

@@ -4,7 +4,7 @@ A free, browser-based car diagnostic tool. Plug a USB OBD-II adapter into a Chro
 
 ## Features
 
-- **Scan and clear codes**: Bob explains stored, pending, and permanent trouble codes in plain English, and identifies the reporting ECU when the adapter provides it. Clearing requires confirmation and resets emissions readiness monitors.
+- **Scan and clear codes**: Bob explains stored, pending, and permanent trouble codes in plain English, and identifies the reporting ECU when the adapter provides it. When a make is selected, Bob also uses the manufacturer-specific title for codes his own notes don't cover (urgency, difficulty, and causes are marked unknown, with a Google search link). Changing the make after a scan refreshes his explanations. Clearing requires confirmation and resets emissions readiness monitors.
 - **Live data dashboard**: a gauge cluster with radial dials (RPM, speed), vertical bars (throttle, load, fuel trims), and horizontal bars (temperatures, airflow, pressure, timing, O2 sensors, voltage, and distance), plus open or closed loop status. On connect, WOBD follows the car's Mode 01 support bitmaps and offers manual selection or automatic, priority-based monitoring. Its parameter catalog distinguishes reported support from decoder availability; standardized OBD-II data is not a complete inventory of physical sensors.
 - **Adapter details**: see the detected protocol, car-response status, adapter voltage, and adapter identification. Automatic baud-rate detection has a manual retry option for adapters that need a specific speed.
 - **Protocol troubleshooting**: automatic protocol selection is the default; an optional per-connection override can force a specific OBD protocol for troubleshooting.
@@ -16,6 +16,12 @@ A free, browser-based car diagnostic tool. Plug a USB OBD-II adapter into a Chro
 - **Optional read-aloud**: Bob can read his speech bubble using the browser's speech synthesis when available.
 - **Tested adapters** (`tested-adapters.html`): personal adapter test results loaded from `data/tested-adapters.json`, browsed by adapter, then make, with filters.
 - **Installable and offline**: WOBD is a PWA. After the first load, the scanner and bundled code search work offline. Scan data stays in the browser; only a search you choose to open, or a VIN lookup you agree to, leaves the site.
+
+### WOBD v1.93 release notes
+
+- Bob uses manufacturer-specific titles for codes his own notes don't cover once a make is chosen (unknown urgency, difficulty, and causes, plus a Google link). Changing the make after a scan refreshes his explanations. Ford descriptions drop their leading fault-type byte and stray letters, and long text wraps in the bubble.
+- Simulator: a "Custom codes…" option makes the pretend car report up to 16 typed codes (`?custom=` in the app link).
+- OBD Dashboard (MIT) attribution for manufacturer descriptions moved to the Credits page. Added `node scripts/test-bob-lookup.mjs`.
 
 ### WOBD v1.92 release notes
 
@@ -141,7 +147,7 @@ The pretend adapter behaves like a real ELM327 about protocols: it only reaches 
 
 ### Simulator
 
-`simulator.html` lets you pick any year, make, and model and connect to a pretend car for it, then shows every command and reply. `js/vehicles.js` maps year, make, and model to a protocol (for example, a 2001 Ford Ranger is J1850 PWM and a 2015 Honda Civic is CAN). These are rules of thumb, so add a `MODEL_RULES` entry when a real car differs. "Automatic protocol search fails" makes the car connect only with the right override. Test: `node scripts/test-simulator.mjs`.
+`simulator.html` lets you pick any year, make, and model and connect to a pretend car for it, then shows every command and reply. `js/vehicles.js` maps year, make, and model to a protocol (for example, a 2001 Ford Ranger is J1850 PWM and a 2015 Honda Civic is CAN). These are rules of thumb, so add a `MODEL_RULES` entry when a real car differs. "Automatic protocol search fails" makes the car connect only with the right override. Choose "Custom codes…" under Trouble codes to type up to 16 codes (such as `P1300, U0100`) for the pretend car to report, which is handy for seeing how Bob explains a code for any make. They carry into "Open in WOBD" as `?custom=`. Test: `node scripts/test-simulator.mjs`.
 
 ## Project layout
 

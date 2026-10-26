@@ -5,7 +5,7 @@ import { DemoTransport } from './demo.js';
 import { ELM327 } from './elm327.js';
 import * as obd from './obd.js';
 import * as ui from './ui.js';
-import { CODE_SETS, DEFAULT_CODE_SET, vehicleProfile } from './vehicles.js';
+import { CODE_SETS, DEFAULT_CODE_SET, MAX_CUSTOM_CODES, parseCodeList, vehicleProfile } from './vehicles.js';
 import { createTrafficView } from './traffic.js';
 import { h } from './dom.js';
 import { formatNumber, onLanguageChange, t } from './i18n.js';
@@ -20,6 +20,7 @@ async function start() {
   ui.initProtocolOverride(obd.PROTOCOLS);
   renderCodeSets();
   $('sim-codes').value = CODE_SETS[params.get('codes')] ? params.get('codes') : DEFAULT_CODE_SET;
+  $('sim-custom').value = params.get('custom') ?? '';
   $('sim-noauto').checked = params.has('noauto');
 
   try {
@@ -33,7 +34,7 @@ async function start() {
     showResult(t('bob.simulator.failedLists', { error: err.message }), true);
   }
 
-  for (const id of ['car-form', 'sim-codes', 'sim-noauto']) $(id).addEventListener('input', refresh);
+  for (const id of ['car-form', 'sim-codes', 'sim-custom', 'sim-noauto']) $(id).addEventListener('input', refresh);
   onLanguageChange(() => { renderCodeSets(); refresh(); });
   $('sim-connect').addEventListener('click', connect);
   refresh();
@@ -47,10 +48,25 @@ function renderCodeSets() {
 }
 
 function currentVehicle() {
-  return vehicleProfile({ ...ui.getCar(), codeSet: $('sim-codes').value, autoFails: $('sim-noauto').checked });
+  return vehicleProfile({ ...ui.getCar(), codeSet: $('sim-codes').value, customCodes: $('sim-custom').value, autoFails: $('sim-noauto').checked });
+}
+
+function refreshCustomCodes() {
+  const custom = $('sim-codes').value === 'custom';
+  const note = $('sim-custom-note');
+  $('sim-custom').hidden = !custom;
+  $('sim-custom-label').hidden = !custom;
+  const { invalid, truncated } = parseCodeList($('sim-custom').value);
+  const messages = [
+    invalid.length && t('bob.simulator.customInvalid', { codes: invalid.join(', ') }),
+    truncated && t('bob.simulator.customTooMany', { max: MAX_CUSTOM_CODES }),
+  ].filter(Boolean);
+  note.hidden = !custom || messages.length === 0;
+  note.textContent = messages.join(' ');
 }
 
 function refresh() {
+  refreshCustomCodes();
   const vehicle = currentVehicle();
   $('sim-profile').textContent = `${vehicle.label}: ${t('bob.simulator.protocolLabel')} ${vehicle.protocol} (${obd.PROTOCOLS[vehicle.protocol]}). ${vehicle.reason}. ${vehicle.vin ? t('bob.simulator.vinReported') : t('bob.simulator.noVin')}`;
 
@@ -58,6 +74,7 @@ function refresh() {
   const car = ui.getCar();
   for (const key of ['year', 'make', 'model']) if (car[key]) link.set(key, car[key]);
   link.set('codes', $('sim-codes').value);
+  if ($('sim-codes').value === 'custom' && $('sim-custom').value.trim()) link.set('custom', $('sim-custom').value.trim());
   if ($('sim-noauto').checked) link.set('noauto', '');
   $('sim-open').href = `index.html?${link}`;
 }

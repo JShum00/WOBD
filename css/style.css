@@ -888,6 +888,7 @@ a:hover { color: var(--link-hover); }
 
 .bubble h3 { margin: 0 1rem 0.3rem 0; font-size: 1rem; line-height: 1.3; }
 .bubble h3 .code { font-family: ui-monospace, Menlo, monospace; color: var(--link); }
+.bubble { overflow-wrap: anywhere; }
 .bubble p { margin: 0 0 0.5rem; }
 .bubble p:last-child { margin-bottom: 0; }
 .bubble h4 { margin: 0.6rem 0 0.2rem; font-size: 0.85rem; color: var(--muted); }

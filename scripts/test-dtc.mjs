@@ -3,6 +3,7 @@
 import assert from 'node:assert/strict';
 import { ElmError, ELM327 } from '../js/elm327.js';
 import { DemoTransport } from '../js/demo.js';
+import { cleanManufacturerDescription } from '../js/dtc.js';
 import { clearCodes, decodeDtcEntries, decodeDtcs, decodeStatus, ecuIdentity, readDtcServices, readScan, toMessages } from '../js/obd.js';
 
 function fakeElm(replies) {
@@ -21,6 +22,14 @@ function fakeElm(replies) {
 }
 
 const cases = [
+  ['manufacturer descriptions drop the fault-type byte, stray letter, and code echoes', () => {
+    assert.equal(cleanManufacturerDescription('87: Display: Missing Message O:\u00a0THE\u00a0DISPLAY\u00a0UNIT\u00a0IS\u00a0INOPERATIVE\u00a0(Information and Entertainment System)'),
+      'Display: Missing Message — THE DISPLAY UNIT IS INOPERATIVE (Information and Entertainment System)');
+    assert.equal(cleanManufacturerDescription('87: PATS Transponder: Missing Message E:\u00a0B10D9:87\u00a0(Passive Anti-Theft System (PATS))'),
+      'PATS Transponder: Missing Message (Passive Anti-Theft System (PATS))');
+    assert.equal(cleanManufacturerDescription('15: License Plate Light: Circuit Short To Battery '), 'License Plate Light: Circuit Short To Battery');
+    assert.equal(cleanManufacturerDescription('Ignition Coil D Secondary Circuit Malfunction'), 'Ignition Coil D Secondary Circuit Malfunction');
+  }],
   ['CAN DTCs preserve the ECU source for all supported services', () => {
     for (const [service, reply, code] of [
       [0x03, '7E8 04 43 01 01 30', 'P0130'],

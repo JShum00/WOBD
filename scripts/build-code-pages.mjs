@@ -26,7 +26,7 @@ const SYSTEMS = {
   U: 'vehicle network (modules talking to each other)',
 };
 
-export const STATIC_PAGES = ['/', '/codes', '/replay', '/guide', '/tested-adapters', '/simulator', '/contact', '/changelog'];
+export const STATIC_PAGES = ['/', '/codes', '/replay', '/guide', '/tested-adapters', '/simulator', '/contact', '/credits', '/changelog'];
 
 export const esc = (s) => String(s)
   .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')

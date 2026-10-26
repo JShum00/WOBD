@@ -2,7 +2,7 @@
 // Everything he says is scripted, so he works offline and never makes things up.
 import { h } from './dom.js';
 import { getLanguage, isMachineTranslated, t } from './i18n.js';
-import { isDtcCode, isManufacturerCode, manufacturerMakeKey } from './dtc.js';
+import { cleanManufacturerDescription, isDtcCode, isManufacturerCode, manufacturerMakeKey } from './dtc.js';
 
 export const URGENCY = {
   low: { get label() { return t('bob.urgency.low'); }, get says() { return t('bob.urgency.lowSays'); } },
@@ -15,6 +15,7 @@ export const DIFFICULTY = {
   get diy() { return t('bob.difficulty.diy'); },
   get moderate() { return t('bob.difficulty.moderate'); },
   get shop() { return t('bob.difficulty.shop'); },
+  get unknown() { return t('bob.difficulty.unknown'); },
 };
 
 const MOODS = { check: '✓', warning: '!', question: '?' };
@@ -167,7 +168,8 @@ export async function loadManufacturerCodes(make) {
             && isManufacturerCode(code) && typeof description === 'string' && description.trim())) {
           throw new Error('Invalid manufacturer-code data.');
         }
-        manufacturerCodes.set(key, data);
+        manufacturerCodes.set(key, Object.fromEntries(Object.entries(data)
+          .map(([code, description]) => [code, cleanManufacturerDescription(description)])));
       })
       .catch((err) => {
         manufacturerLoads.delete(key);
@@ -181,19 +183,20 @@ export async function loadManufacturerCodes(make) {
 export function describeCategory(code) {
   const [letter, d1, d2] = code;
   if (letter === 'P' && d1 === '0' && P0_GROUPS[d2]) return t('bob.category.p0', { digit: d2, group: P0_GROUPS[d2]() });
-  return t('bob.category.system', { letter, system: SYSTEMS[letter]() });
+  return t('bob.category.system', { letter, system: Object.hasOwn(SYSTEMS, letter) ? SYSTEMS[letter]() : '' });
 }
 
 // Always returns something Bob can say, even for codes he has no notes on.
 export function lookup(code, make = '') {
-  const entry = codeBook[code];
+  const entry = Object.hasOwn(codeBook, code) ? codeBook[code] : null;
   if (entry) {
     const translated = isTranslatedEntry({ code });
     return { code, known: true, ...entry, translated, lang: translated ? activeCodeBookLanguage : 'en' };
   }
 
   const key = manufacturerMakeKey(make);
-  const manufacturerDescription = isManufacturerCode(code) ? manufacturerCodes.get(key)?.[code] : null;
+  const manufacturerDescription = isManufacturerCode(code) && Object.hasOwn(manufacturerCodes.get(key) ?? {}, code)
+    ? manufacturerCodes.get(key)[code] : null;
   if (manufacturerDescription) {
     return {
       code,
@@ -204,13 +207,13 @@ export function lookup(code, make = '') {
       lang: 'en',
       plain: manufacturerDescription,
       urgency: 'unknown',
-      causes: [],
-      difficulty: null,
+      causes: [t('bob.lookup.limitedInfo')],
+      difficulty: 'unknown',
       tellMechanic: `${code} is listed for ${make}: ${manufacturerDescription}. Confirm it with vehicle-specific service information.`,
     };
   }
 
-  const general = generic[code];
+  const general = Object.hasOwn(generic, code) ? generic[code] : null;
   if (general) {
     return {
       code,
@@ -323,9 +326,6 @@ export class Bob {
         t('bob.genericDisclaimer')),
       entry.brandSpecific && h('p', { class: 'hint' },
         t('bob.codes.manufacturerDisclaimer')),
-      entry.brandSpecific && h('p', { class: 'hint' },
-        h('a', { href: 'https://github.com/kierandrewett/obd/blob/main/LICENSE',
-          target: '_blank', rel: 'noopener noreferrer' }, t('bob.codes.manufacturerSource'))),
       !entry.known && h('p', {},
         h('a', { href: searchUrl(entry.code, this.getCar()), target: '_blank', rel: 'noopener noreferrer',
           dataset: { searchCode: entry.code } },

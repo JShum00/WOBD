@@ -63,6 +63,9 @@
         <legend data-i18n="bob.simulator.quirks">Pretend car quirks</legend>
         <label for="sim-codes" data-i18n="bob.simulator.codes">Trouble codes</label>
         <select id="sim-codes"></select>
+        <label for="sim-custom" data-i18n="bob.simulator.customLabel" hidden id="sim-custom-label">Codes to show (for example P1300, U0100)</label>
+        <input id="sim-custom" type="text" autocomplete="off" spellcheck="false" placeholder="P1300, P0420" data-i18n-attr="placeholder:bob.simulator.customPlaceholder" hidden>
+        <p id="sim-custom-note" class="hint" role="status" aria-live="polite" hidden></p>
         <label><input id="sim-noauto" type="checkbox"><span data-i18n="bob.simulator.autoFail">Automatic protocol search fails</span></label>
       </fieldset>
     </section>

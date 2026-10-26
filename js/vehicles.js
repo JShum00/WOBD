@@ -5,6 +5,7 @@
 // turns out to differ.
 
 import { t } from './i18n.js';
+import { isDtcCode } from './dtc.js';
 
 // canFrom: first model year that talks CAN 11-bit 500k. Before that, `legacy` applies.
 const FAMILIES = [
@@ -41,7 +42,21 @@ export const CODE_SETS = {
   none: { get label() { return t('bob.codeSet.none'); }, codes: [] },
   few: { get label() { return t('bob.codeSet.few'); }, codes: ['P0301', 'P0171', 'P0442'] },
   brand: { get label() { return t('bob.codeSet.brand'); }, codes: ['P0420', 'P1491'] },
+  custom: { get label() { return t('bob.codeSet.custom'); }, codes: [] },
 };
+
+export const MAX_CUSTOM_CODES = 16;
+
+// Splits a typed list on commas, spaces, and line breaks. Invalid and repeated codes are reported, not sent.
+export function parseCodeList(text) {
+  const codes = [];
+  const invalid = [];
+  for (const raw of String(text ?? '').toUpperCase().split(/[\s,;]+/).filter(Boolean)) {
+    if (!isDtcCode(raw)) invalid.push(raw);
+    else if (!codes.includes(raw)) codes.push(raw);
+  }
+  return { codes: codes.slice(0, MAX_CUSTOM_CODES), invalid, truncated: codes.length > MAX_CUSTOM_CODES };
+}
 
 export const DEFAULT_CODE_SET = 'few';
 
@@ -66,7 +81,7 @@ export function pickProtocol({ year, make, model } = {}) {
 }
 
 // The profile DemoTransport takes as its scenario.
-export function vehicleProfile({ year, make, model, codeSet = DEFAULT_CODE_SET, autoFails = false } = {}) {
+export function vehicleProfile({ year, make, model, codeSet = DEFAULT_CODE_SET, customCodes = '', autoFails = false } = {}) {
   const { protocol, reason } = pickProtocol({ year, make, model });
   const can = /^[6-9A-C]$/.test(protocol);
   const y = Number(year) || null;
@@ -76,7 +91,7 @@ export function vehicleProfile({ year, make, model, codeSet = DEFAULT_CODE_SET, 
     reason,
     // Mode 9 (VIN) is rare on older non-CAN cars.
     vin: can || (y !== null && y >= 2005) ? 'SMLTD000000000001' : null,
-    codes: [...(CODE_SETS[codeSet] ?? CODE_SETS[DEFAULT_CODE_SET]).codes],
+    codes: codeSet === 'custom' ? parseCodeList(customCodes).codes : [...(CODE_SETS[codeSet] ?? CODE_SETS[DEFAULT_CODE_SET]).codes],
     autoFails,
     ...(can ? CAN_PIDS : LEGACY_PIDS),
     ...(TIMING[protocol] ?? {}),

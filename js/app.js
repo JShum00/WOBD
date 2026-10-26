@@ -7,7 +7,8 @@ import { vehicleProfile } from './vehicles.js';
 import { ELM327, ElmError } from './elm327.js';
 import { abortOnUnplug, detectBaud, rateOptions } from './smartbauder.js';
 import * as obd from './obd.js';
-import { Bob, loadCodeBook, loadGenericCodes, lookup } from './bob.js';
+import { isManufacturerCode } from './dtc.js';
+import { Bob, loadCodeBook, loadGenericCodes, loadManufacturerCodes, lookup } from './bob.js';
 import * as ui from './ui.js';
 import { Voice } from './voice.js';
 import { createTrafficView } from './traffic.js';
@@ -100,7 +101,7 @@ onLanguageChange(() => {
   if (state.connInfo && state.elm) renderConnInfo(state.connInfo, { baudRate: state.baudRate });
   if (state.scan) { showScanResults(); announceScan(state.scan); }
   else if (!state.busy && !state.recording) bobIdle();
-  if (state.selected) bob.explain(lookup(state.selected));
+  if (state.selected) bob.explain(lookup(state.selected, ui.getCar().make));
 });
 
 async function start() {
@@ -167,7 +168,7 @@ function bobIdle() {
         : t('app.live.connectFirst'),
     });
   } else if (state.selected) {
-    bob.explain(lookup(state.selected));
+    bob.explain(lookup(state.selected, ui.getCar().make));
   } else if (state.scan) {
     announceScan(state.scan);
   } else if (state.elm) {
@@ -217,6 +218,7 @@ function demoTransport(name) {
     return new DemoTransport(vehicleProfile({
       ...ui.getCar(),
       codeSet: params.get('codes') ?? undefined,
+      customCodes: params.get('custom') ?? '',
       autoFails: params.has('noauto'),
     }));
   }
@@ -558,9 +560,9 @@ async function scan() {
     dtcStatus: service.label,
   })));
   const codeTypes = [...new Set(codes.map((entry) => entry.code))];
-  await loadGenericCodes(codeTypes);
+  await Promise.all([loadGenericCodes(codeTypes), loadMakeCodes(codeTypes)]);
   const entries = codes.map((entry) => ({
-    ...lookup(entry.code),
+    ...lookup(entry.code, ui.getCar().make),
     dtcStatus: entry.dtcStatus,
     ecuSource: entry.ecuSource,
     ecuName: entry.ecuSource ? obd.ecuIdentity(entry.ecuSource).name : null,
@@ -573,6 +575,42 @@ async function scan() {
   state.moduleView = 'all';
   showScanResults();
   announceScan(state.scan);
+}
+
+// Manufacturer-specific descriptions are only fetched when a scanned code needs them.
+// A failed download leaves Bob with his generic fallback.
+async function loadMakeCodes(codes) {
+  const { make } = ui.getCar();
+  if (!make || !codes.some(isManufacturerCode)) return;
+  try {
+    await loadManufacturerCodes(make);
+  } catch (err) {
+    console.warn('[WOBD] Manufacturer codes unavailable:', err);
+  }
+}
+
+// Re-explains the scanned codes when the make changes after a scan.
+async function refreshForMake() {
+  const scan = state.scan;
+  if (!scan) return;
+  await loadMakeCodes(scan.entries.map((entry) => entry.code));
+  if (state.scan !== scan) return;
+  const { make } = ui.getCar();
+  scan.entries = scan.entries.map((entry) => ({
+    ...lookup(entry.code, make),
+    dtcStatus: entry.dtcStatus,
+    ecuSource: entry.ecuSource,
+    ecuName: entry.ecuName,
+  }));
+  showScanResults();
+  if (state.selected) {
+    ui.selectCode(state.selected);
+    bob.explain(lookup(state.selected, make));
+  }
+}
+
+for (const id of ['car-make', 'car-make-other', 'car-skip', 'car-add']) {
+  $(id)?.addEventListener(id === 'car-skip' || id === 'car-add' ? 'click' : 'change', refreshForMake);
 }
 
 // Shows the whole vehicle or one module, depending on the selected tab.

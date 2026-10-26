@@ -228,9 +228,7 @@ function renderDetails(code, entry, make) {
         sourceLink(t('bob.codes.genericSource'), 'https://github.com/foerbsnavi/OBDex')));
   }
   if (isBrand) {
-    sections.push(h('p', { class: 'hint' }, t('bob.codes.manufacturerDisclaimer')),
-      h('p', { class: 'code-dialog-source' },
-        sourceLink(t('bob.codes.manufacturerSource'), 'https://github.com/kierandrewett/obd/blob/main/LICENSE')));
+    sections.push(h('p', { class: 'hint' }, t('bob.codes.manufacturerDisclaimer')));
   }
   if (!entry.known && !entry.generic && !isBrand) {
     sections.push(h('p', { class: 'hint' },
